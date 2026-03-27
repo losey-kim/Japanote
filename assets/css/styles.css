@@ -23,6 +23,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -1423,6 +1427,17 @@ body.is-kana-quiz-sheet-open .page-shell {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
+}
+
+.vocab-card-view {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vocab-card-view .flashcard-actions {
+  margin-top: 0;
+  margin-bottom: 18px;
 }
 
 .vocab-view-toggle {
@@ -3034,6 +3049,14 @@ body::after {
 
   .flashcard {
     min-height: 270px;
+  }
+
+  .vocab-card-view {
+    gap: 14px;
+  }
+
+  .vocab-card-view .flashcard-actions {
+    margin-bottom: 14px;
   }
 
   .vocab-toolbar,
