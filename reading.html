@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JLPT Compass - 독해</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html">
+        <span class="brand-mark">JLPT</span>
+        <div>
+          <p class="brand-name">Compass</p>
+          <p class="brand-sub">시험 준비를 학습 루틴으로 바꾸는 개인용 대시보드</p>
+        </div>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">홈</a>
+        <a href="starter.html">처음시작</a>
+        <a href="vocab.html">단어</a>
+        <a href="grammar.html">문법</a>
+        <a href="reading.html" aria-current="page">독해</a>
+        <a href="quiz.html">퀴즈</a>
+        <a href="match.html">게임</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-intro">
+        <span class="eyebrow">READING PAGE</span>
+        <h1>독해는 여기서 지문만 집중해서 풉니다</h1>
+        <p>독해 PDF에서 추린 문제를 페이지 하나에 모았습니다. N5, N4, N3를 전환하면서 지문, 질문, 해설만 집중해서 볼 수 있습니다.</p>
+      </section>
+
+      <section id="practice-sets" class="content-section">
+        <div class="section-heading">
+          <span>READING PRACTICE</span>
+          <h2>PDF에서 뽑은 독해 문제를 사이트 안에서 바로 풉니다</h2>
+          <p class="section-copy"><code>C:\Users\admin\Downloads\jlpt</code> 폴더의 N3, N4, N5 독해 PDF를 바탕으로 추려낸 문제셋입니다. 지문, 질문, 선택지, 정답 해설을 화면 안에서 바로 확인할 수 있게 구성합니다.</p>
+        </div>
+
+        <div class="reading-level-switcher" id="reading-level-switcher" role="tablist" aria-label="독해 레벨 선택"></div>
+
+        <article class="reading-card">
+          <div class="reading-meta">
+            <span id="reading-level">N5</span>
+            <span id="reading-source">N5R p1</span>
+            <span id="reading-progress">1 / 3</span>
+          </div>
+
+          <div class="quiz-hud">
+            <div class="quiz-hud-item">
+              <span>제한시간</span>
+              <strong id="reading-timer">45초</strong>
+            </div>
+            <div class="quiz-hud-item">
+              <span>정답</span>
+              <strong id="reading-correct">0</strong>
+            </div>
+            <div class="quiz-hud-item">
+              <span>연속 정답</span>
+              <strong id="reading-streak">0</strong>
+            </div>
+          </div>
+
+          <div class="reading-header">
+            <div>
+              <span class="eyebrow">READING SET</span>
+              <h3 id="reading-title">독해 문제</h3>
+            </div>
+            <p class="reading-korean" id="reading-korean"></p>
+          </div>
+
+          <div class="reading-passage" id="reading-passage"></div>
+
+          <div class="reading-question-box">
+            <span class="eyebrow">QUESTION</span>
+            <h4 id="reading-question">질문을 불러오는 중입니다.</h4>
+          </div>
+
+          <div class="reading-options" id="reading-options"></div>
+          <p class="reading-feedback" id="reading-feedback"></p>
+          <p class="reading-explanation" id="reading-explanation"></p>
+
+          <div class="quiz-actions">
+            <button class="primary-btn" id="reading-next" type="button">다음 지문</button>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
