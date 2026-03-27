@@ -1,129 +1,54 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Japanote는 문자, 단어, 문법, 독해, 퀴즈를 가볍게 연습하는 일본어 학습 노트입니다.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Japanote">
+  <meta property="og:title" content="Japanote">
+  <meta property="og:description" content="문자, 단어, 문법, 독해, 퀴즈를 가볍게 연습하는 일본어 학습 노트">
+  <meta property="og:url" content="https://losey-kim.github.io/Japanote/quiz.html">
+  <meta property="og:image" content="https://losey-kim.github.io/Japanote/assets/images/social-preview.png">
+  <meta property="og:image:alt" content="Japanote 로고">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Japanote">
+  <meta name="twitter:description" content="문자, 단어, 문법, 독해, 퀴즈를 가볍게 연습하는 일본어 학습 노트">
+  <meta name="twitter:image" content="https://losey-kim.github.io/Japanote/assets/images/social-preview.png">
   <title>Japanote - 퀴즈</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
   <div class="page-shell">
     <header class="topbar">
-      <a class="brand" href="index.html">
-        <span class="brand-mark">JN</span>
-        <div>
-          <p class="brand-name">Japanote</p>
-          <p class="brand-sub">시험 준비를 학습 루틴으로 바꾸는 개인용 대시보드</p>
-        </div>
-      </a>
-      <nav class="nav-links">
-        <a href="index.html">홈</a>
-        <a href="starter.html">처음시작</a>
-        <a href="vocab.html">단어</a>
-        <a href="grammar.html">문법</a>
-        <a href="reading.html">독해</a>
-        <a href="quiz.html" aria-current="page">퀴즈</a>
-        <a href="match.html">게임</a>
-      </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle>테마: 시스템</button>
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/images/favicon.png" alt=""></span><div><p class="brand-name">Japanote</p><p class="brand-sub">일본어 공부를 가볍게 정리하는 노트</p></div></a>
+      <nav class="nav-links"><a href="index.html">홈</a><a href="starter.html">처음 시작</a><a href="characters.html">문자</a><a href="vocab.html">단어</a><a href="grammar.html">문법</a><a href="reading.html">독해</a><a href="quiz.html" aria-current="page">퀴즈</a><a href="match.html">게임</a></nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="현재 테마" title="테마"></button>
     </header>
-
     <main>
-      <section class="page-intro">
-        <span class="eyebrow">QUIZ PAGE</span>
-        <h1>짧은 퀴즈는 따로 돌립니다</h1>
-        <p>기초를 공부한 뒤 감각만 확인하고 싶을 때 여는 페이지입니다. 긴 모의고사 대신 짧은 문제로 템포를 유지하는 용도로 분리했습니다.</p>
-      </section>
-
       <section id="mock-test" class="content-section">
-        <div class="section-heading">
-          <span>MOCK QUIZ</span>
-          <h2>실전 감각을 유지하는 짧은 퀴즈</h2>
-          <p class="section-copy">길고 무거운 모의고사 전에 짧은 문제로 감각을 자주 유지하는 용도입니다. 10문제/20문제 세션을 고르고, 뜻 퀴즈와 읽기 퀴즈를 번갈아 돌릴 수 있습니다.</p>
-        </div>
-
+        <div class="section-heading"><span>MOCK QUIZ</span><h2>N5 단어 퀴즈</h2><p class="section-copy">문제 수와 모드를 고른 뒤 바로 풀 수 있습니다.</p></div>
         <div class="quiz-toolbar">
-          <div class="quiz-toggle-panel">
-            <span>문제 수</span>
-            <div class="quiz-toggle-group">
-              <button class="level-button" type="button" data-quiz-size="10" aria-pressed="false">10문제</button>
-              <button class="level-button" type="button" data-quiz-size="20" aria-pressed="true">20문제</button>
-            </div>
-          </div>
-          <div class="quiz-toggle-panel">
-            <span>퀴즈 모드</span>
-            <div class="quiz-toggle-group">
-              <button class="level-button" type="button" data-quiz-mode="meaning" aria-pressed="true">히라가나 -> 뜻</button>
-              <button class="level-button" type="button" data-quiz-mode="reading" aria-pressed="false">뜻 숨기고 읽기</button>
-            </div>
-          </div>
+          <div class="quiz-toggle-panel"><span>문제 수</span><div class="quiz-toggle-group"><button class="level-button" type="button" data-quiz-size="10" aria-pressed="false">10문제</button><button class="level-button" type="button" data-quiz-size="20" aria-pressed="true">20문제</button></div></div>
+          <div class="quiz-toggle-panel"><span>퀴즈 모드</span><div class="quiz-toggle-group"><button class="level-button" type="button" data-quiz-mode="meaning" aria-pressed="true">히라가나 → 뜻</button><button class="level-button" type="button" data-quiz-mode="reading" aria-pressed="false">뜻 숨기고 읽기</button></div></div>
         </div>
-
         <div class="quiz-card">
-          <div class="quiz-meta">
-            <span id="quiz-level">N5</span>
-            <span id="quiz-progress">1 / 3</span>
-          </div>
-          <div class="quiz-hud">
-            <div class="quiz-hud-item">
-              <span>제한시간</span>
-              <strong id="quiz-timer">15초</strong>
-            </div>
-            <div class="quiz-hud-item">
-              <span>정답</span>
-              <strong id="quiz-correct">0</strong>
-            </div>
-            <div class="quiz-hud-item">
-              <span>연속 정답</span>
-              <strong id="quiz-streak">0</strong>
-            </div>
-          </div>
+          <div class="quiz-meta"><span id="quiz-level">N5</span></div>
+          <div class="quiz-hud"><div class="quiz-hud-item"><span>진행</span><strong id="quiz-progress">1 / 3</strong></div><div class="quiz-hud-item"><span>제한시간</span><strong id="quiz-timer">15초</strong></div><div class="quiz-hud-item"><span>정답</span><strong id="quiz-correct">0</strong></div><div class="quiz-hud-item"><span>연속 정답</span><strong id="quiz-streak">0</strong></div></div>
           <h3 id="quiz-question">문제를 불러오는 중입니다.</h3>
           <div class="quiz-options" id="quiz-options"></div>
-          <div class="quiz-result" id="quiz-result" hidden>
-            <div class="quiz-result-grid">
-              <article class="quiz-result-item">
-                <span>세션 점수</span>
-                <strong id="quiz-result-score">0 / 0</strong>
-              </article>
-              <article class="quiz-result-item">
-                <span>정답률</span>
-                <strong id="quiz-result-accuracy">0%</strong>
-              </article>
-              <article class="quiz-result-item">
-                <span>오답 수</span>
-                <strong id="quiz-result-wrong">0개</strong>
-              </article>
-            </div>
-            <p class="quiz-result-copy" id="quiz-result-copy">세션 결과를 정리하는 중입니다.</p>
-          </div>
+          <div class="quiz-result" id="quiz-result" hidden><div class="quiz-result-grid"><article class="quiz-result-item"><span>세션 점수</span><strong id="quiz-result-score">0 / 0</strong></article><article class="quiz-result-item"><span>정답률</span><strong id="quiz-result-accuracy">0%</strong></article><article class="quiz-result-item"><span>오답 수</span><strong id="quiz-result-wrong">0개</strong></article></div><p class="quiz-result-copy" id="quiz-result-copy">세션 결과를 정리하는 중입니다.</p></div>
           <p class="quiz-feedback" id="quiz-feedback"></p>
-          <div class="quiz-actions">
-            <button class="secondary-btn" id="quiz-restart" type="button">처음부터 다시</button>
-            <button class="primary-btn" id="quiz-next" type="button">다음 문제</button>
-          </div>
+          <div class="quiz-actions"><button class="secondary-btn" id="quiz-restart" type="button">처음부터 다시</button><button class="primary-btn" id="quiz-next" type="button">다음 문제</button></div>
         </div>
-
-        <div class="quiz-note-panel">
-          <div class="quiz-note-head">
-            <div>
-              <span class="eyebrow">WRONG ANSWERS</span>
-              <h3>오답노트</h3>
-            </div>
-            <button class="secondary-btn" id="quiz-clear-mistakes" type="button">오답노트 비우기</button>
-          </div>
-          <p class="quiz-note-empty" id="quiz-note-empty">아직 저장된 오답이 없습니다.</p>
-          <div class="quiz-note-list" id="quiz-note-list"></div>
-        </div>
+        <div class="quiz-note-panel"><div class="quiz-note-head"><div><span class="eyebrow">WRONG ANSWERS</span><h3>오답노트</h3></div><button class="secondary-btn" id="quiz-clear-mistakes" type="button">오답노트 비우기</button></div><p class="quiz-note-empty" id="quiz-note-empty">아직 저장된 오답이 없습니다.</p><div class="quiz-note-list" id="quiz-note-list"></div></div>
       </section>
     </main>
   </div>
-
-  <script src="theme.js"></script>
-  <script src="jlpt-n5-data.js"></script>
-  <script src="app.js"></script>
+  <script src="assets/js/theme.js"></script><script src="assets/js/jlpt-n5-data.js"></script><script src="assets/js/app.js"></script>
 </body>
 </html>

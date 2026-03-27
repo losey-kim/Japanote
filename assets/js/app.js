@@ -1,84 +1,6 @@
-const storageKey = "jlpt-compass-state";
+﻿const storageKey = "jlpt-compass-state";
 
-const levelData = {
-  N5: {
-    goal: "기초 문법과 일상 표현을 빠르게 굳히는 단계",
-    description:
-      "히라가나, 가타카나, 기초 한자와 동사 활용 패턴을 먼저 안정화하세요. 단어는 자주 쓰는 일상 표현 위주로 묶어서 외우는 편이 효율적입니다.",
-    focus: [
-      "동사 ます형, て형, ない형 기본 활용",
-      "시간, 장소, 수량 표현 중심의 기초 어휘",
-      "짧은 독해와 느린 속도 청해 적응"
-    ],
-    metrics: {
-      vocab: "800 단어",
-      grammar: "기초 45 패턴",
-      study: "하루 60분"
-    }
-  },
-  N4: {
-    goal: "생활 일본어를 문장 단위로 이해하고 쓰는 단계",
-    description:
-      "비교 표현, 경험 표현, 이유 설명 등 연결 문법을 묶어서 익히세요. 짧은 문단 독해와 문제 풀이 속도 개선을 함께 가져가야 합니다.",
-    focus: [
-      "가능형, 의향형, 수수표현 패턴 정리",
-      "주제별 단어장과 문장 예문 병행 학습",
-      "듣고 핵심 정보 찾는 청해 훈련"
-    ],
-    metrics: {
-      vocab: "1,500 단어",
-      grammar: "핵심 70 패턴",
-      study: "하루 75분"
-    }
-  },
-  N3: {
-    goal: "실전 독해와 중급 문법을 본격적으로 연결하는 단계",
-    description:
-      "문법을 단독 암기하지 말고 독해 지문과 함께 묶어야 합니다. 특히 접속 표현과 뉘앙스 차이를 정리해야 점수 손실이 줄어듭니다.",
-    focus: [
-      "유사 문법 구분과 예문 비교",
-      "신문, 안내문 스타일 독해 노출 늘리기",
-      "청해에서 전환 신호어와 결론 포착"
-    ],
-    metrics: {
-      vocab: "3,700 단어",
-      grammar: "중급 110 패턴",
-      study: "하루 90분"
-    }
-  },
-  N2: {
-    goal: "논리적 독해와 고난도 문법 판단을 안정화하는 단계",
-    description:
-      "독해와 청해에서 정보량이 급격히 늘어납니다. 접속사, 평가 표현, 문어체 패턴을 정리하고 틀린 문제를 유형별로 복기해야 합니다.",
-    focus: [
-      "문어체, 평가, 추론형 문법 집중",
-      "장문 독해에서 문단별 핵심 주장 파악",
-      "실전 모의고사 후 오답 원인 분류"
-    ],
-    metrics: {
-      vocab: "6,000 단어",
-      grammar: "고난도 150 패턴",
-      study: "하루 110분"
-    }
-  },
-  N1: {
-    goal: "미세한 문맥 차이까지 구분하는 상급 실전 단계",
-    description:
-      "지문 길이와 추상도가 높아지므로 어휘 확장과 논리 독해를 동시에 끌어올려야 합니다. 오답률 높은 문법과 어휘를 반복 추적하는 방식이 중요합니다.",
-    focus: [
-      "추상 표현, 평론체, 고급 어휘 체계화",
-      "지문 구조 분석과 필자 의도 파악",
-      "시간 압박을 둔 전범위 모의고사 반복"
-    ],
-    metrics: {
-      vocab: "10,000 단어",
-      grammar: "상급 200 패턴",
-      study: "하루 120분"
-    }
-  }
-};
-
-const flashcards = [
+const fallbackFlashcards = [
   { id: "v1", level: "N5", word: "食べる", reading: "たべる", meaning: "먹다" },
   { id: "v2", level: "N5", word: "行く", reading: "いく", meaning: "가다" },
   { id: "v3", level: "N5", word: "見る", reading: "みる", meaning: "보다" },
@@ -101,57 +23,60 @@ const flashcards = [
   { id: "v20", level: "N1", word: "推移", reading: "すいい", meaning: "추이" }
 ];
 
+let flashcards = [...fallbackFlashcards];
+let vocabListItems = [...fallbackFlashcards];
+const vocabPageSize = 20;
+
 const starterItems = [
   {
     id: "s1",
     track: "문자",
-    module: "kana",
-    title: "히라가나를 안 보고 읽기",
-    detail: "50음도를 떠올리지 않고 바로 읽을 수 있을 때까지 반복합니다.",
-    duration: "2-3일 집중"
+    module: "hiragana",
+    title: "히라가나 전체 보기",
+    detail: "히라가나를 한 번에 보고 바로 퀴즈로 이어집니다.",
+    duration: "2~3분"
   },
   {
     id: "s2",
     track: "문자",
-    module: "kana",
-    title: "가타카나 기본 외래어 익히기",
-    detail: "메뉴, 음식, 나라 이름처럼 자주 나오는 가타카나부터 먼저 익힙니다.",
-    duration: "하루 10분"
+    module: "katakana",
+    title: "카타카나 전체 보기",
+    detail: "카타카나를 따로 보고 읽기를 익힙니다.",
+    duration: "2~3분"
   },
   {
     id: "s3",
     track: "단어",
     module: "words",
-    title: "N5 핵심 동사 20개 고정",
-    detail: "食べる, 行く, 見る처럼 가장 많이 쓰는 동사를 읽기와 뜻으로 묶습니다.",
-    duration: "3일 반복"
+    title: "N5 단어 보기",
+    detail: "자주 나오는 N5 단어를 빠르게 반복합니다.",
+    duration: "3분"
   },
   {
     id: "s4",
     track: "문법",
     module: "particles",
-    title: "조사 5개 구분하기",
-    detail: "は, が, を, に, で를 짧은 예문으로 계속 바꿔 보며 감각을 만듭니다.",
-    duration: "하루 1패턴"
+    title: "조사 5개 보기",
+    detail: "は, が, を, に, で를 먼저 구분합니다.",
+    duration: "1분"
   },
   {
     id: "s5",
     track: "한자",
     module: "kanji",
-    title: "N5 첫 한자 40자 시작",
-    detail: "日, 月, 人, 火처럼 쉬운 한자부터 읽기와 뜻을 같이 외웁니다.",
-    duration: "하루 5자"
+    title: "N5 한자 시작",
+    detail: "자주 쓰는 N5 한자를 읽기와 뜻으로 봅니다.",
+    duration: "5분"
   },
   {
     id: "s6",
     track: "독해",
     module: "sentences",
-    title: "짧은 문장 1개 정확히 읽기",
-    detail: "메모, 공지, 안내문 한 줄 정도를 해석하고 모르는 조사만 다시 확인합니다.",
-    duration: "하루 1지문"
+    title: "짧은 문장 읽기",
+    detail: "메모나 공지처럼 짧은 문장을 읽어 봅니다.",
+    duration: "1지문"
   }
 ];
-
 const basicPracticeSets = {
   kana: {
     label: "문자",
@@ -714,6 +639,10 @@ function normalizeQuizDisplay(value) {
   return normalizeQuizText(value).replace(/\s*·\s*/g, " / ");
 }
 
+function formatQuizLineBreaks(value) {
+  return normalizeQuizText(value).replace(/\s*;\s*/g, "\n");
+}
+
 function getQuizDisplayWord(item) {
   return normalizeQuizDisplay(item.pron || item.showEntry || item.show_entry || item.entry);
 }
@@ -784,6 +713,679 @@ function buildDynamicQuizPool(items) {
 }
 
 const dynamicQuizPool = buildDynamicQuizPool(dynamicQuizSource);
+
+function buildDynamicFlashcardPool(items) {
+  const cards = items
+    .map((item) => ({
+      id: item.id,
+      level: "N5",
+      word: item.word,
+      reading: item.reading,
+      meaning: item.meaning
+    }))
+    .filter((item) => item.id && item.word && item.reading && item.meaning);
+
+  return cards.length ? shuffleQuizArray(cards) : [...fallbackFlashcards];
+}
+
+function buildDynamicVocabListPool(items) {
+  const cards = items
+    .map((item) => ({
+      id: item.id,
+      level: "N5",
+      word: item.word,
+      reading: item.reading,
+      meaning: item.meaning
+    }))
+    .filter((item) => item.id && item.word && item.reading && item.meaning);
+
+  return cards.length ? cards : [...fallbackFlashcards];
+}
+
+flashcards = buildDynamicFlashcardPool(dynamicQuizPool);
+vocabListItems = buildDynamicVocabListPool(dynamicQuizPool);
+
+function buildDynamicWordPracticeItems(items) {
+  const tones = ["tone-coral", "tone-mint", "tone-gold", "tone-sky"];
+  const picked = shuffleQuizArray(items).slice(0, 12);
+
+  const questions = picked
+    .map((item, index) => {
+      const distractors = uniqueQuizValues(
+        shuffleQuizArray(
+          items
+            .filter((candidate) => candidate.id !== item.id && candidate.meaning !== item.meaning)
+            .map((candidate) => candidate.meaning)
+        )
+      ).slice(0, 3);
+
+      if (distractors.length < 3) {
+        return null;
+      }
+
+      const options = shuffleQuizArray([item.meaning, ...distractors]);
+      const answer = options.indexOf(item.meaning);
+
+      return {
+        id: `bp-dw-${item.id}-${index}`,
+        source: `N5 단어 ${index + 1}`,
+        title: item.part ? `${item.part} 읽기` : "N5 단어 읽기",
+        note: "N5 랜덤 단어 덱",
+        prompt: "이 단어의 뜻으로 맞는 것을 고르세요.",
+        display: item.reading,
+        displaySub: item.word,
+        options,
+        answer,
+        explanation: `${item.reading}는 ${item.word}, 뜻은 ${item.meaning}입니다.`,
+        tone: tones[index % tones.length]
+      };
+    })
+    .filter(Boolean);
+
+  return questions.length ? questions : basicPracticeSets.words.items;
+}
+
+basicPracticeSets.words.items = buildDynamicWordPracticeItems(dynamicQuizPool);
+
+const kanaBlueprintGroups = [
+  {
+    title: "기본음",
+    items: [
+      { reading: "a", hiragana: "あ" },
+      { reading: "i", hiragana: "い" },
+      { reading: "u", hiragana: "う" },
+      { reading: "e", hiragana: "え" },
+      { reading: "o", hiragana: "お" },
+      { reading: "ka", hiragana: "か" },
+      { reading: "ki", hiragana: "き" },
+      { reading: "ku", hiragana: "く" },
+      { reading: "ke", hiragana: "け" },
+      { reading: "ko", hiragana: "こ" },
+      { reading: "sa", hiragana: "さ" },
+      { reading: "shi", hiragana: "し" },
+      { reading: "su", hiragana: "す" },
+      { reading: "se", hiragana: "せ" },
+      { reading: "so", hiragana: "そ" },
+      { reading: "ta", hiragana: "た" },
+      { reading: "chi", hiragana: "ち" },
+      { reading: "tsu", hiragana: "つ" },
+      { reading: "te", hiragana: "て" },
+      { reading: "to", hiragana: "と" },
+      { reading: "na", hiragana: "な" },
+      { reading: "ni", hiragana: "に" },
+      { reading: "nu", hiragana: "ぬ" },
+      { reading: "ne", hiragana: "ね" },
+      { reading: "no", hiragana: "の" },
+      { reading: "ha", hiragana: "は" },
+      { reading: "hi", hiragana: "ひ" },
+      { reading: "fu", hiragana: "ふ" },
+      { reading: "he", hiragana: "へ" },
+      { reading: "ho", hiragana: "ほ" },
+      { reading: "ma", hiragana: "ま" },
+      { reading: "mi", hiragana: "み" },
+      { reading: "mu", hiragana: "む" },
+      { reading: "me", hiragana: "め" },
+      { reading: "mo", hiragana: "も" },
+      { reading: "ya", hiragana: "や" },
+      { reading: "yu", hiragana: "ゆ" },
+      { reading: "yo", hiragana: "よ" },
+      { reading: "ra", hiragana: "ら" },
+      { reading: "ri", hiragana: "り" },
+      { reading: "ru", hiragana: "る" },
+      { reading: "re", hiragana: "れ" },
+      { reading: "ro", hiragana: "ろ" },
+      { reading: "wa", hiragana: "わ" },
+      { reading: "wo", hiragana: "を" },
+      { reading: "n", hiragana: "ん" }
+    ]
+  },
+  {
+    title: "탁음 / 반탁음",
+    items: [
+      { reading: "ga", hiragana: "が" },
+      { reading: "gi", hiragana: "ぎ" },
+      { reading: "gu", hiragana: "ぐ" },
+      { reading: "ge", hiragana: "げ" },
+      { reading: "go", hiragana: "ご" },
+      { reading: "za", hiragana: "ざ" },
+      { reading: "ji", hiragana: "じ" },
+      { reading: "zu", hiragana: "ず" },
+      { reading: "ze", hiragana: "ぜ" },
+      { reading: "zo", hiragana: "ぞ" },
+      { reading: "da", hiragana: "だ" },
+      { reading: "ji", hiragana: "ぢ" },
+      { reading: "zu", hiragana: "づ" },
+      { reading: "de", hiragana: "で" },
+      { reading: "do", hiragana: "ど" },
+      { reading: "ba", hiragana: "ば" },
+      { reading: "bi", hiragana: "び" },
+      { reading: "bu", hiragana: "ぶ" },
+      { reading: "be", hiragana: "べ" },
+      { reading: "bo", hiragana: "ぼ" },
+      { reading: "pa", hiragana: "ぱ" },
+      { reading: "pi", hiragana: "ぴ" },
+      { reading: "pu", hiragana: "ぷ" },
+      { reading: "pe", hiragana: "ぺ" },
+      { reading: "po", hiragana: "ぽ" }
+    ]
+  },
+  {
+    title: "요음",
+    items: [
+      { reading: "kya", hiragana: "きゃ" },
+      { reading: "kyu", hiragana: "きゅ" },
+      { reading: "kyo", hiragana: "きょ" },
+      { reading: "sha", hiragana: "しゃ" },
+      { reading: "shu", hiragana: "しゅ" },
+      { reading: "sho", hiragana: "しょ" },
+      { reading: "cha", hiragana: "ちゃ" },
+      { reading: "chu", hiragana: "ちゅ" },
+      { reading: "cho", hiragana: "ちょ" },
+      { reading: "nya", hiragana: "にゃ" },
+      { reading: "nyu", hiragana: "にゅ" },
+      { reading: "nyo", hiragana: "にょ" },
+      { reading: "hya", hiragana: "ひゃ" },
+      { reading: "hyu", hiragana: "ひゅ" },
+      { reading: "hyo", hiragana: "ひょ" },
+      { reading: "mya", hiragana: "みゃ" },
+      { reading: "myu", hiragana: "みゅ" },
+      { reading: "myo", hiragana: "みょ" },
+      { reading: "rya", hiragana: "りゃ" },
+      { reading: "ryu", hiragana: "りゅ" },
+      { reading: "ryo", hiragana: "りょ" },
+      { reading: "gya", hiragana: "ぎゃ" },
+      { reading: "gyu", hiragana: "ぎゅ" },
+      { reading: "gyo", hiragana: "ぎょ" },
+      { reading: "ja", hiragana: "じゃ" },
+      { reading: "ju", hiragana: "じゅ" },
+      { reading: "jo", hiragana: "じょ" },
+      { reading: "bya", hiragana: "びゃ" },
+      { reading: "byu", hiragana: "びゅ" },
+      { reading: "byo", hiragana: "びょ" },
+      { reading: "pya", hiragana: "ぴゃ" },
+      { reading: "pyu", hiragana: "ぴゅ" },
+      { reading: "pyo", hiragana: "ぴょ" }
+    ]
+  },
+  {
+    title: "소문자 / 기타",
+    items: [
+      { reading: "xa", hiragana: "ぁ", quiz: false },
+      { reading: "xi", hiragana: "ぃ", quiz: false },
+      { reading: "xu", hiragana: "ぅ", quiz: false },
+      { reading: "xe", hiragana: "ぇ", quiz: false },
+      { reading: "xo", hiragana: "ぉ", quiz: false },
+      { reading: "xtu", hiragana: "っ", quiz: false },
+      { reading: "xya", hiragana: "ゃ", quiz: false },
+      { reading: "xyu", hiragana: "ゅ", quiz: false },
+      { reading: "xyo", hiragana: "ょ", quiz: false },
+      { reading: "xwa", hiragana: "ゎ", quiz: false },
+      { reading: "vu", hiragana: "ゔ" },
+      { reading: "wi", hiragana: "ゐ", quiz: false },
+      { reading: "we", hiragana: "ゑ", quiz: false },
+      { reading: "la", hiragana: "ゕ", quiz: false },
+      { reading: "le", hiragana: "ゖ", quiz: false }
+    ]
+  }
+];
+
+function convertHiraganaToKatakana(text) {
+  return Array.from(text)
+    .map((character) => String.fromCodePoint(character.codePointAt(0) + 0x60))
+    .join("");
+}
+
+function buildKanaDeck(script) {
+  const isKatakana = script === "katakana";
+  return kanaBlueprintGroups.map((group) => ({
+    title: group.title,
+    items: group.items.map((item) => ({
+      reading: item.reading,
+      char: isKatakana ? convertHiraganaToKatakana(item.hiragana) : item.hiragana,
+      quiz: item.quiz !== false,
+      group: group.title
+    }))
+  }));
+}
+
+function buildKanaPracticeItems(script) {
+  const deck = kanaStudyDecks[script] || [];
+  const quizItems = deck.flatMap((group) => group.items.filter((item) => item.quiz !== false));
+
+  return quizItems
+    .map((item, index) => {
+      const distractors = uniqueQuizValues(
+        shuffleQuizArray(
+          quizItems
+            .filter((candidate) => candidate.char !== item.char)
+            .map((candidate) => candidate.reading)
+        )
+      ).slice(0, 3);
+
+      if (distractors.length < 3) {
+        return null;
+      }
+
+      const options = shuffleQuizArray([item.reading, ...distractors]);
+      const answer = options.indexOf(item.reading);
+
+      return {
+        id: `bp-${script}-${index}`,
+        source: `${script === "hiragana" ? "히라가나" : "카타카나"} ${index + 1}`,
+        title: `${script === "hiragana" ? "히라가나" : "카타카나"} 읽기`,
+        note: "전체 표에서 바로 확인한 문자들입니다.",
+        prompt: "이 글자의 읽기로 맞는 것을 고르세요.",
+        display: item.char,
+        displaySub: item.reading,
+        options,
+        answer,
+        explanation: `${item.char}는 ${item.reading}로 읽습니다.`,
+        tone: index % 2 === 0 ? "tone-coral" : "tone-sky"
+      };
+    })
+    .filter(Boolean);
+}
+
+const kanaQuizSettings = {
+  mode: "hiragana",
+  count: 10,
+  duration: 5
+};
+
+const kanaQuizSheetState = {
+  open: false,
+  mode: "hiragana",
+  sessionIndex: 0,
+  sessionItems: [],
+  answered: false
+};
+
+function getKanaQuizModeLabel(mode) {
+  if (mode === "random") {
+    return "랜덤";
+  }
+
+  return mode === "katakana" ? "카타카나" : "히라가나";
+}
+
+function getKanaQuizPool(mode) {
+  if (mode === "random") {
+    return [
+      ...(basicPracticeSets.hiragana?.items || []),
+      ...(basicPracticeSets.katakana?.items || [])
+    ];
+  }
+
+  return basicPracticeSets[mode]?.items || [];
+}
+
+function getKanaQuizCountValue(value, total) {
+  if (value === "all") {
+    return total;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return Math.min(10, total);
+  }
+
+  return Math.min(parsed, total);
+}
+
+function buildKanaQuizSession(mode = kanaQuizSettings.mode) {
+  const pool = getKanaQuizPool(mode);
+  const count = getKanaQuizCountValue(kanaQuizSettings.count, pool.length);
+  return shuffleQuizArray(pool).slice(0, count);
+}
+
+function getKanaQuizSheetCurrentItem() {
+  const items = kanaQuizSheetState.sessionItems;
+  const index = kanaQuizSheetState.sessionIndex;
+
+  if (!items.length || index >= items.length) {
+    return null;
+  }
+
+  return {
+    mode: kanaQuizSheetState.mode,
+    index,
+    total: items.length,
+    item: items[index]
+  };
+}
+
+function renderKanaQuizSetup() {
+  document.querySelectorAll("[data-kana-mode]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.kanaMode === kanaQuizSettings.mode);
+  });
+
+  document.querySelectorAll("[data-kana-count]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.kanaCount === String(kanaQuizSettings.count));
+  });
+
+  document.querySelectorAll("[data-kana-time]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.kanaTime === String(kanaQuizSettings.duration));
+  });
+}
+
+function startKanaQuizSession(mode = kanaQuizSettings.mode) {
+  const nextMode = ["hiragana", "katakana", "random"].includes(mode) ? mode : "hiragana";
+  kanaQuizSettings.mode = nextMode;
+  kanaQuizSheetState.mode = nextMode;
+  kanaQuizSheetState.sessionItems = buildKanaQuizSession(nextMode);
+  kanaQuizSheetState.sessionIndex = 0;
+  kanaQuizSheetState.answered = false;
+  kanaQuizSheetState.open = true;
+
+  quizSessions.kana.duration = Number(kanaQuizSettings.duration);
+  quizSessions.kana.timeLeft = Number(kanaQuizSettings.duration);
+  quizSessions.kana.correct = 0;
+  quizSessions.kana.streak = 0;
+
+  renderKanaQuizSetup();
+  renderQuizSessionHud("kana");
+  renderKanaQuizSheet();
+  resetQuizSessionTimer("kana", handleKanaQuizTimeout);
+}
+
+function openKanaQuizSheet(mode) {
+  startKanaQuizSession(mode);
+}
+
+function closeKanaQuizSheet() {
+  kanaQuizSheetState.open = false;
+  stopQuizSessionTimer("kana");
+  renderKanaQuizSheet();
+}
+
+function renderKanaQuizSheet() {
+  const sheet = document.getElementById("kana-quiz-sheet");
+  const label = document.getElementById("kana-quiz-sheet-label");
+  const title = document.getElementById("kana-quiz-sheet-title");
+  const desc = document.getElementById("kana-quiz-sheet-desc");
+  const source = document.getElementById("kana-quiz-sheet-source");
+  const progress = document.getElementById("kana-quiz-sheet-progress");
+  const promptBox = document.getElementById("kana-quiz-sheet-copy");
+  const note = document.getElementById("kana-quiz-sheet-note");
+  const prompt = document.getElementById("kana-quiz-sheet-prompt");
+  const display = document.getElementById("kana-quiz-sheet-display");
+  const displaySub = document.getElementById("kana-quiz-sheet-display-sub");
+  const options = document.getElementById("kana-quiz-options");
+  const feedback = document.getElementById("kana-quiz-feedback");
+  const explanation = document.getElementById("kana-quiz-explanation");
+  const next = document.getElementById("kana-quiz-next");
+
+  if (!sheet || !label || !title || !desc || !source || !progress || !promptBox || !note || !prompt || !display || !displaySub || !options || !feedback || !explanation || !next) {
+    return;
+  }
+
+  const current = getKanaQuizSheetCurrentItem();
+
+  sheet.hidden = !kanaQuizSheetState.open;
+  sheet.classList.toggle("is-open", kanaQuizSheetState.open);
+  sheet.setAttribute("aria-hidden", String(!kanaQuizSheetState.open));
+  document.body.classList.toggle("is-kana-quiz-sheet-open", kanaQuizSheetState.open);
+
+  if (!kanaQuizSheetState.open) {
+    return;
+  }
+
+  if (!current) {
+    label.textContent = "KANA QUIZ";
+    title.textContent = "문자 퀴즈";
+    desc.textContent = "퀴즈를 불러오지 못했습니다.";
+    source.textContent = "-";
+    progress.textContent = "-";
+    promptBox.hidden = true;
+    note.hidden = true;
+    note.textContent = "";
+    prompt.textContent = "";
+    display.textContent = "-";
+    displaySub.textContent = "";
+    options.innerHTML = "";
+    feedback.textContent = "";
+    explanation.textContent = "";
+    next.disabled = true;
+    return;
+  }
+
+  const modeLabel = getKanaQuizModeLabel(kanaQuizSheetState.mode);
+  label.textContent = `${modeLabel.toUpperCase()} QUIZ`;
+  title.textContent = `${modeLabel} 퀴즈`;
+  desc.textContent = "문자를 보고 읽는 법을 맞혀보세요.";
+  source.textContent = formatQuizLineBreaks(current.item.source);
+  progress.textContent = `${current.index + 1} / ${current.total}`;
+  promptBox.hidden = true;
+  note.hidden = true;
+  note.textContent = "";
+  prompt.textContent = "";
+  display.textContent = formatQuizLineBreaks(current.item.display || "-");
+  displaySub.textContent = "";
+  feedback.textContent = "";
+  explanation.textContent = "";
+  explanation.hidden = true;
+  next.disabled = true;
+  next.textContent = current.index + 1 >= current.total ? "다시 시작" : "다음 문제";
+
+  options.innerHTML = "";
+  current.item.options.forEach((option, optionIndex) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "kana-quiz-option";
+    button.dataset.kanaQuizOption = String(optionIndex);
+    button.textContent = formatQuizLineBreaks(option);
+    button.addEventListener("click", () => handleKanaQuizSheetAnswer(optionIndex));
+    options.appendChild(button);
+  });
+}
+
+function finalizeKanaQuizAnswer(correct) {
+  kanaQuizSheetState.answered = true;
+  finalizeQuizSession("kana", correct);
+
+  const next = document.getElementById("kana-quiz-next");
+  if (next) {
+    next.disabled = false;
+    next.focus();
+  }
+}
+
+function handleKanaQuizSheetAnswer(index) {
+  const current = getKanaQuizSheetCurrentItem();
+  if (!current || kanaQuizSheetState.answered) {
+    return;
+  }
+
+  const optionButtons = document.querySelectorAll("[data-kana-quiz-option]");
+  const correct = index === current.item.answer;
+
+  optionButtons.forEach((item, optionIndex) => {
+    item.disabled = true;
+    if (optionIndex === current.item.answer) {
+      item.classList.add("is-correct");
+    }
+    if (optionIndex === index && !correct) {
+      item.classList.add("is-wrong");
+    }
+  });
+
+  const feedback = document.getElementById("kana-quiz-feedback");
+  const explanation = document.getElementById("kana-quiz-explanation");
+  if (feedback) {
+    feedback.textContent = "";
+  }
+  if (explanation) {
+    explanation.textContent = "";
+    explanation.hidden = true;
+  }
+
+  finalizeKanaQuizAnswer(correct);
+}
+
+function handleKanaQuizTimeout() {
+  const current = getKanaQuizSheetCurrentItem();
+  if (!current || kanaQuizSheetState.answered) {
+    return;
+  }
+
+  const optionButtons = document.querySelectorAll("[data-kana-quiz-option]");
+  optionButtons.forEach((item, optionIndex) => {
+    item.disabled = true;
+    if (optionIndex === current.item.answer) {
+      item.classList.add("is-correct");
+    }
+  });
+
+  const feedback = document.getElementById("kana-quiz-feedback");
+  const explanation = document.getElementById("kana-quiz-explanation");
+  if (feedback) {
+    feedback.textContent = "시간이 끝났습니다.";
+  }
+  if (explanation) {
+    explanation.textContent = "";
+    explanation.hidden = true;
+  }
+
+  finalizeKanaQuizAnswer(false);
+}
+
+function nextKanaQuizSheetQuestion() {
+  const current = getKanaQuizSheetCurrentItem();
+  if (!current) {
+    startKanaQuizSession(kanaQuizSettings.mode);
+    return;
+  }
+
+  if (!kanaQuizSheetState.answered) {
+    const feedback = document.getElementById("kana-quiz-feedback");
+    if (feedback) {
+      feedback.textContent = "답을 고르면 다음으로 넘어갈 수 있습니다.";
+    }
+    return;
+  }
+
+  if (current.index + 1 >= current.total) {
+    startKanaQuizSession(kanaQuizSettings.mode);
+    return;
+  }
+
+  kanaQuizSheetState.sessionIndex += 1;
+  kanaQuizSheetState.answered = false;
+  renderKanaQuizSheet();
+  resetQuizSessionTimer("kana", handleKanaQuizTimeout);
+}
+
+const kanaStudyDecks = {
+  hiragana: buildKanaDeck("hiragana"),
+  katakana: buildKanaDeck("katakana")
+};
+
+basicPracticeSets.hiragana = {
+  label: "히라가나",
+  heading: "히라가나 전부",
+  items: buildKanaPracticeItems("hiragana")
+};
+
+basicPracticeSets.katakana = {
+  label: "카타카나",
+  heading: "카타카나 전부",
+  items: buildKanaPracticeItems("katakana")
+};
+
+delete basicPracticeSets.kana;
+
+basicPracticeSets.hiragana.label = "히라가나";
+basicPracticeSets.hiragana.heading = "히라가나 전부";
+basicPracticeSets.katakana.label = "카타카나";
+basicPracticeSets.katakana.heading = "카타카나 전부";
+
+const basicPracticeTrackOrder = ["hiragana", "katakana", "words", "particles", "kanji", "sentences"];
+const basicPracticeTrackLabels = {
+  hiragana: "히라가나",
+  katakana: "카타카나",
+  words: "단어",
+  particles: "문법",
+  kanji: "한자",
+  sentences: "독해"
+};
+
+function getAvailableBasicPracticeTracks() {
+  const switcher = document.getElementById("basic-practice-switcher");
+  const configured = switcher?.dataset?.basicTracks;
+
+  if (!configured) {
+    return basicPracticeTrackOrder.filter((key) => basicPracticeSets[key]);
+  }
+
+  const tracks = configured
+    .split(",")
+    .map((item) => item.trim())
+    .filter((key) => key && basicPracticeSets[key]);
+
+  return tracks.length ? tracks : basicPracticeTrackOrder.filter((key) => basicPracticeSets[key]);
+}
+function renderKanaLibrary() {
+  const sections = [
+    {
+      targetId: "hiragana-table",
+      track: "hiragana",
+      title: "히라가나 전부",
+      description: "기본음, 탁음, 요음, 소문자를 한 번에 확인할 수 있습니다."
+    },
+    {
+      targetId: "katakana-table",
+      track: "katakana",
+      title: "카타카나 전부",
+      description: "외래어와 표기에서 쓰는 카타카나를 한 번에 볼 수 있습니다."
+    }
+  ];
+
+  sections.forEach((section) => {
+    const container = document.getElementById(section.targetId);
+    if (!container) {
+      return;
+    }
+
+    const deck = kanaStudyDecks[section.track] || [];
+    container.innerHTML = deck
+      .map(
+        (group) => `
+          <section class="kana-group">
+            <h4>${group.title}</h4>
+            <div class="kana-grid">
+              ${group.items
+                .map(
+                  (item) => `
+                    <div class="kana-tile${item.quiz ? "" : " is-muted"}">
+                      <strong>${item.char}</strong>
+                      <span>${item.reading}</span>
+                    </div>
+                  `
+                )
+                .join("")}
+            </div>
+          </section>
+        `
+      )
+      .join("");
+  });
+
+  document.querySelectorAll("[data-kana-track]").forEach((button) => {
+    if (button.dataset.kanaBound === "true") {
+      return;
+    }
+
+    button.dataset.kanaBound = "true";
+    button.addEventListener("click", () => {
+      const track = button.getAttribute("data-kana-track");
+      if (!track || !basicPracticeSets[track]) {
+        return;
+      }
+
+      openKanaQuizSheet(track);
+    });
+  });
+}
 
 function createQuizMeta(item, mode, promptKind) {
   return {
@@ -936,17 +1538,6 @@ function createQuizSession(mode, size) {
 }
 
 let activeQuizQuestions = [];
-
-const plannerItems = [
-  { day: "Mon", title: "히라가나 · 가타카나", detail: "문자표를 안 보고 읽는 연습과 가타카나 외래어 10개 점검" },
-  { day: "Tue", title: "N5 핵심 동사", detail: "食べる, 行く, 見る 같은 기본 동사 15개를 읽기와 뜻으로 반복" },
-  { day: "Wed", title: "조사 고정", detail: "は, が, を, に, で를 짧은 문장으로 바꿔 보며 감각 익히기" },
-  { day: "Thu", title: "초급 한자 5자", detail: "쉬운 한자 5개만 읽기와 뜻으로 외우고 예문 한 줄 확인" },
-  { day: "Fri", title: "짧은 독해 1지문", detail: "메모나 공지 한 개를 읽고 핵심 정보만 한국어로 정리" },
-  { day: "Sat", title: "문법 드릴", detail: "N5 문법 문제 2-4개만 풀고 조사와 동사형 오답만 복기" },
-  { day: "Sun", title: "가벼운 복습", detail: "한 주 동안 헷갈린 문자, 단어, 조사만 다시 보고 다음 주로 넘기기" },
-  { day: "Bonus", title: "읽기 우선 점검", detail: "뜻이 바로 안 떠올라도 먼저 읽을 수 있는지부터 확인" }
-];
 
 const readingSets = {
   N5: [
@@ -1213,9 +1804,10 @@ const readingSets = {
 };
 
 const defaultState = {
-  selectedLevel: "N5",
   flashcardIndex: 0,
   flashcardRevealed: false,
+  vocabView: "card",
+  vocabPage: 1,
   starterDoneIds: [],
   basicPracticeTrack: "kana",
   basicPracticeIndexes: {
@@ -1264,13 +1856,34 @@ function loadState() {
   }
 }
 
-let state = loadState();
+function normalizeBasicPracticeState(inputState) {
+  const nextState = { ...inputState };
+  const savedIndexes = { ...(inputState?.basicPracticeIndexes || {}) };
+
+  if (nextState.basicPracticeTrack === "kana" || !basicPracticeSets[nextState.basicPracticeTrack]) {
+    nextState.basicPracticeTrack = "hiragana";
+  }
+
+  nextState.basicPracticeIndexes = {
+    ...defaultState.basicPracticeIndexes,
+    ...savedIndexes,
+    hiragana: savedIndexes.hiragana ?? savedIndexes.kana ?? 0,
+    katakana: savedIndexes.katakana ?? 0
+  };
+  delete nextState.basicPracticeIndexes.kana;
+
+  return nextState;
+}
+
+let state = normalizeBasicPracticeState(loadState());
 state.quizMode = getQuizMode(state.quizMode);
 state.quizSessionSize = getQuizSessionSize(state.quizSessionSize);
 state.quizSessionFinished = false;
 state.quizIndex = 0;
 state.quizMistakes = Array.isArray(state.quizMistakes) ? state.quizMistakes : [];
 state.quizSessionMistakeIds = [];
+state.vocabView = state.vocabView === "list" ? "list" : "card";
+state.vocabPage = Number.isFinite(Number(state.vocabPage)) ? Math.max(1, Number(state.vocabPage)) : 1;
 activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize);
 
 const quizSessions = {
@@ -1313,6 +1926,16 @@ const quizSessions = {
     timerElement: "quiz-timer",
     correctElement: "quiz-correct",
     streakElement: "quiz-streak"
+  },
+  kana: {
+    duration: 5,
+    timeLeft: 5,
+    correct: 0,
+    streak: 0,
+    timerId: null,
+    timerElement: "kana-quiz-timer",
+    correctElement: "kana-quiz-correct",
+    streakElement: "kana-quiz-streak"
   }
 };
 
@@ -1342,8 +1965,11 @@ function renderQuizSessionHud(key) {
     return;
   }
 
-  timer.textContent = `${session.timeLeft}초`;
-  timer.classList.toggle("is-warning", session.timeLeft <= Math.max(5, Math.floor(session.duration / 3)));
+  timer.textContent = session.duration <= 0 ? "무제한" : `${session.timeLeft}초`;
+  timer.classList.toggle(
+    "is-warning",
+    session.duration > 0 && session.timeLeft <= Math.max(5, Math.floor(session.duration / 3))
+  );
   correct.textContent = String(session.correct);
   streak.textContent = String(session.streak);
 }
@@ -1365,6 +1991,10 @@ function resetQuizSessionTimer(key, onExpire) {
   stopQuizSessionTimer(key);
   session.timeLeft = session.duration;
   renderQuizSessionHud(key);
+
+  if (session.duration <= 0) {
+    return;
+  }
 
   session.timerId = window.setInterval(() => {
     session.timeLeft = Math.max(0, session.timeLeft - 1);
@@ -1428,50 +2058,6 @@ function updateStudyStreak() {
   saveState();
 }
 
-function renderRoadmap() {
-  const switcher = document.getElementById("level-switcher");
-  const panel = document.getElementById("roadmap-panel");
-  const levels = Object.keys(levelData);
-
-  if (!switcher || !panel) {
-    return;
-  }
-
-  switcher.innerHTML = "";
-
-  levels.forEach((level) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `level-button${state.selectedLevel === level ? " is-active" : ""}`;
-    button.textContent = level;
-    button.addEventListener("click", () => {
-      state.selectedLevel = level;
-      state.flashcardIndex = 0;
-      state.flashcardRevealed = false;
-      saveState();
-      renderAll();
-    });
-    switcher.appendChild(button);
-  });
-
-  const selected = levelData[state.selectedLevel];
-  panel.innerHTML = `
-    <div class="roadmap-copy">
-      <span class="eyebrow">${state.selectedLevel} STUDY STRATEGY</span>
-      <h3>${selected.goal}</h3>
-      <p>${selected.description}</p>
-      <ul class="roadmap-list">
-        ${selected.focus.map((item) => `<li>${item}</li>`).join("")}
-      </ul>
-    </div>
-    <ul class="roadmap-metrics">
-      <li><strong>${selected.metrics.vocab}</strong><span>권장 어휘량</span></li>
-      <li><strong>${selected.metrics.grammar}</strong><span>핵심 문법 범위</span></li>
-      <li><strong>${selected.metrics.study}</strong><span>추천 학습 시간</span></li>
-    </ul>
-  `;
-}
-
 function renderStarterPath() {
   const grid = document.getElementById("starter-grid");
   const progress = document.getElementById("starter-progress");
@@ -1507,6 +2093,12 @@ function renderStarterPath() {
     article.querySelector(".starter-learn").addEventListener("click", () => {
       state.basicPracticeTrack = item.module;
       saveState();
+
+      if (item.module === "hiragana" || item.module === "katakana") {
+        window.location.href = "characters.html";
+        return;
+      }
+
       renderBasicPractice();
       document.getElementById("basic-drill").scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -1529,8 +2121,9 @@ function renderStarterPath() {
 }
 
 function getCurrentBasicPracticeSet() {
-  const track = basicPracticeSets[state.basicPracticeTrack];
-  const currentIndex = state.basicPracticeIndexes[state.basicPracticeTrack] % track.items.length;
+  const trackKey = basicPracticeSets[state.basicPracticeTrack] ? state.basicPracticeTrack : "hiragana";
+  const track = basicPracticeSets[trackKey];
+  const currentIndex = state.basicPracticeIndexes[trackKey] % track.items.length;
   return track.items[currentIndex];
 }
 
@@ -1548,7 +2141,16 @@ function renderBasicPractice() {
   const displaySub = document.getElementById("basic-practice-display-sub");
   const feedback = document.getElementById("basic-practice-feedback");
   const explanation = document.getElementById("basic-practice-explanation");
-  const track = basicPracticeSets[state.basicPracticeTrack];
+  const availableTracks = getAvailableBasicPracticeTracks();
+  const fallbackTrack = availableTracks[0] || "hiragana";
+  const trackKey =
+    basicPracticeSets[state.basicPracticeTrack] && availableTracks.includes(state.basicPracticeTrack)
+      ? state.basicPracticeTrack
+      : fallbackTrack;
+  if (state.basicPracticeTrack !== trackKey) {
+    state.basicPracticeTrack = trackKey;
+  }
+  const track = basicPracticeSets[trackKey];
   const current = getCurrentBasicPracticeSet();
 
   if (
@@ -1571,11 +2173,16 @@ function renderBasicPractice() {
 
   switcher.innerHTML = "";
 
-  Object.entries(basicPracticeSets).forEach(([key, value]) => {
+  availableTracks.forEach((key) => {
+    const value = basicPracticeSets[key];
+    if (!value) {
+      return;
+    }
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = `level-button${state.basicPracticeTrack === key ? " is-active" : ""}`;
-    button.textContent = value.label;
+    button.textContent = basicPracticeTrackLabels[key] || value.label;
     button.addEventListener("click", () => {
       state.basicPracticeTrack = key;
       saveState();
@@ -1584,17 +2191,17 @@ function renderBasicPractice() {
     switcher.appendChild(button);
   });
 
-  trackLabel.textContent = track.label;
-  source.textContent = current.source;
+  trackLabel.textContent = basicPracticeTrackLabels[trackKey] || track.label;
+  source.textContent = formatQuizLineBreaks(current.source);
   progress.textContent =
-    `${(state.basicPracticeIndexes[state.basicPracticeTrack] % track.items.length) + 1} / ${track.items.length}`;
-  title.textContent = current.title;
-  note.textContent = current.note;
-  prompt.textContent = current.prompt;
-  display.textContent = current.display;
-  displaySub.textContent = current.displaySub || "";
+    `${(state.basicPracticeIndexes[trackKey] % track.items.length) + 1} / ${track.items.length}`;
+  title.textContent = formatQuizLineBreaks(current.title);
+  note.textContent = formatQuizLineBreaks(current.note);
+  prompt.textContent = formatQuizLineBreaks(current.prompt);
+  display.textContent = formatQuizLineBreaks(current.display);
+  displaySub.textContent = formatQuizLineBreaks(current.displaySub || "");
   feedback.textContent = "";
-  explanation.textContent = "";
+  explanation.textContent = formatQuizLineBreaks(current.explanation || "");
 
   card.className = `basic-practice-card ${current.tone || "tone-coral"}`;
 
@@ -1603,7 +2210,7 @@ function renderBasicPractice() {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "basic-practice-option";
-    button.textContent = option;
+    button.textContent = formatQuizLineBreaks(option);
     button.addEventListener("click", () => handleBasicPracticeAnswer(index));
     optionsContainer.appendChild(button);
   });
@@ -1661,7 +2268,7 @@ function handleBasicPracticeTimeout() {
     }
   });
 
-  document.getElementById("basic-practice-feedback").textContent = "시간 종료입니다. 정답을 표시했습니다.";
+  document.getElementById("basic-practice-feedback").textContent = "시간이 끝났습니다.";
   document.getElementById("basic-practice-explanation").textContent = current.explanation;
 
   updateStudyStreak();
@@ -1670,22 +2277,43 @@ function handleBasicPracticeTimeout() {
 }
 
 function nextBasicPracticeSet() {
-  const track = basicPracticeSets[state.basicPracticeTrack];
-  state.basicPracticeIndexes[state.basicPracticeTrack] =
-    (state.basicPracticeIndexes[state.basicPracticeTrack] + 1) % track.items.length;
+  const trackKey = basicPracticeSets[state.basicPracticeTrack] ? state.basicPracticeTrack : "hiragana";
+  const track = basicPracticeSets[trackKey];
+  state.basicPracticeIndexes[trackKey] =
+    (state.basicPracticeIndexes[trackKey] + 1) % track.items.length;
   saveState();
   renderBasicPractice();
 }
 
+
 function getVisibleFlashcards() {
-  const preferred = flashcards.filter((item) => item.level === state.selectedLevel);
-  return preferred.length ? preferred : flashcards;
+  return flashcards;
+}
+
+function getVisibleVocabList() {
+  return vocabListItems;
+}
+
+function getVocabPageCount(items) {
+  return Math.max(1, Math.ceil(items.length / vocabPageSize));
+}
+
+function clampVocabPage(items) {
+  state.vocabPage = Math.min(Math.max(state.vocabPage, 1), getVocabPageCount(items));
 }
 
 function renderFlashcard() {
   const cards = getVisibleFlashcards();
-  const currentIndex = state.flashcardIndex % cards.length;
-  const card = cards[currentIndex];
+  const emptyCard = {
+    level: "N5",
+    word: "단어가 없습니다",
+    reading: "",
+    meaning: "",
+    id: "empty"
+  };
+  const source = cards.length ? cards : [emptyCard];
+  const currentIndex = state.flashcardIndex % source.length;
+  const card = source[currentIndex];
   const flashcard = document.getElementById("flashcard");
   const level = document.getElementById("flashcard-level");
   const word = document.getElementById("flashcard-word");
@@ -1697,34 +2325,123 @@ function renderFlashcard() {
     return;
   }
 
-  level.textContent = card.level;
-  word.textContent = card.word;
-  reading.textContent = card.reading;
-  meaning.textContent = card.meaning;
+  level.textContent = formatQuizLineBreaks(card.level);
+  word.textContent = formatQuizLineBreaks(card.word);
+  reading.textContent = formatQuizLineBreaks(card.reading);
+  meaning.textContent = formatQuizLineBreaks(card.meaning);
   hint.textContent = state.flashcardRevealed
     ? "뜻을 확인했습니다"
     : "카드를 눌러 뜻 보기";
   flashcard.classList.toggle("is-revealed", state.flashcardRevealed);
 }
 
+function renderVocabList() {
+  const list = document.getElementById("vocab-list");
+  const pageInfo = document.getElementById("vocab-page-info");
+  const prev = document.getElementById("vocab-page-prev");
+  const next = document.getElementById("vocab-page-next");
+  const summary = document.getElementById("vocab-summary");
+  const items = getVisibleVocabList();
+
+  if (!list || !pageInfo || !prev || !next || !summary) {
+    return;
+  }
+
+  const previousPage = state.vocabPage;
+  clampVocabPage(items);
+  if (state.vocabPage !== previousPage) {
+    saveState();
+  }
+
+  const pageCount = getVocabPageCount(items);
+  const startIndex = (state.vocabPage - 1) * vocabPageSize;
+  const pageItems = items.slice(startIndex, startIndex + vocabPageSize);
+
+  summary.textContent = `총 ${items.length}개`;
+  pageInfo.textContent = `${state.vocabPage} / ${pageCount}`;
+  prev.disabled = state.vocabPage <= 1;
+  next.disabled = state.vocabPage >= pageCount;
+
+  if (!pageItems.length) {
+    list.innerHTML = '<p class="vocab-list-empty">표시할 단어가 없습니다.</p>';
+    return;
+  }
+
+  list.innerHTML = pageItems
+    .map((item, index) => {
+      const mastered = state.masteredIds.includes(item.id);
+
+      return `
+        <article class="vocab-list-card">
+          <div class="vocab-list-card-head">
+            <span class="vocab-list-index">${startIndex + index + 1}</span>
+            ${mastered ? '<span class="vocab-mastered-badge">암기 완료</span>' : ""}
+          </div>
+          <div class="vocab-list-main">
+            <strong class="vocab-list-word">${formatQuizLineBreaks(item.word)}</strong>
+            <p class="vocab-list-reading">${formatQuizLineBreaks(item.reading)}</p>
+          </div>
+          <p class="vocab-list-meaning">${formatQuizLineBreaks(item.meaning)}</p>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderVocabPage() {
+  const cardView = document.getElementById("vocab-card-view");
+  const listView = document.getElementById("vocab-list-view");
+  const summary = document.getElementById("vocab-summary");
+  const items = getVisibleVocabList();
+
+  if (summary) {
+    summary.textContent = `총 ${items.length}개`;
+  }
+
+  document.querySelectorAll("[data-vocab-view]").forEach((button) => {
+    const active = button.dataset.vocabView === state.vocabView;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  if (cardView) {
+    cardView.hidden = state.vocabView !== "card";
+  }
+
+  if (listView) {
+    listView.hidden = state.vocabView !== "list";
+  }
+
+  renderFlashcard();
+  renderVocabList();
+}
+
 function toggleFlashcardReveal() {
   state.flashcardRevealed = !state.flashcardRevealed;
   updateStudyStreak();
   saveState();
-  renderFlashcard();
+  renderVocabPage();
   renderStats();
 }
 
 function moveFlashcard(step) {
   const cards = getVisibleFlashcards();
+  if (!cards.length) {
+    return;
+  }
+
   state.flashcardIndex = (state.flashcardIndex + step + cards.length) % cards.length;
   state.flashcardRevealed = false;
   saveState();
-  renderFlashcard();
+  renderVocabPage();
 }
 
 function markFlashcardMastered() {
   const cards = getVisibleFlashcards();
+  if (!cards.length) {
+    return;
+  }
+
   const currentIndex = state.flashcardIndex % cards.length;
   const currentCard = cards[currentIndex];
 
@@ -1908,7 +2625,7 @@ function handleGrammarPracticeTimeout() {
     }
   });
 
-  document.getElementById("grammar-practice-feedback").textContent = "시간 종료입니다. 정답을 표시했습니다.";
+  document.getElementById("grammar-practice-feedback").textContent = "시간이 끝났습니다.";
   document.getElementById("grammar-practice-explanation").textContent = current.explanation;
 
   updateStudyStreak();
@@ -2246,7 +2963,7 @@ function nextQuiz() {
 
   if (!answered) {
     if (feedback) {
-      feedback.textContent = "답을 고르거나 시간이 끝난 뒤에만 다음으로 넘어갈 수 있습니다.";
+      feedback.textContent = "답을 고른 뒤 다음으로 넘어갈 수 있습니다.";
     }
     return;
   }
@@ -2268,26 +2985,6 @@ function clearQuizMistakes() {
   state.quizSessionMistakeIds = [];
   saveState();
   renderQuizMistakes();
-}
-
-function renderPlanner() {
-  const plannerGrid = document.getElementById("planner-grid");
-
-  if (!plannerGrid) {
-    return;
-  }
-
-  plannerGrid.innerHTML = plannerItems
-    .map(
-      (item) => `
-        <article class="planner-item">
-          <span class="eyebrow">${item.day}</span>
-          <h3>${item.title}</h3>
-          <p>${item.detail}</p>
-        </article>
-      `
-    )
-    .join("");
 }
 
 function getCurrentReadingSet() {
@@ -2421,7 +3118,7 @@ function handleReadingTimeout() {
     }
   });
 
-  document.getElementById("reading-feedback").textContent = "시간 종료입니다. 정답을 표시했습니다.";
+  document.getElementById("reading-feedback").textContent = "시간이 끝났습니다.";
   document.getElementById("reading-explanation").textContent = current.explanation;
 
   updateStudyStreak();
@@ -2465,6 +3162,9 @@ function attachEventListeners() {
   const flashcardNext = document.getElementById("flashcard-next");
   const flashcardAgain = document.getElementById("flashcard-again");
   const flashcardMastered = document.getElementById("flashcard-mastered");
+  const vocabViewButtons = document.querySelectorAll("[data-vocab-view]");
+  const vocabPagePrev = document.getElementById("vocab-page-prev");
+  const vocabPageNext = document.getElementById("vocab-page-next");
   const quizNext = document.getElementById("quiz-next");
   const quizRestart = document.getElementById("quiz-restart");
   const quizClearMistakes = document.getElementById("quiz-clear-mistakes");
@@ -2473,6 +3173,12 @@ function attachEventListeners() {
   const readingNext = document.getElementById("reading-next");
   const basicPracticeNext = document.getElementById("basic-practice-next");
   const grammarPracticeNext = document.getElementById("grammar-practice-next");
+  const kanaQuizNext = document.getElementById("kana-quiz-next");
+  const kanaQuizCloseButtons = document.querySelectorAll("[data-kana-sheet-close]");
+  const kanaModeButtons = document.querySelectorAll("[data-kana-mode]");
+  const kanaCountButtons = document.querySelectorAll("[data-kana-count]");
+  const kanaTimeButtons = document.querySelectorAll("[data-kana-time]");
+  const kanaSetupStart = document.getElementById("kana-setup-start");
 
   if (flashcard) {
     flashcard.addEventListener("click", toggleFlashcardReveal);
@@ -2487,11 +3193,38 @@ function attachEventListeners() {
     flashcardAgain.addEventListener("click", () => {
       state.flashcardRevealed = false;
       saveState();
-      renderFlashcard();
+      renderVocabPage();
     });
   }
   if (flashcardMastered) {
     flashcardMastered.addEventListener("click", markFlashcardMastered);
+  }
+  vocabViewButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextView = button.dataset.vocabView === "list" ? "list" : "card";
+
+      if (state.vocabView === nextView) {
+        return;
+      }
+
+      state.vocabView = nextView;
+      saveState();
+      renderVocabPage();
+    });
+  });
+  if (vocabPagePrev) {
+    vocabPagePrev.addEventListener("click", () => {
+      state.vocabPage = Math.max(1, state.vocabPage - 1);
+      saveState();
+      renderVocabPage();
+    });
+  }
+  if (vocabPageNext) {
+    vocabPageNext.addEventListener("click", () => {
+      state.vocabPage += 1;
+      saveState();
+      renderVocabPage();
+    });
   }
   if (quizNext) {
     quizNext.addEventListener("click", nextQuiz);
@@ -2535,20 +3268,57 @@ function attachEventListeners() {
   if (grammarPracticeNext) {
     grammarPracticeNext.addEventListener("click", nextGrammarPracticeSet);
   }
+  if (kanaQuizNext) {
+    kanaQuizNext.addEventListener("click", nextKanaQuizSheetQuestion);
+  }
+  kanaModeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      kanaQuizSettings.mode = button.dataset.kanaMode || "hiragana";
+      renderKanaQuizSetup();
+    });
+  });
+  kanaCountButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      kanaQuizSettings.count = button.dataset.kanaCount || "10";
+      renderKanaQuizSetup();
+    });
+  });
+  kanaTimeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      kanaQuizSettings.duration = Number(button.dataset.kanaTime || 5);
+      renderKanaQuizSetup();
+    });
+  });
+  if (kanaSetupStart) {
+    kanaSetupStart.addEventListener("click", () => {
+      startKanaQuizSession(kanaQuizSettings.mode);
+    });
+  }
+  kanaQuizCloseButtons.forEach((button) => {
+    button.addEventListener("click", closeKanaQuizSheet);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && kanaQuizSheetState.open) {
+      closeKanaQuizSheet();
+    }
+  });
 }
 
 function renderAll() {
   renderReadingPractice();
   renderStarterPath();
+  renderKanaQuizSetup();
+  renderKanaLibrary();
   renderBasicPractice();
-  renderRoadmap();
-  renderFlashcard();
+  renderKanaQuizSheet();
+  renderQuizSessionHud("kana");
+  renderVocabPage();
   renderGrammar();
   renderGrammarPractice();
   renderQuiz();
-  renderPlanner();
   renderStats();
 }
 
 attachEventListeners();
 renderAll();
+

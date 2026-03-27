@@ -1,4 +1,4 @@
-const themeStorageKey = "japanote-theme";
+﻿const themeStorageKey = "japanote-theme";
 const themeModes = ["system", "light", "dark"];
 
 function getSavedThemeMode() {
@@ -28,8 +28,10 @@ function updateThemeToggleLabel(mode = getSavedThemeMode()) {
   };
 
   document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-    button.textContent = labelMap[mode];
-    button.setAttribute("aria-label", `현재 테마 ${labelMap[mode]}`);
+    button.textContent = "";
+    button.dataset.themeMode = mode;
+    button.setAttribute("aria-label", `현재 ${labelMap[mode]}`);
+    button.setAttribute("title", labelMap[mode]);
   });
 }
 

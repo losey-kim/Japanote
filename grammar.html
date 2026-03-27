@@ -1,118 +1,54 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Japanote는 문자, 단어, 문법, 독해, 퀴즈를 가볍게 연습하는 일본어 학습 노트입니다.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Japanote">
+  <meta property="og:title" content="Japanote">
+  <meta property="og:description" content="문자, 단어, 문법, 독해, 퀴즈를 가볍게 연습하는 일본어 학습 노트">
+  <meta property="og:url" content="https://losey-kim.github.io/Japanote/grammar.html">
+  <meta property="og:image" content="https://losey-kim.github.io/Japanote/assets/images/social-preview.png">
+  <meta property="og:image:alt" content="Japanote 로고">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Japanote">
+  <meta name="twitter:description" content="문자, 단어, 문법, 독해, 퀴즈를 가볍게 연습하는 일본어 학습 노트">
+  <meta name="twitter:image" content="https://losey-kim.github.io/Japanote/assets/images/social-preview.png">
   <title>Japanote - 문법</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="assets/images/favicon.png">
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
   <div class="page-shell">
     <header class="topbar">
-      <a class="brand" href="index.html">
-        <span class="brand-mark">JN</span>
-        <div>
-          <p class="brand-name">Japanote</p>
-          <p class="brand-sub">시험 준비를 학습 루틴으로 바꾸는 개인용 대시보드</p>
-        </div>
-      </a>
-      <nav class="nav-links">
-        <a href="index.html">홈</a>
-        <a href="starter.html">처음시작</a>
-        <a href="vocab.html">단어</a>
-        <a href="grammar.html" aria-current="page">문법</a>
-        <a href="reading.html">독해</a>
-        <a href="quiz.html">퀴즈</a>
-        <a href="match.html">게임</a>
-      </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle>테마: 시스템</button>
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/images/favicon.png" alt=""></span><div><p class="brand-name">Japanote</p><p class="brand-sub">일본어 공부를 가볍게 정리하는 노트</p></div></a>
+      <nav class="nav-links"><a href="index.html">홈</a><a href="starter.html">처음 시작</a><a href="characters.html">문자</a><a href="vocab.html">단어</a><a href="grammar.html" aria-current="page">문법</a><a href="reading.html">독해</a><a href="quiz.html">퀴즈</a><a href="match.html">게임</a></nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="현재 테마" title="테마"></button>
     </header>
-
     <main>
-      <section class="page-intro">
-        <span class="eyebrow">GRAMMAR PAGE</span>
-        <h1>문법은 체크와 드릴을 분리해서 봅니다</h1>
-        <p>문법 체크리스트와 실제 PDF 기반 문법 드릴을 한 페이지에 모았습니다. 오늘 필요한 패턴만 보고 바로 문제로 넘어갈 수 있게 구성했습니다.</p>
-      </section>
-
       <section id="grammar" class="content-section two-column">
-        <div class="section-heading">
-          <span>GRAMMAR CHECKLIST</span>
-          <h2>문법 학습 누락을 체크리스트로 관리하세요</h2>
-          <p class="section-copy">문법은 많이 아는 것보다 헷갈리는 패턴을 줄이는 쪽이 더 중요합니다. 체크 방식으로 빈 구간을 드러내게 만들었습니다.</p>
-        </div>
-
+        <div class="section-heading"><span>GRAMMAR CHECKLIST</span><h2>문법 체크</h2><p class="section-copy">자주 쓰는 문형부터 가볍게 확인합니다.</p></div>
         <div class="grammar-grid" id="grammar-grid"></div>
-
         <div class="grammar-practice-shell">
-          <div class="grammar-practice-copy">
-            <span class="eyebrow">GRAMMAR DRILL</span>
-            <h3>PDF 문법 문제를 사이트 안에서 바로 풉니다</h3>
-            <p>
-              <code>C:\Users\admin\Downloads\jlpt</code>의 <code>N5G</code>, <code>N4G</code>,
-              <code>N3G</code>에서 실제 문장형 문제를 골라 레벨별 드릴로 정리했습니다. 문장, 보기,
-              정답 해설까지 한 화면에서 확인할 수 있습니다.
-            </p>
-            <div
-              class="grammar-practice-level-switcher"
-              id="grammar-practice-level-switcher"
-              role="tablist"
-              aria-label="문법 드릴 레벨 선택"
-            ></div>
-          </div>
-
+          <div class="grammar-practice-copy"><span class="eyebrow">GRAMMAR DRILL</span><h3>문법 문제 바로 풀기</h3><p>문장과 보기만 보고 빠르게 확인할 수 있게 정리했습니다.</p><div class="grammar-practice-level-switcher" id="grammar-practice-level-switcher" role="tablist" aria-label="문법 연습 급수 선택"></div></div>
           <article class="grammar-practice-card">
-            <div class="grammar-practice-meta">
-              <span id="grammar-practice-level">N5</span>
-              <span id="grammar-practice-source">N5G 問題1-1</span>
-              <span id="grammar-practice-progress">1 / 4</span>
-            </div>
-
-            <div class="quiz-hud">
-              <div class="quiz-hud-item">
-                <span>제한시간</span>
-                <strong id="grammar-timer">25초</strong>
-              </div>
-              <div class="quiz-hud-item">
-                <span>정답</span>
-                <strong id="grammar-correct">0</strong>
-              </div>
-              <div class="quiz-hud-item">
-                <span>연속 정답</span>
-                <strong id="grammar-streak">0</strong>
-              </div>
-            </div>
-
-            <div class="grammar-practice-header">
-              <div>
-                <span class="eyebrow">GRAMMAR SET</span>
-                <h3 id="grammar-practice-title">문법 드릴</h3>
-              </div>
-              <p class="grammar-practice-note" id="grammar-practice-note"></p>
-            </div>
-
-            <div class="grammar-practice-question">
-              <span class="eyebrow">SENTENCE</span>
-              <p id="grammar-practice-sentence">문장을 불러오는 중입니다.</p>
-            </div>
-
+            <div class="grammar-practice-meta"><span id="grammar-practice-level">N5</span><span id="grammar-practice-source">N5G 1</span><span id="grammar-practice-progress">1 / 4</span></div>
+            <div class="quiz-hud"><div class="quiz-hud-item"><span>제한시간</span><strong id="grammar-timer">25초</strong></div><div class="quiz-hud-item"><span>정답</span><strong id="grammar-correct">0</strong></div><div class="quiz-hud-item"><span>연속 정답</span><strong id="grammar-streak">0</strong></div></div>
+            <div class="grammar-practice-header"><div><span class="eyebrow">GRAMMAR SET</span><h3 id="grammar-practice-title">문법 연습</h3></div><p class="grammar-practice-note" id="grammar-practice-note"></p></div>
+            <div class="grammar-practice-question"><span class="eyebrow">SENTENCE</span><p id="grammar-practice-sentence">문장을 불러오는 중입니다.</p></div>
             <div class="grammar-practice-options" id="grammar-practice-options"></div>
             <p class="grammar-practice-feedback" id="grammar-practice-feedback"></p>
             <p class="grammar-practice-explanation" id="grammar-practice-explanation"></p>
-
-            <div class="quiz-actions">
-              <button class="primary-btn" id="grammar-practice-next" type="button">다음 문항</button>
-            </div>
+            <div class="quiz-actions"><button class="primary-btn" id="grammar-practice-next" type="button">다음 문제</button></div>
           </article>
         </div>
       </section>
     </main>
   </div>
-
-  <script src="theme.js"></script>
-  <script src="app.js"></script>
+  <script src="assets/js/theme.js"></script><script src="assets/js/app.js"></script>
 </body>
 </html>
