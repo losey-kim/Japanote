@@ -53,7 +53,11 @@ function buildMatchPool(source) {
     );
 }
 
-const matchSource = Array.isArray(globalThis.jlptN5Vocab) ? globalThis.jlptN5Vocab : [];
+const matchSource = Array.isArray(globalThis.japanoteContent?.vocab?.jlptN5)
+  ? globalThis.japanoteContent.vocab.jlptN5
+  : Array.isArray(globalThis.jlptN5Vocab)
+    ? globalThis.jlptN5Vocab
+    : [];
 const matchPool = buildMatchPool(matchSource);
 
 const matchState = {
