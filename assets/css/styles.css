@@ -179,6 +179,20 @@ button {
   background: var(--panel-dark);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-toggle .material-symbols-rounded {
+  font-size: 18px;
+}
+
 .theme-toggle {
   flex: 0 0 auto;
   width: 20px;
@@ -3254,6 +3268,32 @@ body::after {
     display: none;
   }
 
+  .topbar-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    align-self: start;
+    gap: 8px;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    padding: 0 12px;
+    white-space: nowrap;
+  }
+
+  .topbar[data-mobile-nav="ready"] .nav-links {
+    display: none;
+  }
+
+  .topbar[data-mobile-nav="ready"].is-nav-open .nav-links {
+    display: grid;
+  }
+
   .nav-links {
     grid-column: 1 / -1;
     display: grid;
@@ -3272,10 +3312,6 @@ body::after {
   }
 
   .theme-toggle {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    align-self: start;
     width: 16px;
     height: 16px;
     min-height: 16px;
