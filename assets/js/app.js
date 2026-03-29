@@ -586,35 +586,44 @@ function buildDynamicQuizPool(items) {
 
 let dynamicQuizPool = buildDynamicQuizPool(dynamicQuizSource);
 
-function buildDynamicFlashcardPool(items) {
+function getFallbackVocabItems(level = "N5") {
+  const normalizedLevel = contentLevels.includes(level) ? level : "N5";
+  const fallbackItems = fallbackFlashcards.filter((item) => item.level === normalizedLevel);
+
+  return fallbackItems.length ? fallbackItems : fallbackFlashcards.filter((item) => item.level === "N5");
+}
+
+function buildDynamicFlashcardPool(items, level = "N5") {
+  const normalizedLevel = contentLevels.includes(level) ? level : "N5";
   const cards = items
     .map((item) => ({
       id: item.id,
-      level: "N5",
+      level: normalizedLevel,
       word: item.word,
       reading: item.reading,
       meaning: item.meaning
     }))
     .filter((item) => item.id && item.word && item.reading && item.meaning);
 
-  return cards.length ? shuffleQuizArray(cards) : [...fallbackFlashcards];
+  return cards.length ? shuffleQuizArray(cards) : shuffleQuizArray(getFallbackVocabItems(normalizedLevel));
 }
 
-function buildDynamicVocabListPool(items) {
+function buildDynamicVocabListPool(items, level = "N5") {
+  const normalizedLevel = contentLevels.includes(level) ? level : "N5";
   const cards = items
     .map((item) => ({
       id: item.id,
-      level: "N5",
+      level: normalizedLevel,
       word: item.word,
       reading: item.reading,
       meaning: item.meaning
     }))
     .filter((item) => item.id && item.word && item.reading && item.meaning);
 
-  return cards.length ? cards : [...fallbackFlashcards];
+  return cards.length ? cards : getFallbackVocabItems(normalizedLevel);
 }
 
-function buildDynamicWordPracticeItems(items) {
+function buildDynamicWordPracticeItems(items, level = "N5") {
   const tones = ["tone-coral", "tone-mint", "tone-gold", "tone-sky"];
   const picked = shuffleQuizArray(items).slice(0, 12);
 
@@ -637,9 +646,9 @@ function buildDynamicWordPracticeItems(items) {
 
       return {
         id: `bp-dw-${item.id}-${index}`,
-        source: `N5 단어 ${index + 1}`,
-        title: item.part ? `${item.part} 읽기` : "N5 단어 읽기",
-        note: "N5 단어를 랜덤으로 만나봐요.",
+        source: `${level} 단어 ${index + 1}`,
+        title: item.part ? `${item.part} 읽기` : `${level} 단어 읽기`,
+        note: `${level} 단어를 랜덤으로 만나봐요.`,
         prompt: "이 단어 뜻, 어떤 걸까요?",
         display: item.reading,
         displaySub: item.word,
@@ -654,12 +663,24 @@ function buildDynamicWordPracticeItems(items) {
   return questions.length ? questions : basicPracticeSets.words.items;
 }
 
-function refreshDynamicVocabContent() {
-  dynamicQuizSource = getDynamicVocabSource("N5");
+function getVocabLevel(level = state?.vocabLevel) {
+  return contentLevels.includes(level) ? level : "N5";
+}
+
+function refreshDynamicVocabContent(level = "N5") {
+  const activeLevel = getVocabLevel(level);
+  dynamicQuizSource = getDynamicVocabSource(activeLevel);
   dynamicQuizPool = buildDynamicQuizPool(dynamicQuizSource);
-  flashcards = buildDynamicFlashcardPool(dynamicQuizPool);
-  vocabListItems = buildDynamicVocabListPool(dynamicQuizPool);
-  basicPracticeSets.words.items = buildDynamicWordPracticeItems(dynamicQuizPool);
+  basicPracticeSets.words.items = buildDynamicWordPracticeItems(dynamicQuizPool, activeLevel);
+}
+
+function refreshVocabPageContent(level = "N5") {
+  const activeLevel = getVocabLevel(level);
+  const activeVocabSource = getDynamicVocabSource(activeLevel);
+  const activeVocabPool = buildDynamicQuizPool(activeVocabSource);
+
+  flashcards = buildDynamicFlashcardPool(activeVocabPool, activeLevel);
+  vocabListItems = buildDynamicVocabListPool(activeVocabPool, activeLevel);
 }
 
 const kanaBlueprintGroups = [
@@ -888,6 +909,21 @@ const vocabFilterLabels = {
   all: "전체",
   review: "다시 보기",
   mastered: "익힌 단어"
+};
+
+const vocabHeadingCopy = {
+  N5: {
+    title: "N5 단어, 카드로 익혀봐요",
+    description: "카드를 넘기며 읽기랑 뜻을 같이 익혀봐요."
+  },
+  N4: {
+    title: "N4 단어, 카드로 익혀봐요",
+    description: "조금 더 넓어진 표현을 카드와 리스트로 같이 익혀봐요."
+  },
+  N3: {
+    title: "N3 단어, 카드로 익혀봐요",
+    description: "실전에서 자주 만나는 N3 단어를 천천히 쌓아봐요."
+  }
 };
 
 function getKanaQuizPool(mode) {
@@ -2471,6 +2507,7 @@ const readingSets = getLevelContentSets(readingContent.sets);
 const defaultState = {
   flashcardIndex: 0,
   flashcardRevealed: false,
+  vocabLevel: "N5",
   vocabView: "card",
   vocabFilter: "all",
   vocabPage: 1,
@@ -2554,12 +2591,14 @@ state.masteredIds = Array.from(new Set(Array.isArray(state.masteredIds) ? state.
 state.reviewIds = Array.from(
   new Set((Array.isArray(state.reviewIds) ? state.reviewIds : []).filter((id) => !state.masteredIds.includes(id)))
 );
+state.vocabLevel = getVocabLevel(state.vocabLevel);
 state.vocabView = state.vocabView === "list" ? "list" : "card";
 state.vocabFilter = ["all", "review", "mastered"].includes(state.vocabFilter)
   ? state.vocabFilter
   : "all";
 state.vocabPage = Number.isFinite(Number(state.vocabPage)) ? Math.max(1, Number(state.vocabPage)) : 1;
 state.kanaSetupOpen = state.kanaSetupOpen !== false;
+refreshVocabPageContent(state.vocabLevel);
 activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize);
 
 const quizSessions = {
@@ -2994,16 +3033,33 @@ function getVocabFilterCounts() {
 
 function getVocabSummaryText(count) {
   const activeFilter = getVocabFilter();
+  const activeLevel = getVocabLevel();
 
   if (activeFilter === "review") {
-    return `다시 볼 단어 ${count}개예요`;
+    return `${activeLevel} 다시 볼 단어 ${count}개예요`;
   }
 
   if (activeFilter === "mastered") {
-    return `익힌 단어 ${count}개 모였어요`;
+    return `${activeLevel} 익힌 단어 ${count}개 모였어요`;
   }
 
-  return `전체 단어 ${count}개예요`;
+  return `${activeLevel} 전체 단어 ${count}개예요`;
+}
+
+function setVocabLevel(level) {
+  const nextLevel = getVocabLevel(level);
+
+  if (state.vocabLevel === nextLevel) {
+    return;
+  }
+
+  state.vocabLevel = nextLevel;
+  state.flashcardIndex = 0;
+  state.flashcardRevealed = false;
+  state.vocabPage = 1;
+  refreshVocabPageContent(nextLevel);
+  saveState();
+  renderVocabPage();
 }
 
 function setVocabFilter(filter) {
@@ -3057,10 +3113,11 @@ function clampVocabPage(items) {
 
 function renderFlashcard() {
   const activeFilter = getVocabFilter();
+  const activeLevel = getVocabLevel();
   const cards = getVisibleFlashcards();
   const emptyCardMap = {
     all: {
-      level: "N5",
+      level: activeLevel,
       word: "아직 단어가 없어요",
       reading: "단어가 들어오면 같이 볼게요.",
       meaning: "조금만 기다려주세요.",
@@ -3208,12 +3265,30 @@ function renderVocabPage() {
   const cardView = document.getElementById("vocab-card-view");
   const listView = document.getElementById("vocab-list-view");
   const summary = document.getElementById("vocab-summary");
+  const headingTitle = document.getElementById("vocab-heading-title");
+  const headingCopy = document.getElementById("vocab-heading-copy");
   const items = getVisibleVocabList();
   const counts = getVocabFilterCounts();
+  const activeLevel = getVocabLevel();
+  const heading = vocabHeadingCopy[activeLevel] || vocabHeadingCopy.N5;
+
+  if (headingTitle) {
+    headingTitle.textContent = heading.title;
+  }
+
+  if (headingCopy) {
+    headingCopy.textContent = heading.description;
+  }
 
   if (summary) {
     summary.textContent = getVocabSummaryText(items.length);
   }
+
+  document.querySelectorAll("[data-vocab-level]").forEach((button) => {
+    const active = button.dataset.vocabLevel === activeLevel;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", active ? "true" : "false");
+  });
 
   document.querySelectorAll("[data-vocab-view]").forEach((button) => {
     const active = button.dataset.vocabView === state.vocabView;
@@ -4017,6 +4092,7 @@ function attachEventListeners() {
   const flashcardNext = document.getElementById("flashcard-next");
   const flashcardAgain = document.getElementById("flashcard-again");
   const flashcardMastered = document.getElementById("flashcard-mastered");
+  const vocabLevelButtons = document.querySelectorAll("[data-vocab-level]");
   const vocabViewButtons = document.querySelectorAll("[data-vocab-view]");
   const vocabFilterButtons = document.querySelectorAll("[data-vocab-filter]");
   const vocabPagePrev = document.getElementById("vocab-page-prev");
@@ -4060,6 +4136,11 @@ function attachEventListeners() {
   if (flashcardMastered) {
     flashcardMastered.addEventListener("click", markFlashcardMastered);
   }
+  vocabLevelButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setVocabLevel(button.dataset.vocabLevel);
+    });
+  });
   vocabViewButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const nextView = button.dataset.vocabView === "list" ? "list" : "card";

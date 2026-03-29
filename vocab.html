@@ -32,10 +32,15 @@
     </header>
     <main>
       <section id="flashcards" class="content-section two-column">
-        <div class="section-heading"><span>VOCAB TRAINER</span><h2>N5 단어, 카드로 익혀봐요</h2><p class="section-copy">카드를 넘기며 읽기랑 뜻을 같이 익혀봐요.</p></div>
+        <div class="section-heading"><span>VOCAB TRAINER</span><h2 id="vocab-heading-title">N5 단어, 카드로 익혀봐요</h2><p class="section-copy" id="vocab-heading-copy">카드를 넘기며 읽기랑 뜻을 같이 익혀봐요.</p></div>
         <div class="flashcard-panel">
           <div class="vocab-toolbar">
             <div class="vocab-toolbar-groups">
+              <div class="vocab-level-switcher" role="tablist" aria-label="단어 레벨 고르기">
+                <button class="level-button is-active" type="button" data-vocab-level="N5" aria-pressed="true">N5</button>
+                <button class="level-button" type="button" data-vocab-level="N4" aria-pressed="false">N4</button>
+                <button class="level-button" type="button" data-vocab-level="N3" aria-pressed="false">N3</button>
+              </div>
               <div class="vocab-view-toggle" role="tablist" aria-label="단어 보는 방식 고르기">
                 <button class="level-button button-with-icon is-active" type="button" data-vocab-view="card" aria-pressed="true" aria-label="카드로 보기"><span class="material-symbols-rounded" aria-hidden="true">style</span><span>카드</span></button>
                 <button class="level-button button-with-icon" type="button" data-vocab-view="list" aria-pressed="false" aria-label="리스트로 보기"><span class="material-symbols-rounded" aria-hidden="true">view_list</span><span>리스트</span></button>
