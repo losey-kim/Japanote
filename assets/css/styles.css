@@ -857,6 +857,13 @@ button {
   display: grid;
   gap: 12px;
   margin-bottom: 20px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 247, 240, 0.94)),
+    linear-gradient(135deg, rgba(93, 133, 207, 0.08), rgba(222, 107, 72, 0.08));
+  box-shadow: var(--shadow-soft);
 }
 
 .kana-setup-toggle {
@@ -865,22 +872,19 @@ button {
   justify-content: space-between;
   gap: 18px;
   width: 100%;
-  padding: 20px 22px;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 247, 240, 0.94)),
-    linear-gradient(135deg, rgba(93, 133, 207, 0.08), rgba(222, 107, 72, 0.08));
-  box-shadow: var(--shadow-soft);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .kana-setup-toggle:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
+  opacity: 0.88;
 }
 
 .kana-setup-toggle-copy {
@@ -912,13 +916,8 @@ button {
 .kana-setup-panel {
   display: grid;
   gap: 16px;
-  padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 240, 0.88)),
-    linear-gradient(135deg, rgba(93, 133, 207, 0.08), rgba(222, 107, 72, 0.08));
-  box-shadow: var(--shadow-soft);
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
 }
 
 .kana-setup-group {
@@ -3403,7 +3402,6 @@ body::after {
   }
 
   .kana-setup-toggle {
-    padding: 18px;
     gap: 14px;
   }
 
@@ -3415,8 +3413,12 @@ body::after {
     font-size: 0.92rem;
   }
 
-  .kana-setup-panel {
+  .kana-setup-shell {
     padding: 18px;
+  }
+
+  .kana-setup-panel {
+    padding-top: 16px;
   }
 
   .kana-table-head {
