@@ -3077,6 +3077,10 @@ body::after {
     padding: 18px 16px 64px;
   }
 
+  .page-shell > main > .content-section:first-child {
+    margin-top: 32px;
+  }
+
   .topbar {
     justify-content: flex-start;
     border-radius: 28px;
@@ -3252,17 +3256,27 @@ body::after {
 
   .nav-links {
     grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
     width: 100%;
     gap: 10px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
   }
 
   .nav-links a {
+    flex: 0 0 auto;
     justify-content: center;
     min-height: 44px;
     padding: 10px 12px;
     text-align: center;
+    white-space: nowrap;
   }
 
   .theme-toggle {
