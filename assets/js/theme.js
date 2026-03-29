@@ -26,9 +26,14 @@ function updateThemeToggleLabel(mode = getSavedThemeMode()) {
     light: "\uBC1D\uAC8C \uBCFC\uAE4C\uC694?",
     dark: "\uCC28\uBD84\uD558\uAC8C \uBCFC\uAE4C\uC694?"
   };
+  const iconMap = {
+    system: "contrast",
+    light: "light_mode",
+    dark: "dark_mode"
+  };
 
   document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
-    button.textContent = "";
+    button.innerHTML = `<span class="material-symbols-rounded" aria-hidden="true">${iconMap[mode]}</span>`;
     button.dataset.themeMode = mode;
     button.setAttribute("aria-label", labelMap[mode]);
     button.setAttribute("title", labelMap[mode]);
