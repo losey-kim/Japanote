@@ -35,19 +35,76 @@
         <div class="match-shell">
           <aside class="match-sidebar">
             <div class="match-sidebar-head"><span class="eyebrow">ROUND HUD</span><h3>이번 라운드</h3></div>
-            <div class="match-stats-grid">
-              <div class="match-stat-card"><span>진행</span><strong id="match-progress">0 / 5</strong><p>맞춘 짝</p></div>
-              <div class="match-stat-card"><span>시도</span><strong id="match-attempts">0</strong><p>고른 횟수</p></div>
-              <div class="match-stat-card"><span>연속 성공</span><strong id="match-streak">0</strong><p>이어진 성공</p></div>
-              <div class="match-stat-card"><span>최고 기록</span><strong id="match-best">0</strong><p>이번 접속 최고 기록</p></div>
+            <div class="study-options-shell match-options-shell" id="match-options-shell">
+              <button class="study-options-toggle" id="match-options-toggle" type="button" aria-expanded="true" aria-controls="match-options-panel">
+                <div class="study-options-toggle-copy"><strong>매칭 설정</strong><p class="study-options-toggle-summary" id="match-options-summary">N5 · 5문제 · 45초</p></div>
+                <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+              </button>
+              <div class="study-options-panel study-options-panel-wide" id="match-options-panel">
+                <div class="study-options-group">
+                  <span>어느 난이도로 할까요?</span>
+                  <div class="match-toggle-group" role="group" aria-label="매칭 난이도 고르기">
+                    <button class="level-button is-active" type="button" data-match-level="N5" aria-pressed="true">N5</button>
+                    <button class="level-button" type="button" data-match-level="N4" aria-pressed="false">N4</button>
+                    <button class="level-button" type="button" data-match-level="N3" aria-pressed="false">N3</button>
+                    <button class="level-button" type="button" data-match-level="all" aria-pressed="false">전체</button>
+                  </div>
+                </div>
+                <div class="study-options-group">
+                  <span>총 몇 문제로 할까요?</span>
+                  <div class="match-toggle-group" role="group" aria-label="매칭 문제 수 고르기">
+                    <button class="level-button is-active" type="button" data-match-count="5" aria-pressed="true">5문제</button>
+                    <button class="level-button" type="button" data-match-count="10" aria-pressed="false">10문제</button>
+                    <button class="level-button" type="button" data-match-count="15" aria-pressed="false">15문제</button>
+                    <button class="level-button" type="button" data-match-count="20" aria-pressed="false">20문제</button>
+                  </div>
+                </div>
+                <div class="study-options-group">
+                  <span>시간은 어떻게 할까요?</span>
+                  <div class="match-toggle-group" role="group" aria-label="매칭 시간 고르기">
+                    <button class="level-button" type="button" data-match-time="0" aria-pressed="false">천천히</button>
+                    <button class="level-button" type="button" data-match-time="30" aria-pressed="false">30초</button>
+                    <button class="level-button is-active" type="button" data-match-time="45" aria-pressed="true">45초</button>
+                    <button class="level-button" type="button" data-match-time="60" aria-pressed="false">60초</button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="match-actions"><button class="primary-btn button-with-icon" id="match-new-round" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span>새로 섞어볼까요?</span></button><button class="secondary-btn button-with-icon" id="match-reset-round" type="button"><span class="material-symbols-rounded" aria-hidden="true">replay</span><span>이 판 다시 해볼까요?</span></button></div>
+            <div class="match-stats-grid">
+              <div class="match-stat-card"><span>진행</span><strong id="match-progress">0 / 5</strong><p>푼 문제</p></div>
+              <div class="match-stat-card"><span>남은 시간</span><strong id="match-timer">45초</strong><p>페이지 타이머</p></div>
+            </div>
+            <div class="match-actions">
+              <button class="primary-btn button-with-icon" id="match-new-round" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span id="match-new-round-label">새 세트 시작</span></button>
+              <button class="secondary-btn button-with-icon" id="match-reset-round" type="button"><span class="material-symbols-rounded" aria-hidden="true">replay</span><span id="match-reset-round-label">현재 페이지 다시</span></button>
+            </div>
+            <p class="match-actions-note" id="match-actions-note">새 세트는 문제 전체를 새로 뽑고, 현재 페이지 다시는 지금 보이는 단어만 처음부터 다시 시작해요.</p>
           </aside>
           <div class="match-board">
-            <div class="match-feedback" id="match-feedback">왼쪽이랑 오른쪽에서 하나씩 골라보세요.</div>
-            <div class="match-columns">
-              <section class="match-column"><div class="match-column-head"><span>LEFT</span><h3>읽기 카드</h3></div><div class="match-card-list" id="match-left-list"></div></section>
-              <section class="match-column"><div class="match-column-head"><span>RIGHT</span><h3>뜻 카드</h3></div><div class="match-card-list" id="match-right-list"></div></section>
+            <div class="match-play-view" id="match-play-view">
+              <div class="match-feedback" id="match-feedback">왼쪽이랑 오른쪽에서 하나씩 골라보세요.</div>
+              <div class="match-columns">
+                <section class="match-column"><div class="match-column-head"><span>LEFT</span><h3>읽기 카드</h3></div><div class="match-card-list" id="match-left-list"></div></section>
+                <section class="match-column"><div class="match-column-head"><span>RIGHT</span><h3>뜻 카드</h3></div><div class="match-card-list" id="match-right-list"></div></section>
+              </div>
+            </div>
+            <div class="match-result-view" id="match-result-view" hidden>
+              <div class="match-result-head">
+                <div><span class="eyebrow">RESULT</span><h3>이번 매칭 결과</h3></div>
+                <p class="match-result-summary" id="match-result-summary">결과를 정리하고 있어요.</p>
+              </div>
+              <div class="match-result-grid">
+                <article class="match-result-stat"><span>전체</span><strong id="match-result-total">0</strong></article>
+                <article class="match-result-stat"><span>맞춘 문제</span><strong id="match-result-correct">0</strong></article>
+                <article class="match-result-stat"><span>틀린 문제</span><strong id="match-result-wrong">0</strong></article>
+              </div>
+              <div class="match-result-filters" id="match-result-filters" role="group" aria-label="매칭 결과 필터">
+                <button class="secondary-btn vocab-filter-button is-active" type="button" data-match-result-filter="all" aria-pressed="true"><span>전체</span><strong data-match-result-count="all">0</strong></button>
+                <button class="secondary-btn vocab-filter-button" type="button" data-match-result-filter="correct" aria-pressed="false"><span>맞춘 문제</span><strong data-match-result-count="correct">0</strong></button>
+                <button class="secondary-btn vocab-filter-button" type="button" data-match-result-filter="wrong" aria-pressed="false"><span>틀린 문제</span><strong data-match-result-count="wrong">0</strong></button>
+              </div>
+              <p class="match-result-empty" id="match-result-empty" hidden>보여줄 결과가 아직 없어요.</p>
+              <div class="match-result-list" id="match-result-list"></div>
             </div>
           </div>
         </div>

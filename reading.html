@@ -33,7 +33,22 @@
     <main>
       <section id="practice-sets" class="content-section">
         <div class="section-heading"><span>READING PRACTICE</span><h2>짧은 글, 같이 읽어볼까요?</h2><p class="section-copy">짧은 글부터 편하게 읽어보세요.</p></div>
-        <div class="reading-level-switcher" id="reading-level-switcher" role="tablist" aria-label="독해 레벨 고르기"></div>
+        <div class="study-options-shell" id="reading-options-shell">
+          <button class="study-options-toggle" id="reading-options-toggle" type="button" aria-expanded="true" aria-controls="reading-options-panel">
+            <div class="study-options-toggle-copy"><strong>독해 설정</strong><p class="study-options-toggle-summary" id="reading-options-summary">N5 · 45초</p></div>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="study-options-panel study-options-panel-compact" id="reading-options-panel">
+            <div class="study-options-group">
+              <span>어느 레벨로 읽을까요?</span>
+              <div class="reading-level-switcher" id="reading-level-switcher" role="tablist" aria-label="독해 레벨 고르기"></div>
+            </div>
+            <div class="study-options-group">
+              <span>시간은 어떻게 할까요?</span>
+              <div class="reading-time-switcher" id="reading-time-switcher" role="group" aria-label="독해 시간 고르기"></div>
+            </div>
+          </div>
+        </div>
         <article class="reading-card">
           <div class="reading-meta"><span id="reading-level">N5</span><span id="reading-source">N5R p1</span></div>
           <div class="quiz-hud"><div class="quiz-hud-item"><span>진행</span><strong id="reading-progress">1 / 3</strong></div><div class="quiz-hud-item"><span>남은 시간</span><strong id="reading-timer">45초</strong></div><div class="quiz-hud-item"><span>맞힌 수</span><strong id="reading-correct">0</strong></div><div class="quiz-hud-item"><span>연속 성공</span><strong id="reading-streak">0</strong></div></div>

@@ -1,6 +1,7 @@
 ﻿const storageKey = "jlpt-compass-state";
 
 const contentLevels = ["N5", "N4", "N3"];
+const allLevelValue = "all";
 const contentRegistry = globalThis.japanoteContent || {};
 const kanaStrokeSvgs = globalThis.kanaStrokeSvgs || {};
 const vocabContent = contentRegistry.vocab || {};
@@ -18,18 +19,29 @@ function getLegacyVocabKey(level) {
   return `jlpt${level}`;
 }
 
+function withTaggedVocabLevel(items, level) {
+  return (Array.isArray(items) ? items : []).map((item) => ({
+    ...item,
+    _level: item?._level || item?.level || level
+  }));
+}
+
 function getDynamicVocabSource(level = "N5") {
+  if (level === allLevelValue) {
+    return contentLevels.flatMap((itemLevel) => getDynamicVocabSource(itemLevel));
+  }
+
   if (Array.isArray(vocabContent?.[level]) && vocabContent[level].length) {
-    return vocabContent[level];
+    return withTaggedVocabLevel(vocabContent[level], level);
   }
 
   const legacyKey = getLegacyVocabKey(level);
   if (Array.isArray(vocabContent?.[legacyKey]) && vocabContent[legacyKey].length) {
-    return vocabContent[legacyKey];
+    return withTaggedVocabLevel(vocabContent[legacyKey], level);
   }
 
   if (level === "N5" && Array.isArray(globalThis.jlptN5Vocab) && globalThis.jlptN5Vocab.length) {
-    return globalThis.jlptN5Vocab;
+    return withTaggedVocabLevel(globalThis.jlptN5Vocab, level);
   }
 
   return [];
@@ -492,6 +504,10 @@ const quizModeLabels = {
   reading: "읽기 맞히기"
 };
 const quizSessionSizeOptions = [10, 20];
+const quizDurationOptions = [0, 10, 15, 20];
+const readingDurationOptions = [0, 45, 60, 90];
+const vocabPartAllValue = allLevelValue;
+const selectableStudyLevels = [...contentLevels, allLevelValue];
 
 function normalizeQuizText(value) {
   const text = String(value ?? "").trim();
@@ -547,6 +563,52 @@ function getQuizMode(value) {
   return value === "reading" ? "reading" : "meaning";
 }
 
+function getLevelLabel(level) {
+  return level === allLevelValue ? "전체" : level;
+}
+
+function getLevelSummaryLabel(level) {
+  return level === allLevelValue ? "전체 난이도" : getLevelLabel(level);
+}
+
+function getDurationLabel(duration) {
+  return Number(duration) <= 0 ? "천천히" : `${Number(duration)}초`;
+}
+
+function getQuizLevel(level = state?.quizLevel) {
+  return selectableStudyLevels.includes(level) ? level : "N5";
+}
+
+function getQuizLevelLabel(level = state?.quizLevel) {
+  return getLevelLabel(getQuizLevel(level));
+}
+
+function getQuizDuration(value = state?.quizDuration) {
+  const numericValue = Number(value);
+  return quizDurationOptions.includes(numericValue) ? numericValue : 15;
+}
+
+function getReadingLevel(level = state?.readingLevel) {
+  return contentLevels.includes(level) ? level : "N5";
+}
+
+function getReadingDuration(value = state?.readingDuration) {
+  const numericValue = Number(value);
+  return readingDurationOptions.includes(numericValue) ? numericValue : 45;
+}
+
+function getCharactersTab(value) {
+  return ["library", "quiz", "writing"].includes(value) ? value : "library";
+}
+
+function getCharactersLibraryTab(value) {
+  return value === "katakana" ? "katakana" : "hiragana";
+}
+
+function getWritingPracticeOrder(value) {
+  return value === "random" ? "random" : "sequence";
+}
+
 function shuffleQuizArray(items) {
   const copy = [...items];
 
@@ -566,6 +628,7 @@ function buildDynamicQuizPool(items) {
   const normalizedItems = items
     .map((item) => ({
       id: normalizeQuizText(item.entry_id || item.id),
+      level: normalizeQuizText(item._level || item.level) || "N5",
       word: getQuizDisplayWord(item),
       reading: getQuizReading(item),
       meaning: getQuizMeaning(item),
@@ -587,21 +650,28 @@ function buildDynamicQuizPool(items) {
 let dynamicQuizPool = buildDynamicQuizPool(dynamicQuizSource);
 
 function getFallbackVocabItems(level = "N5") {
-  const normalizedLevel = contentLevels.includes(level) ? level : "N5";
+  const normalizedLevel = getVocabLevel(level);
+
+  if (normalizedLevel === allLevelValue) {
+    const mixedLevelItems = fallbackFlashcards.filter((item) => contentLevels.includes(item.level));
+    return mixedLevelItems.length ? mixedLevelItems : fallbackFlashcards.filter((item) => item.level === "N5");
+  }
+
   const fallbackItems = fallbackFlashcards.filter((item) => item.level === normalizedLevel);
 
   return fallbackItems.length ? fallbackItems : fallbackFlashcards.filter((item) => item.level === "N5");
 }
 
 function buildDynamicFlashcardPool(items, level = "N5") {
-  const normalizedLevel = contentLevels.includes(level) ? level : "N5";
+  const normalizedLevel = getVocabLevel(level);
   const cards = items
     .map((item) => ({
       id: item.id,
-      level: normalizedLevel,
+      level: normalizeQuizText(item.level) || normalizedLevel,
       word: item.word,
       reading: item.reading,
-      meaning: item.meaning
+      meaning: item.meaning,
+      part: item.part || ""
     }))
     .filter((item) => item.id && item.word && item.reading && item.meaning);
 
@@ -609,14 +679,15 @@ function buildDynamicFlashcardPool(items, level = "N5") {
 }
 
 function buildDynamicVocabListPool(items, level = "N5") {
-  const normalizedLevel = contentLevels.includes(level) ? level : "N5";
+  const normalizedLevel = getVocabLevel(level);
   const cards = items
     .map((item) => ({
       id: item.id,
-      level: normalizedLevel,
+      level: normalizeQuizText(item.level) || normalizedLevel,
       word: item.word,
       reading: item.reading,
-      meaning: item.meaning
+      meaning: item.meaning,
+      part: item.part || ""
     }))
     .filter((item) => item.id && item.word && item.reading && item.meaning);
 
@@ -625,6 +696,7 @@ function buildDynamicVocabListPool(items, level = "N5") {
 
 function buildDynamicWordPracticeItems(items, level = "N5") {
   const tones = ["tone-coral", "tone-mint", "tone-gold", "tone-sky"];
+  const levelLabel = getLevelLabel(level);
   const picked = shuffleQuizArray(items).slice(0, 12);
 
   const questions = picked
@@ -646,9 +718,9 @@ function buildDynamicWordPracticeItems(items, level = "N5") {
 
       return {
         id: `bp-dw-${item.id}-${index}`,
-        source: `${level} 단어 ${index + 1}`,
-        title: item.part ? `${item.part} 읽기` : `${level} 단어 읽기`,
-        note: `${level} 단어를 랜덤으로 만나봐요.`,
+        source: `${levelLabel} 단어 ${index + 1}`,
+        title: item.part ? `${item.part} 읽기` : `${levelLabel} 단어 읽기`,
+        note: `${levelLabel} 단어를 랜덤으로 만나봐요.`,
         prompt: "이 단어 뜻, 어떤 걸까요?",
         display: item.reading,
         displaySub: item.word,
@@ -664,14 +736,24 @@ function buildDynamicWordPracticeItems(items, level = "N5") {
 }
 
 function getVocabLevel(level = state?.vocabLevel) {
-  return contentLevels.includes(level) ? level : "N5";
+  return selectableStudyLevels.includes(level) ? level : "N5";
+}
+
+function getVocabLevelLabel(level = state?.vocabLevel) {
+  return getLevelLabel(getVocabLevel(level));
 }
 
 function refreshDynamicVocabContent(level = "N5") {
   const activeLevel = getVocabLevel(level);
+  const activeSource = getDynamicVocabSource(activeLevel);
+  const activePool = buildDynamicQuizPool(activeSource);
+  basicPracticeSets.words.items = buildDynamicWordPracticeItems(activePool, activeLevel);
+}
+
+function refreshQuizContent(level = "N5") {
+  const activeLevel = getQuizLevel(level);
   dynamicQuizSource = getDynamicVocabSource(activeLevel);
   dynamicQuizPool = buildDynamicQuizPool(dynamicQuizSource);
-  basicPracticeSets.words.items = buildDynamicWordPracticeItems(dynamicQuizPool, activeLevel);
 }
 
 function refreshVocabPageContent(level = "N5") {
@@ -923,8 +1005,35 @@ const vocabHeadingCopy = {
   N3: {
     title: "N3 단어, 카드로 익혀봐요",
     description: "실전에서 자주 만나는 N3 단어를 천천히 쌓아봐요."
+  },
+  all: {
+    title: "전체 단어, 한 번에 익혀봐요",
+    description: "N5부터 N3까지 섞어서 카드와 리스트로 같이 훑어봐요."
   }
 };
+
+const quizHeadingCopy = {
+  N5: {
+    title: "N5 단어 퀴즈 한 판 해볼까요?",
+    description: "문제 수랑 모드를 고르고 바로 시작해보세요."
+  },
+  N4: {
+    title: "N4 단어 퀴즈로 감각 올려볼까요?",
+    description: "N4 단어를 뜻이랑 읽기로 번갈아 풀어보세요."
+  },
+  N3: {
+    title: "N3 단어 퀴즈, 실전 느낌으로 가볼까요?",
+    description: "조금 더 긴 호흡으로 N3 어휘 감각을 확인해봐요."
+  },
+  all: {
+    title: "전체 단어 퀴즈로 감각을 섞어볼까요?",
+    description: "N5부터 N3까지 섞어서 문제 수와 시간에 맞춰 풀어보세요."
+  }
+};
+
+function getVocabItemPart(item) {
+  return normalizeQuizText(item?.part) || "기타";
+}
 
 function getKanaQuizPool(mode) {
   if (mode === "random") {
@@ -1397,10 +1506,10 @@ function renderKanaLibrary() {
               ${group.items
                 .map(
                   (item) => `
-                    <div class="kana-tile${item.quiz ? "" : " is-muted"}">
+                    <button class="kana-tile${item.quiz ? "" : " is-muted"}" type="button" data-writing-char="${item.char}" data-writing-script="${section.track}" aria-label="${item.char} 따라쓰기 열기">
                       <strong>${item.char}</strong>
                       <span>${item.reading}</span>
-                    </div>
+                    </button>
                   `
                 )
                 .join("")}
@@ -1426,6 +1535,52 @@ function renderKanaLibrary() {
       openKanaQuizSheet(track);
     });
   });
+
+  document.querySelectorAll("[data-writing-char]").forEach((button) => {
+    if (button.dataset.writingBound === "true") {
+      return;
+    }
+
+    button.dataset.writingBound = "true";
+    button.addEventListener("click", () => {
+      openWritingPracticeForCharacter(button.dataset.writingChar, button.dataset.writingScript);
+    });
+  });
+}
+
+function renderCharactersPageLayout() {
+  const activeTab = getCharactersTab(state.charactersTab);
+  const libraryTab = getCharactersLibraryTab(state.charactersLibraryTab);
+
+  document.querySelectorAll("[data-characters-tab]").forEach((button) => {
+    const isActive = button.dataset.charactersTab === activeTab;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+    button.setAttribute("tabindex", isActive ? "0" : "-1");
+  });
+
+  document.querySelectorAll("[data-characters-tab-panel]").forEach((panel) => {
+    const isActive = panel.dataset.charactersTabPanel === activeTab;
+    panel.hidden = !isActive;
+    panel.setAttribute("aria-hidden", String(!isActive));
+  });
+
+  document.querySelectorAll("[data-characters-library-tab]").forEach((button) => {
+    const isActive = button.dataset.charactersLibraryTab === libraryTab;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+    button.setAttribute("tabindex", isActive ? "0" : "-1");
+  });
+
+  document.querySelectorAll("[data-characters-library-panel]").forEach((panel) => {
+    const isActive = panel.dataset.charactersLibraryPanel === libraryTab;
+    panel.hidden = !isActive;
+    panel.setAttribute("aria-hidden", String(!isActive));
+  });
+
+  if (activeTab === "writing" && document.getElementById("writing-practice-shell")) {
+    scheduleWritingPracticeLayout(false);
+  }
 }
 
 function clampValue(value, min, max) {
@@ -1433,7 +1588,8 @@ function clampValue(value, min, max) {
 }
 
 const writingPracticeSettings = {
-  mode: "hiragana"
+  mode: "hiragana",
+  order: "sequence"
 };
 
 const writingPracticeState = {
@@ -1442,6 +1598,7 @@ const writingPracticeState = {
   guideVisible: true,
   answerVisible: false,
   isAnimating: false,
+  isTransitioning: false,
   animationToken: 0,
   layoutFrame: null,
   pointerId: null,
@@ -1462,6 +1619,56 @@ function getWritingPracticeDefaultFeedback() {
 
 function getWritingPracticeDefaultTip() {
   return "가이드가 잘 보이도록 천천히 크게 써보세요.";
+}
+
+function beginWritingPracticeTransition() {
+  writingPracticeState.isTransitioning = true;
+  updateWritingPracticeControls();
+}
+
+function endWritingPracticeTransition() {
+  writingPracticeState.isTransitioning = false;
+  updateWritingPracticeControls();
+}
+
+function getWritingPracticeModeLabel(mode = writingPracticeSettings.mode) {
+  if (mode === "random") {
+    return "랜덤";
+  }
+
+  return mode === "katakana" ? "카타카나" : "히라가나";
+}
+
+function getWritingPracticeOrderLabel(order = writingPracticeSettings.order) {
+  return getWritingPracticeOrder(order) === "random" ? "랜덤 순서" : "순서대로";
+}
+
+function renderWritingPracticeSetup() {
+  const setupShell = document.getElementById("writing-setup-shell");
+  const setupToggle = document.getElementById("writing-setup-toggle");
+  const setupPanel = document.getElementById("writing-setup-panel");
+  const setupSummary = document.getElementById("writing-setup-summary");
+  const isOpen = state.writingSetupOpen !== false;
+
+  if (setupSummary) {
+    setupSummary.textContent = [
+      getWritingPracticeModeLabel(writingPracticeSettings.mode),
+      getWritingPracticeOrderLabel(writingPracticeSettings.order)
+    ].join(" · ");
+  }
+
+  if (setupShell) {
+    setupShell.classList.toggle("is-open", isOpen);
+  }
+
+  if (setupToggle) {
+    setupToggle.setAttribute("aria-expanded", String(isOpen));
+  }
+
+  if (setupPanel) {
+    setupPanel.hidden = !isOpen;
+    setupPanel.setAttribute("aria-hidden", String(!isOpen));
+  }
 }
 
 function buildWritingPracticePool(script) {
@@ -1487,17 +1694,22 @@ const writingPracticePools = {
   katakana: buildWritingPracticePool("katakana")
 };
 
-function buildWritingPracticeSession(mode = writingPracticeSettings.mode) {
-  if (mode === "random") {
-    return shuffleQuizArray([...writingPracticePools.hiragana, ...writingPracticePools.katakana]);
-  }
+function buildWritingPracticeSession(mode = writingPracticeSettings.mode, order = writingPracticeSettings.order) {
+  const nextOrder = getWritingPracticeOrder(order);
+  const items =
+    mode === "random"
+      ? [...writingPracticePools.hiragana, ...writingPracticePools.katakana]
+      : [...(writingPracticePools[mode] || writingPracticePools.hiragana)];
 
-  return [...(writingPracticePools[mode] || writingPracticePools.hiragana)];
+  return nextOrder === "random" ? shuffleQuizArray(items) : items;
 }
 
 function ensureWritingPracticeSession() {
   if (!writingPracticeState.sessionItems.length) {
-    writingPracticeState.sessionItems = buildWritingPracticeSession(writingPracticeSettings.mode);
+    writingPracticeState.sessionItems = buildWritingPracticeSession(
+      writingPracticeSettings.mode,
+      writingPracticeSettings.order
+    );
     writingPracticeState.sessionIndex = 0;
   }
 }
@@ -1566,6 +1778,93 @@ function uniquifyWritingSvgIds(svg, prefix) {
         element.setAttribute(attribute, nextValue);
       }
     });
+  });
+}
+
+function parseWritingPracticeSvg(rawSvg) {
+  if (!rawSvg) {
+    return null;
+  }
+
+  const parsed = new DOMParser().parseFromString(rawSvg.trim(), "image/svg+xml");
+  const svg = parsed.documentElement;
+
+  if (!svg || svg.nodeName.toLowerCase() !== "svg" || parsed.querySelector("parsererror")) {
+    return null;
+  }
+
+  return document.importNode(svg, true);
+}
+
+function getWritingSvgViewBox(svg, fallbackViewBox = { x: 0, y: 0, width: 1024, height: 1024 }) {
+  const baseViewBox = {
+    x: Number.isFinite(fallbackViewBox?.x) ? fallbackViewBox.x : 0,
+    y: Number.isFinite(fallbackViewBox?.y) ? fallbackViewBox.y : 0,
+    width: Number.isFinite(fallbackViewBox?.width) && fallbackViewBox.width > 0 ? fallbackViewBox.width : 1024,
+    height: Number.isFinite(fallbackViewBox?.height) && fallbackViewBox.height > 0 ? fallbackViewBox.height : 1024
+  };
+  const groups = [
+    svg.querySelector('g[data-strokesvg="shadows"]'),
+    svg.querySelector('g[data-strokesvg="strokes"]')
+  ].filter(Boolean);
+  let minX = baseViewBox.x;
+  let minY = baseViewBox.y;
+  let maxX = baseViewBox.x + baseViewBox.width;
+  let maxY = baseViewBox.y + baseViewBox.height;
+  let hasMeasuredBounds = false;
+
+  groups.forEach((group) => {
+    if (!group || typeof group.getBBox !== "function") {
+      return;
+    }
+
+    try {
+      const box = group.getBBox();
+
+      if (!box || (!box.width && !box.height)) {
+        return;
+      }
+
+      hasMeasuredBounds = true;
+      minX = Math.min(minX, box.x);
+      minY = Math.min(minY, box.y);
+      maxX = Math.max(maxX, box.x + box.width);
+      maxY = Math.max(maxY, box.y + box.height);
+    } catch (error) {
+      // Hidden or not-yet-rendered SVG nodes may fail to measure; keep the original viewBox.
+    }
+  });
+
+  if (!hasMeasuredBounds) {
+    return baseViewBox;
+  }
+
+  const contentWidth = Math.max(1, maxX - minX);
+  const contentHeight = Math.max(1, maxY - minY);
+  const padX = Math.max(24, contentWidth * 0.08);
+  const padY = Math.max(28, contentHeight * 0.1);
+
+  return {
+    x: minX - padX,
+    y: minY - padY,
+    width: contentWidth + padX * 2,
+    height: contentHeight + padY * 2
+  };
+}
+
+function applyWritingSvgViewBox(entry) {
+  if (!entry?.svg) {
+    return;
+  }
+
+  const nextViewBox = getWritingSvgViewBox(entry.svg, entry.baseViewBox || entry.viewBox);
+  entry.viewBox = nextViewBox;
+  entry.svg.setAttribute("viewBox", `${nextViewBox.x} ${nextViewBox.y} ${nextViewBox.width} ${nextViewBox.height}`);
+}
+
+function refreshWritingPracticeViewBoxes() {
+  writingPracticeState.slotEntries.forEach((entry) => {
+    applyWritingSvgViewBox(entry);
   });
 }
 
@@ -1650,6 +1949,7 @@ function buildWritingPracticeStage(current) {
         char: character,
         slot,
         svg: null,
+        baseViewBox: { x: 0, y: 0, width: 1024, height: 1024 },
         viewBox: { x: 0, y: 0, width: 1024, height: 1024 },
         shadowPaths: [],
         strokeEntries: []
@@ -1657,21 +1957,19 @@ function buildWritingPracticeStage(current) {
       return;
     }
 
-    slot.innerHTML = rawSvg;
-
-    const svg = slot.querySelector("svg");
+    const svg = parseWritingPracticeSvg(rawSvg);
 
     if (!svg) {
       const fallback = document.createElement("div");
       fallback.className = "writing-character-fallback";
       fallback.textContent = character;
-      slot.innerHTML = "";
       slot.appendChild(fallback);
       layer.appendChild(slot);
       writingPracticeState.slotEntries.push({
         char: character,
         slot,
         svg: null,
+        baseViewBox: { x: 0, y: 0, width: 1024, height: 1024 },
         viewBox: { x: 0, y: 0, width: 1024, height: 1024 },
         shadowPaths: [],
         strokeEntries: []
@@ -1679,11 +1977,12 @@ function buildWritingPracticeStage(current) {
       return;
     }
 
+    slot.appendChild(svg);
     svg.classList.add("writing-character-svg");
     svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
     uniquifyWritingSvgIds(svg, `${renderPrefix}-${index}`);
 
-    const viewBox = svg.viewBox?.baseVal
+    const baseViewBox = svg.viewBox?.baseVal
       ? {
           x: svg.viewBox.baseVal.x,
           y: svg.viewBox.baseVal.y,
@@ -1696,15 +1995,18 @@ function buildWritingPracticeStage(current) {
       .map((path) => path.getAttribute("d"))
       .filter(Boolean);
 
-    const strokeEntries = collectWritingStrokeEntries(svg);
-
     writingPracticeState.hasVectorGuide = writingPracticeState.hasVectorGuide || shadowPaths.length > 0;
 
     layer.appendChild(slot);
+    const viewBox = getWritingSvgViewBox(svg, baseViewBox);
+    svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+    const strokeEntries = collectWritingStrokeEntries(svg);
+
     writingPracticeState.slotEntries.push({
       char: character,
       slot,
       svg,
+      baseViewBox,
       viewBox,
       shadowPaths,
       strokeEntries
@@ -1736,30 +2038,41 @@ function getWritingPracticeStrokeCount() {
 function updateWritingPracticeControls() {
   const guideToggle = document.getElementById("writing-guide-toggle");
   const revealToggle = document.getElementById("writing-practice-reveal");
+  const prevButton = document.getElementById("writing-practice-prev");
   const clearButton = document.getElementById("writing-practice-clear");
   const scoreButton = document.getElementById("writing-practice-score-btn");
   const replayButton = document.getElementById("writing-practice-replay");
+  const nextButton = document.getElementById("writing-practice-next");
+  const isBusy = writingPracticeState.isAnimating || writingPracticeState.isTransitioning;
 
   if (guideToggle) {
     guideToggle.textContent = writingPracticeState.guideVisible ? "가이드 숨기기" : "가이드 보기";
-    guideToggle.disabled = !writingPracticeState.hasVectorGuide;
+    guideToggle.disabled = !writingPracticeState.hasVectorGuide || isBusy;
   }
 
   if (revealToggle) {
     revealToggle.textContent = writingPracticeState.answerVisible ? "정답 가리기" : "정답 보기";
-    revealToggle.disabled = !writingPracticeState.hasVectorGuide;
+    revealToggle.disabled = !writingPracticeState.hasVectorGuide || isBusy;
+  }
+
+  if (prevButton) {
+    prevButton.disabled = !writingPracticeState.sessionItems.length || isBusy;
   }
 
   if (clearButton) {
-    clearButton.disabled = writingPracticeState.strokes.length === 0;
+    clearButton.disabled = writingPracticeState.strokes.length === 0 || isBusy;
   }
 
   if (scoreButton) {
-    scoreButton.disabled = !writingPracticeState.hasVectorGuide || writingPracticeState.isAnimating;
+    scoreButton.disabled = !writingPracticeState.hasVectorGuide || isBusy;
   }
 
   if (replayButton) {
-    replayButton.disabled = !writingPracticeState.hasVectorGuide || writingPracticeState.isAnimating;
+    replayButton.disabled = !writingPracticeState.hasVectorGuide || isBusy;
+  }
+
+  if (nextButton) {
+    nextButton.disabled = !writingPracticeState.sessionItems.length || isBusy;
   }
 }
 
@@ -1779,6 +2092,12 @@ function updateWritingPracticePanel() {
   document.querySelectorAll("[data-writing-mode]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.writingMode === writingPracticeSettings.mode);
   });
+
+  document.querySelectorAll("[data-writing-order]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.writingOrder === writingPracticeSettings.order);
+  });
+
+  renderWritingPracticeSetup();
 
   if (!current) {
     if (title) {
@@ -1982,23 +2301,29 @@ function syncWritingPracticeCanvas() {
     canvas.height = nextHeight;
   }
 
+  refreshWritingPracticeViewBoxes();
   renderWritingOverlay();
   renderWritingPracticeTargetMask();
 }
 
 function scheduleWritingPracticeLayout(replay = false) {
+  beginWritingPracticeTransition();
+
   if (writingPracticeState.layoutFrame) {
     cancelAnimationFrame(writingPracticeState.layoutFrame);
   }
 
   writingPracticeState.layoutFrame = window.requestAnimationFrame(() => {
-    writingPracticeState.layoutFrame = null;
-    syncWritingPracticeCanvas();
-    updateWritingPracticeStageState();
+    writingPracticeState.layoutFrame = window.requestAnimationFrame(() => {
+      writingPracticeState.layoutFrame = null;
+      syncWritingPracticeCanvas();
+      updateWritingPracticeStageState();
+      endWritingPracticeTransition();
 
-    if (replay && writingPracticeState.hasVectorGuide) {
-      replayWritingStrokeAnimation();
-    }
+      if (replay && writingPracticeState.hasVectorGuide) {
+        replayWritingStrokeAnimation();
+      }
+    });
   });
 }
 
@@ -2067,6 +2392,10 @@ function getWritingPracticeScoreResult(score, coverage, precision) {
 }
 
 function scoreWritingPractice() {
+  if (writingPracticeState.isAnimating || writingPracticeState.isTransitioning) {
+    return;
+  }
+
   const canvas = document.getElementById("writing-overlay-canvas");
   const userCtx = canvas?.getContext("2d");
   const targetCtx = writingPracticeState.targetCanvas.getContext("2d");
@@ -2138,6 +2467,10 @@ function getWritingCanvasPoint(event, canvas) {
 
 function handleWritingPointerDown(event) {
   if (event.pointerType === "mouse" && event.button !== 0) {
+    return;
+  }
+
+  if (writingPracticeState.isAnimating || writingPracticeState.isTransitioning) {
     return;
   }
 
@@ -2221,7 +2554,7 @@ function waitForWritingAnimation(duration) {
 }
 
 async function replayWritingStrokeAnimation() {
-  if (!writingPracticeState.hasVectorGuide) {
+  if (!writingPracticeState.hasVectorGuide || writingPracticeState.isAnimating) {
     return;
   }
 
@@ -2277,23 +2610,32 @@ function clearWritingPracticeCanvas(resetStatus = true) {
   updateWritingPracticePanel();
 }
 
-function startWritingPracticeSession(mode = writingPracticeSettings.mode) {
+function startWritingPracticeSession(mode = writingPracticeSettings.mode, order = writingPracticeSettings.order) {
   const nextMode = ["hiragana", "katakana", "random"].includes(mode) ? mode : "hiragana";
+  const nextOrder = getWritingPracticeOrder(order);
   writingPracticeSettings.mode = nextMode;
-  writingPracticeState.sessionItems = buildWritingPracticeSession(nextMode);
+  writingPracticeSettings.order = nextOrder;
+  writingPracticeState.sessionItems = buildWritingPracticeSession(nextMode, nextOrder);
   writingPracticeState.sessionIndex = 0;
   resetWritingPracticeRound();
   renderWritingPractice();
 }
 
 function nextWritingPracticeItem() {
+  if (writingPracticeState.isAnimating || writingPracticeState.isTransitioning) {
+    return;
+  }
+
   if (!writingPracticeState.sessionItems.length) {
-    startWritingPracticeSession(writingPracticeSettings.mode);
+    startWritingPracticeSession(writingPracticeSettings.mode, writingPracticeSettings.order);
     return;
   }
 
   if (writingPracticeState.sessionIndex + 1 >= writingPracticeState.sessionItems.length) {
-    writingPracticeState.sessionItems = buildWritingPracticeSession(writingPracticeSettings.mode);
+    writingPracticeState.sessionItems = buildWritingPracticeSession(
+      writingPracticeSettings.mode,
+      writingPracticeSettings.order
+    );
     writingPracticeState.sessionIndex = 0;
   } else {
     writingPracticeState.sessionIndex += 1;
@@ -2301,6 +2643,45 @@ function nextWritingPracticeItem() {
 
   resetWritingPracticeRound();
   renderWritingPractice();
+}
+
+function previousWritingPracticeItem() {
+  if (writingPracticeState.isAnimating || writingPracticeState.isTransitioning) {
+    return;
+  }
+
+  if (!writingPracticeState.sessionItems.length) {
+    startWritingPracticeSession(writingPracticeSettings.mode, writingPracticeSettings.order);
+    return;
+  }
+
+  if (writingPracticeState.sessionIndex <= 0) {
+    writingPracticeState.sessionIndex = writingPracticeState.sessionItems.length - 1;
+  } else {
+    writingPracticeState.sessionIndex -= 1;
+  }
+
+  resetWritingPracticeRound();
+  renderWritingPractice();
+}
+
+function openWritingPracticeForCharacter(char, script) {
+  if (!char) {
+    return;
+  }
+
+  const nextMode = script === "katakana" ? "katakana" : "hiragana";
+  const nextItems = buildWritingPracticeSession(nextMode, writingPracticeSettings.order);
+  const nextIndex = nextItems.findIndex((item) => item.char === char);
+
+  state.charactersTab = "writing";
+  writingPracticeSettings.mode = nextMode;
+  writingPracticeState.sessionItems = nextItems;
+  writingPracticeState.sessionIndex = nextIndex >= 0 ? nextIndex : 0;
+  resetWritingPracticeRound();
+  saveState();
+  renderWritingPractice();
+  renderCharactersPageLayout();
 }
 
 function toggleWritingGuide() {
@@ -2313,13 +2694,14 @@ function toggleWritingAnswer() {
     return;
   }
 
+  cancelWritingPracticeAnimation();
   writingPracticeState.answerVisible = !writingPracticeState.answerVisible;
 
   if (writingPracticeState.answerVisible) {
     writingPracticeState.guideVisible = true;
     writingPracticeState.tip = "정답 모양을 켰어요. 획순을 보고 같은 흐름으로 다시 써보세요.";
+    setWritingStrokeEntriesState(true, 0.88);
     updateWritingPracticePanel();
-    replayWritingStrokeAnimation();
     return;
   }
 
@@ -2341,13 +2723,14 @@ function renderWritingPractice() {
   const current = getCurrentWritingPracticeItem();
 
   if (!current) {
+    endWritingPracticeTransition();
     updateWritingPracticePanel();
     return;
   }
 
   buildWritingPracticeStage(current);
   updateWritingPracticePanel();
-  scheduleWritingPracticeLayout(true);
+  scheduleWritingPracticeLayout(false);
 }
 
 function createQuizMeta(item, mode, promptKind) {
@@ -2355,6 +2738,7 @@ function createQuizMeta(item, mode, promptKind) {
     mode,
     promptKind,
     sourceId: item.id,
+    level: item.level,
     word: item.word,
     reading: item.reading,
     meaning: item.meaning,
@@ -2379,8 +2763,8 @@ function buildWordToMeaningQuizQuestion(item, pool, index) {
   const label = item.part ? ` (${item.part})` : "";
 
   return {
-    id: `n5-meaning-${item.id}-${index}`,
-    level: "N5",
+    id: `quiz-meaning-${item.id}-${index}`,
+    level: item.level || "N5",
     question: `다음 히라가나의 뜻으로 맞는 것은 무엇인가요? ${item.reading}${label}`,
     options: shuffleQuizArray([correctMeaning, ...distractors.slice(0, 3)]),
     answer: correctMeaning,
@@ -2403,8 +2787,8 @@ function buildMeaningToWordQuizQuestion(item, pool, index) {
   }
 
   return {
-    id: `n5-word-${item.id}-${index}`,
-    level: "N5",
+    id: `quiz-word-${item.id}-${index}`,
+    level: item.level || "N5",
     question: `다음 뜻에 맞는 일본어 단어는 무엇인가요? ${item.meaning}`,
     options: shuffleQuizArray([correctWord, ...distractors.slice(0, 3)]),
     answer: correctWord,
@@ -2432,8 +2816,8 @@ function buildReadingQuizQuestion(item, pool, index) {
   const label = item.part ? ` (${item.part})` : "";
 
   return {
-    id: `n5-reading-${item.id}-${index}`,
-    level: "N5",
+    id: `quiz-reading-${item.id}-${index}`,
+    level: item.level || "N5",
     question: `다음 단어의 읽기로 맞는 것은 무엇인가요? ${item.word}${label}`,
     options: shuffleQuizArray([item.reading, ...distractors.slice(0, 3)]),
     answer: item.reading,
@@ -2472,9 +2856,29 @@ function buildReadingQuizSession(pool, count) {
   return questions;
 }
 
-function createFallbackQuizSession(count) {
-  return shuffleQuizArray(quizQuestions)
-    .slice(0, Math.min(count, quizQuestions.length))
+function createFallbackQuizSession(count, mode = state.quizMode, level = state.quizLevel) {
+  const activeLevel = getQuizLevel(level);
+  const sessionMode = getQuizMode(mode);
+  const fallbackPool = buildDynamicQuizPool(getFallbackVocabItems(activeLevel));
+  const fallbackQuestions =
+    sessionMode === "reading"
+      ? buildReadingQuizSession(fallbackPool, count)
+      : buildMeaningQuizSession(fallbackPool, count);
+
+  if (fallbackQuestions.length) {
+    return fallbackQuestions;
+  }
+
+  const levelQuestions =
+    activeLevel === allLevelValue
+      ? quizQuestions.filter((question) => contentLevels.includes(question.level))
+      : quizQuestions.filter((question) => question.level === activeLevel);
+  const sourceQuestions = levelQuestions.length
+    ? levelQuestions
+    : quizQuestions.filter((question) => question.level === "N5");
+
+  return shuffleQuizArray(sourceQuestions)
+    .slice(0, Math.min(count, sourceQuestions.length))
     .map((question) => ({
       ...question,
       meta: {
@@ -2489,15 +2893,20 @@ function createFallbackQuizSession(count) {
     }));
 }
 
-function createQuizSession(mode, size) {
+function createQuizSession(mode, size, level = state.quizLevel) {
+  const activeLevel = getQuizLevel(level);
   const sessionMode = getQuizMode(mode);
   const questionCount = getQuizSessionSize(size);
+  const activeSource = getDynamicVocabSource(activeLevel);
+  const activePool = buildDynamicQuizPool(activeSource);
   const dynamicQuestions =
     sessionMode === "reading"
-      ? buildReadingQuizSession(dynamicQuizPool, questionCount)
-      : buildMeaningQuizSession(dynamicQuizPool, questionCount);
+      ? buildReadingQuizSession(activePool, questionCount)
+      : buildMeaningQuizSession(activePool, questionCount);
 
-  return dynamicQuestions.length ? dynamicQuestions : createFallbackQuizSession(questionCount);
+  return dynamicQuestions.length
+    ? dynamicQuestions
+    : createFallbackQuizSession(questionCount, sessionMode, activeLevel);
 }
 
 let activeQuizQuestions = [];
@@ -2510,6 +2919,8 @@ const defaultState = {
   vocabLevel: "N5",
   vocabView: "card",
   vocabFilter: "all",
+  vocabPartFilter: "all",
+  vocabOptionsOpen: true,
   vocabPage: 1,
   starterDoneIds: [],
   basicPracticeTrack: "kana",
@@ -2526,16 +2937,24 @@ const defaultState = {
   grammarPracticeLevel: "N5",
   grammarPracticeIndexes: { N5: 0, N4: 0, N3: 0 },
   quizIndex: 0,
+  quizLevel: "N5",
   quizMode: "meaning",
   quizSessionSize: 20,
+  quizDuration: 15,
+  quizOptionsOpen: true,
   quizSessionFinished: false,
   quizMistakes: [],
   quizSessionMistakeIds: [],
   quizCorrectCount: 0,
   quizAnsweredCount: 0,
   readingLevel: "N5",
+  readingDuration: 45,
+  readingOptionsOpen: true,
   readingIndexes: { N5: 0, N4: 0, N3: 0 },
+  charactersTab: "library",
+  charactersLibraryTab: "hiragana",
   kanaSetupOpen: true,
+  writingSetupOpen: true,
   lastStudyDate: null,
   streak: 0
 };
@@ -2581,8 +3000,10 @@ function normalizeBasicPracticeState(inputState) {
 }
 
 let state = normalizeBasicPracticeState(loadState());
+state.quizLevel = getQuizLevel(state.quizLevel);
 state.quizMode = getQuizMode(state.quizMode);
 state.quizSessionSize = getQuizSessionSize(state.quizSessionSize);
+state.quizDuration = getQuizDuration(state.quizDuration);
 state.quizSessionFinished = false;
 state.quizIndex = 0;
 state.quizMistakes = Array.isArray(state.quizMistakes) ? state.quizMistakes : [];
@@ -2596,10 +3017,25 @@ state.vocabView = state.vocabView === "list" ? "list" : "card";
 state.vocabFilter = ["all", "review", "mastered"].includes(state.vocabFilter)
   ? state.vocabFilter
   : "all";
+state.vocabPartFilter =
+  normalizeQuizText(state.vocabPartFilter) === vocabPartAllValue
+    ? vocabPartAllValue
+    : normalizeQuizText(state.vocabPartFilter);
 state.vocabPage = Number.isFinite(Number(state.vocabPage)) ? Math.max(1, Number(state.vocabPage)) : 1;
+state.readingLevel = getReadingLevel(state.readingLevel);
+state.readingDuration = getReadingDuration(state.readingDuration);
+state.charactersTab = getCharactersTab(state.charactersTab ?? state.charactersPracticeTab);
+state.charactersLibraryTab = getCharactersLibraryTab(state.charactersLibraryTab);
 state.kanaSetupOpen = state.kanaSetupOpen !== false;
+state.writingSetupOpen = state.writingSetupOpen !== false;
+state.quizOptionsOpen = state.quizOptionsOpen !== false;
+state.vocabOptionsOpen = state.vocabOptionsOpen !== false;
+state.readingOptionsOpen = state.readingOptionsOpen !== false;
+refreshDynamicVocabContent("N5");
+refreshQuizContent(state.quizLevel);
 refreshVocabPageContent(state.vocabLevel);
-activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize);
+state.vocabPartFilter = getVocabPartFilter(state.vocabPartFilter);
+activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize, state.quizLevel);
 
 const quizSessions = {
   basic: {
@@ -2623,8 +3059,8 @@ const quizSessions = {
     streakElement: "grammar-streak"
   },
   reading: {
-    duration: 45,
-    timeLeft: 45,
+    duration: state.readingDuration,
+    timeLeft: state.readingDuration,
     correct: 0,
     streak: 0,
     timerId: null,
@@ -2633,8 +3069,8 @@ const quizSessions = {
     streakElement: "reading-streak"
   },
   quiz: {
-    duration: 15,
-    timeLeft: 15,
+    duration: state.quizDuration,
+    timeLeft: state.quizDuration,
     correct: 0,
     streak: 0,
     timerId: null,
@@ -2687,6 +3123,20 @@ function renderQuizSessionHud(key) {
   );
   correct.textContent = String(session.correct);
   streak.textContent = String(session.streak);
+}
+
+function setQuizSessionDuration(key, duration) {
+  const session = quizSessions[key];
+
+  if (!session) {
+    return;
+  }
+
+  const nextDuration = Math.max(0, Number(duration) || 0);
+  stopQuizSessionTimer(key);
+  session.duration = nextDuration;
+  session.timeLeft = nextDuration;
+  renderQuizSessionHud(key);
 }
 
 function resetQuizSessionTimer(key, onExpire) {
@@ -3005,45 +3455,117 @@ function getVocabFilter(filter = state.vocabFilter) {
   return Object.prototype.hasOwnProperty.call(vocabFilterLabels, filter) ? filter : "all";
 }
 
-function filterVocabItems(items, filter = state.vocabFilter) {
+function getAvailableVocabParts(items = vocabListItems) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  const counts = items.reduce((map, item) => {
+    const part = getVocabItemPart(item);
+    map.set(part, (map.get(part) || 0) + 1);
+    return map;
+  }, new Map());
+
+  return Array.from(counts.entries())
+    .sort((left, right) => {
+      if (right[1] !== left[1]) {
+        return right[1] - left[1];
+      }
+
+      return left[0].localeCompare(right[0], "ko");
+    })
+    .map(([value, count]) => ({ value, count }));
+}
+
+function getVocabPartFilter(part = state.vocabPartFilter, items = vocabListItems) {
+  const normalizedPart = normalizeQuizText(part);
+
+  if (!normalizedPart || normalizedPart === vocabPartAllValue) {
+    return vocabPartAllValue;
+  }
+
+  const exists = getAvailableVocabParts(items).some((item) => item.value === normalizedPart);
+  return exists ? normalizedPart : vocabPartAllValue;
+}
+
+function getVocabPartSummaryLabel(part = state.vocabPartFilter) {
+  const activePart = getVocabPartFilter(part);
+  return activePart === vocabPartAllValue ? "전체 품사" : activePart;
+}
+
+function getVocabOptionsSummaryText() {
+  return [
+    getVocabLevelLabel(),
+    state.vocabView === "list" ? "리스트" : "카드",
+    vocabFilterLabels[getVocabFilter()],
+    getVocabPartSummaryLabel()
+  ].join(" · ");
+}
+
+function getVocabEmptyMessage(filter = state.vocabFilter, part = state.vocabPartFilter) {
   const activeFilter = getVocabFilter(filter);
+  const activePart = getVocabPartFilter(part);
+  const partLabel = activePart === vocabPartAllValue ? "단어" : `${activePart} 단어`;
+
+  if (activeFilter === "review") {
+    return `다시 볼 ${partLabel}가 아직 없어요.`;
+  }
+
+  if (activeFilter === "mastered") {
+    return `익힌 ${partLabel}가 아직 없어요.`;
+  }
+
+  return `${partLabel}가 아직 없어요.`;
+}
+
+function filterVocabItems(items, filter = state.vocabFilter, partFilter = state.vocabPartFilter) {
+  const activeFilter = getVocabFilter(filter);
+  const activePartFilter = getVocabPartFilter(partFilter, items);
 
   if (!Array.isArray(items)) {
     return [];
   }
 
+  const filteredByPart =
+    activePartFilter === vocabPartAllValue
+      ? items
+      : items.filter((item) => getVocabItemPart(item) === activePartFilter);
+
   if (activeFilter === "review") {
-    return items.filter((item) => state.reviewIds.includes(item.id));
+    return filteredByPart.filter((item) => state.reviewIds.includes(item.id));
   }
 
   if (activeFilter === "mastered") {
-    return items.filter((item) => state.masteredIds.includes(item.id));
+    return filteredByPart.filter((item) => state.masteredIds.includes(item.id));
   }
 
-  return items;
+  return filteredByPart;
 }
 
 function getVocabFilterCounts() {
   return {
-    all: vocabListItems.length,
-    review: filterVocabItems(vocabListItems, "review").length,
-    mastered: filterVocabItems(vocabListItems, "mastered").length
+    all: filterVocabItems(vocabListItems, "all", state.vocabPartFilter).length,
+    review: filterVocabItems(vocabListItems, "review", state.vocabPartFilter).length,
+    mastered: filterVocabItems(vocabListItems, "mastered", state.vocabPartFilter).length
   };
 }
 
 function getVocabSummaryText(count) {
   const activeFilter = getVocabFilter();
   const activeLevel = getVocabLevel();
+  const levelLabel = getLevelSummaryLabel(activeLevel);
+  const activePart = getVocabPartFilter();
+  const partLabel = activePart === vocabPartAllValue ? "단어" : `${activePart} 단어`;
 
   if (activeFilter === "review") {
-    return `${activeLevel} 다시 볼 단어 ${count}개예요`;
+    return `${levelLabel} 다시 볼 ${partLabel} ${count}개예요`;
   }
 
   if (activeFilter === "mastered") {
-    return `${activeLevel} 익힌 단어 ${count}개 모였어요`;
+    return `${levelLabel} 익힌 ${partLabel} ${count}개 모였어요`;
   }
 
-  return `${activeLevel} 전체 단어 ${count}개예요`;
+  return `${levelLabel} ${activePart === vocabPartAllValue ? "단어" : partLabel} ${count}개예요`;
 }
 
 function setVocabLevel(level) {
@@ -3058,6 +3580,7 @@ function setVocabLevel(level) {
   state.flashcardRevealed = false;
   state.vocabPage = 1;
   refreshVocabPageContent(nextLevel);
+  state.vocabPartFilter = getVocabPartFilter(state.vocabPartFilter);
   saveState();
   renderVocabPage();
 }
@@ -3070,6 +3593,21 @@ function setVocabFilter(filter) {
   }
 
   state.vocabFilter = nextFilter;
+  state.flashcardIndex = 0;
+  state.flashcardRevealed = false;
+  state.vocabPage = 1;
+  saveState();
+  renderVocabPage();
+}
+
+function setVocabPartFilter(part) {
+  const nextPart = getVocabPartFilter(part);
+
+  if (state.vocabPartFilter === nextPart) {
+    return;
+  }
+
+  state.vocabPartFilter = nextPart;
   state.flashcardIndex = 0;
   state.flashcardRevealed = false;
   state.vocabPage = 1;
@@ -3114,27 +3652,38 @@ function clampVocabPage(items) {
 function renderFlashcard() {
   const activeFilter = getVocabFilter();
   const activeLevel = getVocabLevel();
+  const activePart = getVocabPartFilter();
+  const emptyWordLabel = activePart === vocabPartAllValue ? "아직 단어가 없어요" : `${activePart} 단어가 아직 없어요`;
+  const emptyReadingLabel = activePart === vocabPartAllValue ? "단어가 들어오면 같이 볼게요." : `${activePart} 단어가 들어오면 같이 볼게요.`;
+  const emptyMeaningLabel =
+    activePart === vocabPartAllValue ? "조금만 기다려주세요." : "다른 품사도 같이 골라볼 수 있어요.";
   const cards = getVisibleFlashcards();
   const emptyCardMap = {
     all: {
       level: activeLevel,
-      word: "아직 단어가 없어요",
-      reading: "단어가 들어오면 같이 볼게요.",
-      meaning: "조금만 기다려주세요.",
+      word: emptyWordLabel,
+      reading: emptyReadingLabel,
+      meaning: emptyMeaningLabel,
       id: "empty-all"
     },
     review: {
       level: "REVIEW",
-      word: "다시 볼 단어가 없어요",
+      word: activePart === vocabPartAllValue ? "다시 볼 단어가 없어요" : `다시 볼 ${activePart} 단어가 없어요`,
       reading: "잘하고 있어요.",
-      meaning: "헷갈린 단어가 생기면 여기 모아둘게요.",
+      meaning:
+        activePart === vocabPartAllValue
+          ? "헷갈린 단어가 생기면 여기 모아둘게요."
+          : "다른 품사를 고르면 다시 볼 단어를 더 볼 수 있어요.",
       id: "empty-review"
     },
     mastered: {
       level: "MASTERED",
-      word: "익힌 단어가 아직 없어요",
+      word: activePart === vocabPartAllValue ? "익힌 단어가 아직 없어요" : `익힌 ${activePart} 단어가 아직 없어요`,
       reading: "하나씩 쌓아봐요.",
-      meaning: "익혔어요!를 누른 단어가 여기 모여요.",
+      meaning:
+        activePart === vocabPartAllValue
+          ? "익혔어요!를 누른 단어가 여기 모여요."
+          : "선택한 품사에서 익힌 단어가 생기면 여기 모여요.",
       id: "empty-mastered"
     }
   };
@@ -3223,13 +3772,7 @@ function renderVocabList() {
   next.disabled = state.vocabPage >= pageCount;
 
   if (!pageItems.length) {
-    list.innerHTML = `<p class="vocab-list-empty">${
-      activeFilter === "review"
-        ? "다시 볼 단어가 아직 없어요."
-        : activeFilter === "mastered"
-          ? "익힌 단어가 아직 없어요."
-          : "아직 보여줄 단어가 없어요."
-    }</p>`;
+    list.innerHTML = `<p class="vocab-list-empty">${getVocabEmptyMessage(activeFilter)}</p>`;
     return;
   }
 
@@ -3265,12 +3808,20 @@ function renderVocabPage() {
   const cardView = document.getElementById("vocab-card-view");
   const listView = document.getElementById("vocab-list-view");
   const summary = document.getElementById("vocab-summary");
+  const optionsShell = document.getElementById("vocab-options-shell");
+  const optionsToggle = document.getElementById("vocab-options-toggle");
+  const optionsPanel = document.getElementById("vocab-options-panel");
+  const optionsSummary = document.getElementById("vocab-options-summary");
+  const partFilterGroup = document.getElementById("vocab-part-filter-group");
   const headingTitle = document.getElementById("vocab-heading-title");
   const headingCopy = document.getElementById("vocab-heading-copy");
   const items = getVisibleVocabList();
   const counts = getVocabFilterCounts();
   const activeLevel = getVocabLevel();
+  const activePart = getVocabPartFilter();
   const heading = vocabHeadingCopy[activeLevel] || vocabHeadingCopy.N5;
+  const availableParts = getAvailableVocabParts();
+  const isOptionsOpen = state.vocabOptionsOpen !== false;
 
   if (headingTitle) {
     headingTitle.textContent = heading.title;
@@ -3282,6 +3833,23 @@ function renderVocabPage() {
 
   if (summary) {
     summary.textContent = getVocabSummaryText(items.length);
+  }
+
+  if (optionsSummary) {
+    optionsSummary.textContent = getVocabOptionsSummaryText();
+  }
+
+  if (optionsShell) {
+    optionsShell.classList.toggle("is-open", isOptionsOpen);
+  }
+
+  if (optionsToggle) {
+    optionsToggle.setAttribute("aria-expanded", String(isOptionsOpen));
+  }
+
+  if (optionsPanel) {
+    optionsPanel.hidden = !isOptionsOpen;
+    optionsPanel.setAttribute("aria-hidden", String(!isOptionsOpen));
   }
 
   document.querySelectorAll("[data-vocab-level]").forEach((button) => {
@@ -3308,6 +3876,30 @@ function renderVocabPage() {
       count.textContent = String(counts[filter]);
     }
   });
+
+  if (partFilterGroup) {
+    partFilterGroup.innerHTML = "";
+
+    const partOptions = [{ value: vocabPartAllValue, count: vocabListItems.length }, ...availableParts];
+    partOptions.forEach((partOption) => {
+      const active = partOption.value === activePart;
+      const button = document.createElement("button");
+      const label = partOption.value === vocabPartAllValue ? "전체 품사" : partOption.value;
+      const count = document.createElement("strong");
+      const text = document.createElement("span");
+
+      button.type = "button";
+      button.className = `secondary-btn vocab-filter-button${active ? " is-active" : ""}`;
+      button.dataset.vocabPartFilter = partOption.value;
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+
+      text.textContent = label;
+      count.textContent = String(partOption.count);
+
+      button.append(text, count);
+      partFilterGroup.appendChild(button);
+    });
+  }
 
   if (cardView) {
     cardView.hidden = state.vocabView !== "card";
@@ -3570,7 +4162,7 @@ function nextGrammarPracticeSet() {
 
 function getQuizQuestion() {
   if (!activeQuizQuestions.length) {
-    activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize);
+    activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize, state.quizLevel);
   }
 
   return activeQuizQuestions[state.quizIndex] || activeQuizQuestions[0];
@@ -3582,6 +4174,38 @@ function getQuizAccuracyValue(correct = quizSessions.quiz.correct, total = activ
 
 function getQuizModeLabel(mode = state.quizMode) {
   return quizModeLabels[getQuizMode(mode)];
+}
+
+function getQuizOptionsSummaryText() {
+  return [
+    getQuizLevelLabel(),
+    getQuizModeLabel(),
+    `${getQuizSessionSize(state.quizSessionSize)}문제`,
+    getDurationLabel(getQuizDuration())
+  ].join(" · ");
+}
+
+function setQuizLevel(level) {
+  const nextLevel = getQuizLevel(level);
+
+  if (state.quizLevel === nextLevel) {
+    return;
+  }
+
+  state.quizLevel = nextLevel;
+  refreshQuizContent(nextLevel);
+  startNewQuizSession();
+}
+
+function setQuizDuration(duration) {
+  const nextDuration = getQuizDuration(duration);
+
+  if (state.quizDuration === nextDuration) {
+    return;
+  }
+
+  state.quizDuration = nextDuration;
+  startNewQuizSession();
 }
 
 function getQuizNextButton() {
@@ -3608,8 +4232,50 @@ function setQuizActionState({ nextLabel, nextDisabled = false, nextHidden = fals
 }
 
 function renderQuizControls() {
+  const optionsShell = document.getElementById("quiz-options-shell");
+  const optionsToggle = document.getElementById("quiz-options-toggle");
+  const optionsPanel = document.getElementById("quiz-options-panel");
+  const optionsSummary = document.getElementById("quiz-options-summary");
+  const headingTitle = document.getElementById("quiz-heading-title");
+  const headingCopy = document.getElementById("quiz-heading-copy");
+  const activeLevel = getQuizLevel();
+  const heading = quizHeadingCopy[activeLevel] || quizHeadingCopy.N5;
   const sizeButtons = document.querySelectorAll("[data-quiz-size]");
   const modeButtons = document.querySelectorAll("[data-quiz-mode]");
+  const levelButtons = document.querySelectorAll("[data-quiz-level]");
+  const timeButtons = document.querySelectorAll("[data-quiz-time]");
+  const isOptionsOpen = state.quizOptionsOpen !== false;
+
+  if (headingTitle) {
+    headingTitle.textContent = heading.title;
+  }
+
+  if (headingCopy) {
+    headingCopy.textContent = heading.description;
+  }
+
+  if (optionsSummary) {
+    optionsSummary.textContent = getQuizOptionsSummaryText();
+  }
+
+  if (optionsShell) {
+    optionsShell.classList.toggle("is-open", isOptionsOpen);
+  }
+
+  if (optionsToggle) {
+    optionsToggle.setAttribute("aria-expanded", String(isOptionsOpen));
+  }
+
+  if (optionsPanel) {
+    optionsPanel.hidden = !isOptionsOpen;
+    optionsPanel.setAttribute("aria-hidden", String(!isOptionsOpen));
+  }
+
+  levelButtons.forEach((button) => {
+    const active = button.dataset.quizLevel === activeLevel;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
 
   sizeButtons.forEach((button) => {
     const active = Number(button.dataset.quizSize) === state.quizSessionSize;
@@ -3619,6 +4285,12 @@ function renderQuizControls() {
 
   modeButtons.forEach((button) => {
     const active = button.dataset.quizMode === state.quizMode;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+
+  timeButtons.forEach((button) => {
+    const active = Number(button.dataset.quizTime) === getQuizDuration();
     button.classList.toggle("is-active", active);
     button.setAttribute("aria-pressed", String(active));
   });
@@ -3686,17 +4358,20 @@ function renderQuizMistakes() {
 function resetQuizSessionStats() {
   quizSessions.quiz.correct = 0;
   quizSessions.quiz.streak = 0;
-  quizSessions.quiz.timeLeft = quizSessions.quiz.duration;
+  setQuizSessionDuration("quiz", state.quizDuration);
   renderQuizSessionHud("quiz");
 }
 
 function startNewQuizSession() {
+  state.quizLevel = getQuizLevel(state.quizLevel);
   state.quizMode = getQuizMode(state.quizMode);
   state.quizSessionSize = getQuizSessionSize(state.quizSessionSize);
+  state.quizDuration = getQuizDuration(state.quizDuration);
   state.quizIndex = 0;
   state.quizSessionFinished = false;
   state.quizSessionMistakeIds = [];
-  activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize);
+  refreshQuizContent(state.quizLevel);
+  activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize, state.quizLevel);
   resetQuizSessionStats();
   saveState();
   renderQuiz();
@@ -3804,7 +4479,7 @@ function renderQuiz() {
 
   if (state.quizSessionFinished) {
     stopQuizSessionTimer("quiz");
-    level.textContent = `N5 · ${getQuizModeLabel()}`;
+    level.textContent = `${getQuizLevelLabel()} · ${getQuizModeLabel()}`;
     progress.textContent = `${activeQuizQuestions.length} / ${activeQuizQuestions.length}`;
     questionText.textContent = "이번 퀴즈 끝!";
     feedback.textContent = `${activeQuizQuestions.length}문제까지 잘 풀었어요.`;
@@ -3830,7 +4505,7 @@ function renderQuiz() {
     result.hidden = true;
   }
 
-  level.textContent = `N5 · ${getQuizModeLabel()}`;
+  level.textContent = `${getQuizLevelLabel()} · ${getQuizModeLabel()}`;
   progress.textContent = `${state.quizIndex + 1} / ${activeQuizQuestions.length}`;
   questionText.textContent = question.question;
   feedback.textContent = "";
@@ -3917,14 +4592,112 @@ function clearQuizMistakes() {
   renderQuizMistakes();
 }
 
+function getReadingOptionsSummaryText() {
+  return [getReadingLevel(), getDurationLabel(getReadingDuration())].join(" · ");
+}
+
+function setReadingLevel(level) {
+  const nextLevel = getReadingLevel(level);
+
+  if (state.readingLevel === nextLevel) {
+    return;
+  }
+
+  state.readingLevel = nextLevel;
+  saveState();
+  renderReadingPractice();
+}
+
+function setReadingDuration(duration) {
+  const nextDuration = getReadingDuration(duration);
+
+  if (state.readingDuration === nextDuration) {
+    return;
+  }
+
+  state.readingDuration = nextDuration;
+  saveState();
+  renderReadingPractice();
+}
+
+function renderReadingControls() {
+  const optionsShell = document.getElementById("reading-options-shell");
+  const optionsToggle = document.getElementById("reading-options-toggle");
+  const optionsPanel = document.getElementById("reading-options-panel");
+  const optionsSummary = document.getElementById("reading-options-summary");
+  const switcher = document.getElementById("reading-level-switcher");
+  const timeSwitcher = document.getElementById("reading-time-switcher");
+  const activeLevel = getReadingLevel(state.readingLevel);
+  const activeDuration = getReadingDuration(state.readingDuration);
+  const isOptionsOpen = state.readingOptionsOpen !== false;
+
+  if (optionsSummary) {
+    optionsSummary.textContent = getReadingOptionsSummaryText();
+  }
+
+  if (optionsShell) {
+    optionsShell.classList.toggle("is-open", isOptionsOpen);
+  }
+
+  if (optionsToggle) {
+    optionsToggle.setAttribute("aria-expanded", String(isOptionsOpen));
+  }
+
+  if (optionsPanel) {
+    optionsPanel.hidden = !isOptionsOpen;
+    optionsPanel.setAttribute("aria-hidden", String(!isOptionsOpen));
+  }
+
+  if (switcher) {
+    switcher.innerHTML = "";
+
+    Object.keys(readingSets).forEach((level) => {
+      const button = document.createElement("button");
+      const isActive = level === activeLevel;
+
+      button.type = "button";
+      button.className = `level-button${isActive ? " is-active" : ""}`;
+      button.textContent = level;
+      button.setAttribute("aria-pressed", String(isActive));
+      button.addEventListener("click", () => {
+        setReadingLevel(level);
+      });
+      switcher.appendChild(button);
+    });
+  }
+
+  if (timeSwitcher) {
+    timeSwitcher.innerHTML = "";
+
+    readingDurationOptions.forEach((duration) => {
+      const button = document.createElement("button");
+      const isActive = duration === activeDuration;
+
+      button.type = "button";
+      button.className = `level-button${isActive ? " is-active" : ""}`;
+      button.textContent = getDurationLabel(duration);
+      button.setAttribute("aria-pressed", String(isActive));
+      button.addEventListener("click", () => {
+        setReadingDuration(duration);
+      });
+      timeSwitcher.appendChild(button);
+    });
+  }
+}
+
 function getCurrentReadingSet() {
-  const sets = readingSets[state.readingLevel];
-  const currentIndex = state.readingIndexes[state.readingLevel] % sets.length;
+  const activeLevel = getReadingLevel(state.readingLevel);
+  const sets = readingSets[activeLevel] || [];
+
+  if (!sets.length) {
+    return null;
+  }
+
+  const currentIndex = state.readingIndexes[activeLevel] % sets.length;
   return sets[currentIndex];
 }
 
 function renderReadingPractice() {
-  const switcher = document.getElementById("reading-level-switcher");
   const readingCard = document.querySelector(".reading-card");
   const passage = document.getElementById("reading-passage");
   const optionsContainer = document.getElementById("reading-options");
@@ -3936,11 +4709,13 @@ function renderReadingPractice() {
   const question = document.getElementById("reading-question");
   const feedback = document.getElementById("reading-feedback");
   const explanation = document.getElementById("reading-explanation");
+  state.readingLevel = getReadingLevel(state.readingLevel);
+  state.readingDuration = getReadingDuration(state.readingDuration);
+  renderReadingControls();
   const current = getCurrentReadingSet();
-  const sets = readingSets[state.readingLevel];
+  const sets = readingSets[state.readingLevel] || [];
 
   if (
-    !switcher ||
     !readingCard ||
     !passage ||
     !optionsContainer ||
@@ -3951,25 +4726,12 @@ function renderReadingPractice() {
     !korean ||
     !question ||
     !feedback ||
-    !explanation
+    !explanation ||
+    !current ||
+    !sets.length
   ) {
     return;
   }
-
-  switcher.innerHTML = "";
-
-  Object.keys(readingSets).forEach((level) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `level-button${state.readingLevel === level ? " is-active" : ""}`;
-    button.textContent = level;
-    button.addEventListener("click", () => {
-      state.readingLevel = level;
-      saveState();
-      renderReadingPractice();
-    });
-    switcher.appendChild(button);
-  });
 
   level.textContent = state.readingLevel;
   source.textContent = current.source;
@@ -3995,6 +4757,7 @@ function renderReadingPractice() {
     optionsContainer.appendChild(button);
   });
 
+  setQuizSessionDuration("reading", state.readingDuration);
   resetQuizSessionTimer("reading", handleReadingTimeout);
 }
 
@@ -4057,8 +4820,15 @@ function handleReadingTimeout() {
 }
 
 function nextReadingSet() {
-  const sets = readingSets[state.readingLevel];
-  state.readingIndexes[state.readingLevel] = (state.readingIndexes[state.readingLevel] + 1) % sets.length;
+  const activeLevel = getReadingLevel(state.readingLevel);
+  const sets = readingSets[activeLevel] || [];
+
+  if (!sets.length) {
+    return;
+  }
+
+  state.readingLevel = activeLevel;
+  state.readingIndexes[activeLevel] = (state.readingIndexes[activeLevel] + 1) % sets.length;
   saveState();
   renderReadingPractice();
 }
@@ -4092,16 +4862,22 @@ function attachEventListeners() {
   const flashcardNext = document.getElementById("flashcard-next");
   const flashcardAgain = document.getElementById("flashcard-again");
   const flashcardMastered = document.getElementById("flashcard-mastered");
+  const vocabOptionsToggle = document.getElementById("vocab-options-toggle");
   const vocabLevelButtons = document.querySelectorAll("[data-vocab-level]");
   const vocabViewButtons = document.querySelectorAll("[data-vocab-view]");
   const vocabFilterButtons = document.querySelectorAll("[data-vocab-filter]");
+  const vocabPartFilterGroup = document.getElementById("vocab-part-filter-group");
   const vocabPagePrev = document.getElementById("vocab-page-prev");
   const vocabPageNext = document.getElementById("vocab-page-next");
   const quizNext = document.getElementById("quiz-next");
   const quizRestart = document.getElementById("quiz-restart");
   const quizClearMistakes = document.getElementById("quiz-clear-mistakes");
+  const quizOptionsToggle = document.getElementById("quiz-options-toggle");
+  const quizLevelButtons = document.querySelectorAll("[data-quiz-level]");
   const quizSizeButtons = document.querySelectorAll("[data-quiz-size]");
   const quizModeButtons = document.querySelectorAll("[data-quiz-mode]");
+  const quizTimeButtons = document.querySelectorAll("[data-quiz-time]");
+  const readingOptionsToggle = document.getElementById("reading-options-toggle");
   const readingNext = document.getElementById("reading-next");
   const basicPracticeNext = document.getElementById("basic-practice-next");
   const grammarPracticeNext = document.getElementById("grammar-practice-next");
@@ -4112,10 +4888,15 @@ function attachEventListeners() {
   const kanaCountButtons = document.querySelectorAll("[data-kana-count]");
   const kanaTimeButtons = document.querySelectorAll("[data-kana-time]");
   const kanaSetupStart = document.getElementById("kana-setup-start");
+  const charactersTabButtons = document.querySelectorAll("[data-characters-tab]");
+  const charactersLibraryTabButtons = document.querySelectorAll("[data-characters-library-tab]");
+  const writingSetupToggle = document.getElementById("writing-setup-toggle");
   const writingModeButtons = document.querySelectorAll("[data-writing-mode]");
+  const writingOrderButtons = document.querySelectorAll("[data-writing-order]");
   const writingReplay = document.getElementById("writing-practice-replay");
   const writingGuideToggle = document.getElementById("writing-guide-toggle");
   const writingRevealToggle = document.getElementById("writing-practice-reveal");
+  const writingPrev = document.getElementById("writing-practice-prev");
   const writingClear = document.getElementById("writing-practice-clear");
   const writingScore = document.getElementById("writing-practice-score-btn");
   const writingNext = document.getElementById("writing-practice-next");
@@ -4141,6 +4922,13 @@ function attachEventListeners() {
       setVocabLevel(button.dataset.vocabLevel);
     });
   });
+  if (vocabOptionsToggle) {
+    vocabOptionsToggle.addEventListener("click", () => {
+      state.vocabOptionsOpen = !state.vocabOptionsOpen;
+      saveState();
+      renderVocabPage();
+    });
+  }
   vocabViewButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const nextView = button.dataset.vocabView === "list" ? "list" : "card";
@@ -4159,6 +4947,17 @@ function attachEventListeners() {
       setVocabFilter(button.dataset.vocabFilter);
     });
   });
+  if (vocabPartFilterGroup) {
+    vocabPartFilterGroup.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-vocab-part-filter]");
+
+      if (!button) {
+        return;
+      }
+
+      setVocabPartFilter(button.dataset.vocabPartFilter);
+    });
+  }
   if (vocabPagePrev) {
     vocabPagePrev.addEventListener("click", () => {
       state.vocabPage = Math.max(1, state.vocabPage - 1);
@@ -4182,6 +4981,18 @@ function attachEventListeners() {
   if (quizClearMistakes) {
     quizClearMistakes.addEventListener("click", clearQuizMistakes);
   }
+  if (quizOptionsToggle) {
+    quizOptionsToggle.addEventListener("click", () => {
+      state.quizOptionsOpen = !state.quizOptionsOpen;
+      saveState();
+      renderQuizControls();
+    });
+  }
+  quizLevelButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setQuizLevel(button.dataset.quizLevel);
+    });
+  });
   quizSizeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const nextSize = getQuizSessionSize(button.dataset.quizSize);
@@ -4206,6 +5017,18 @@ function attachEventListeners() {
       startNewQuizSession();
     });
   });
+  quizTimeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setQuizDuration(button.dataset.quizTime);
+    });
+  });
+  if (readingOptionsToggle) {
+    readingOptionsToggle.addEventListener("click", () => {
+      state.readingOptionsOpen = !state.readingOptionsOpen;
+      saveState();
+      renderReadingControls();
+    });
+  }
   if (readingNext) {
     readingNext.addEventListener("click", nextReadingSet);
   }
@@ -4248,6 +5071,32 @@ function attachEventListeners() {
       startKanaQuizSession(kanaQuizSettings.mode);
     });
   }
+  charactersTabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextTab = getCharactersTab(button.dataset.charactersTab);
+
+      if (state.charactersTab === nextTab) {
+        return;
+      }
+
+      state.charactersTab = nextTab;
+      saveState();
+      renderCharactersPageLayout();
+    });
+  });
+  charactersLibraryTabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextTab = getCharactersLibraryTab(button.dataset.charactersLibraryTab);
+
+      if (state.charactersLibraryTab === nextTab) {
+        return;
+      }
+
+      state.charactersLibraryTab = nextTab;
+      saveState();
+      renderCharactersPageLayout();
+    });
+  });
   kanaQuizCloseButtons.forEach((button) => {
     button.addEventListener("click", closeKanaQuizSheet);
   });
@@ -4262,6 +5111,24 @@ function attachEventListeners() {
       startWritingPracticeSession(nextMode);
     });
   });
+  if (writingSetupToggle) {
+    writingSetupToggle.addEventListener("click", () => {
+      state.writingSetupOpen = !state.writingSetupOpen;
+      saveState();
+      renderWritingPracticeSetup();
+    });
+  }
+  writingOrderButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextOrder = getWritingPracticeOrder(button.dataset.writingOrder);
+
+      if (nextOrder === writingPracticeSettings.order) {
+        return;
+      }
+
+      startWritingPracticeSession(writingPracticeSettings.mode, nextOrder);
+    });
+  });
   if (writingReplay) {
     writingReplay.addEventListener("click", replayWritingStrokeAnimation);
   }
@@ -4270,6 +5137,9 @@ function attachEventListeners() {
   }
   if (writingRevealToggle) {
     writingRevealToggle.addEventListener("click", toggleWritingAnswer);
+  }
+  if (writingPrev) {
+    writingPrev.addEventListener("click", previousWritingPracticeItem);
   }
   if (writingClear) {
     writingClear.addEventListener("click", () => {
@@ -4308,6 +5178,7 @@ function renderAll() {
   renderKanaQuizSetup();
   renderKanaLibrary();
   renderWritingPractice();
+  renderCharactersPageLayout();
   renderBasicPractice();
   renderKanaQuizSheet();
   renderQuizSessionHud("kana");
@@ -4318,8 +5189,9 @@ function renderAll() {
   renderStats();
 }
 
-refreshDynamicVocabContent();
-activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize);
+refreshDynamicVocabContent("N5");
+refreshQuizContent(state.quizLevel);
+activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize, state.quizLevel);
 attachEventListeners();
 renderAll();
 

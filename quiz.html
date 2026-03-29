@@ -32,10 +32,46 @@
     </header>
     <main>
       <section id="mock-test" class="content-section">
-        <div class="section-heading"><span>MOCK QUIZ</span><h2>N5 단어 퀴즈 한 판 해볼까요?</h2><p class="section-copy">문제 수랑 모드를 고르고 바로 시작해보세요.</p></div>
-        <div class="quiz-toolbar">
-          <div class="quiz-toggle-panel"><span>몇 문제 풀까요?</span><div class="quiz-toggle-group"><button class="level-button" type="button" data-quiz-size="10" aria-pressed="false">10문제</button><button class="level-button" type="button" data-quiz-size="20" aria-pressed="true">20문제</button></div></div>
-          <div class="quiz-toggle-panel"><span>어떤 방식으로 해볼까요?</span><div class="quiz-toggle-group"><button class="level-button" type="button" data-quiz-mode="meaning" aria-pressed="true">뜻 맞히기</button><button class="level-button" type="button" data-quiz-mode="reading" aria-pressed="false">읽기 맞히기</button></div></div>
+        <div class="section-heading"><span>MOCK QUIZ</span><h2 id="quiz-heading-title">N5 단어 퀴즈 한 판 해볼까요?</h2><p class="section-copy" id="quiz-heading-copy">문제 수랑 모드를 고르고 바로 시작해보세요.</p></div>
+        <div class="study-options-shell" id="quiz-options-shell">
+          <button class="study-options-toggle" id="quiz-options-toggle" type="button" aria-expanded="true" aria-controls="quiz-options-panel">
+            <div class="study-options-toggle-copy"><strong>퀴즈 옵션</strong><p class="study-options-toggle-summary" id="quiz-options-summary">N5 · 뜻 맞히기 · 20문제 · 15초</p></div>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="study-options-panel" id="quiz-options-panel">
+            <div class="study-options-group">
+              <span>어느 난이도로 풀까요?</span>
+              <div class="quiz-toggle-group" role="tablist" aria-label="퀴즈 레벨 고르기">
+                <button class="level-button is-active" type="button" data-quiz-level="N5" aria-pressed="true">N5</button>
+                <button class="level-button" type="button" data-quiz-level="N4" aria-pressed="false">N4</button>
+                <button class="level-button" type="button" data-quiz-level="N3" aria-pressed="false">N3</button>
+                <button class="level-button" type="button" data-quiz-level="all" aria-pressed="false">전체</button>
+              </div>
+            </div>
+            <div class="study-options-group">
+              <span>몇 문제 풀까요?</span>
+              <div class="quiz-toggle-group">
+                <button class="level-button" type="button" data-quiz-size="10" aria-pressed="false">10문제</button>
+                <button class="level-button" type="button" data-quiz-size="20" aria-pressed="true">20문제</button>
+              </div>
+            </div>
+            <div class="study-options-group">
+              <span>어떤 방식으로 해볼까요?</span>
+              <div class="quiz-toggle-group">
+                <button class="level-button" type="button" data-quiz-mode="meaning" aria-pressed="true">뜻 맞히기</button>
+                <button class="level-button" type="button" data-quiz-mode="reading" aria-pressed="false">읽기 맞히기</button>
+              </div>
+            </div>
+            <div class="study-options-group">
+              <span>시간은 어떻게 할까요?</span>
+              <div class="quiz-toggle-group">
+                <button class="level-button" type="button" data-quiz-time="0" aria-pressed="false">천천히</button>
+                <button class="level-button" type="button" data-quiz-time="10" aria-pressed="false">10초</button>
+                <button class="level-button is-active" type="button" data-quiz-time="15" aria-pressed="true">15초</button>
+                <button class="level-button" type="button" data-quiz-time="20" aria-pressed="false">20초</button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="quiz-card">
           <div class="quiz-meta"><span id="quiz-level">N5</span></div>
