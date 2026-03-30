@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -26,123 +26,31 @@
 <body>
   <div class="page-shell">
     <header class="topbar">
-      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/images/favicon.png" alt=""></span><div><p class="brand-name">Japanote</p><p class="brand-sub">오늘도 가볍게 일본어, 같이 해봐요</p></div></a>
-      <nav class="nav-links"><a href="index.html">홈</a><a href="starter.html">첫걸음</a><a href="characters.html">문자</a><a href="kanji.html">한자</a><a href="vocab.html">단어</a><a href="grammar.html">문법</a><a href="reading.html">독해</a><a href="match.html" aria-current="page">매칭</a></nav>
+      <a class="brand" href="index.html">
+        <span class="brand-mark" aria-hidden="true"><img src="assets/images/favicon.png" alt=""></span>
+        <div>
+          <p class="brand-name">Japanote</p>
+          <p class="brand-sub">오늘도 가볍게 일본어, 같이 해봐요</p>
+        </div>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">홈</a>
+        <a href="starter.html">첫걸음</a>
+        <a href="characters.html">문자</a>
+        <a href="kanji.html">한자</a>
+        <a href="vocab.html">단어</a>
+        <a href="grammar.html">문법</a>
+        <a href="reading.html">독해</a>
+        <a href="match.html" aria-current="page">매칭</a>
+      </nav>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="테마 바꿔보기" title="테마 바꿔보기"></button>
     </header>
     <main>
       <section class="content-section">
-        <div class="match-shell">
-          <aside class="match-sidebar">
-            <div class="match-sidebar-head"><span class="eyebrow">ROUND HUD</span></div>
-            <div class="study-options-shell match-options-shell" id="match-options-shell">
-              <button class="study-options-toggle" id="match-options-toggle" type="button" aria-expanded="true" aria-controls="match-options-panel">
-                <div class="study-options-toggle-copy"><strong>매칭 설정</strong><p class="study-options-toggle-summary" id="match-options-summary">5문제 · 15초</p></div>
-                <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-              </button>
-              <div class="study-options-panel study-options-panel-wide" id="match-options-panel">
-                <div class="study-options-group">
-                  <span>총 몇 문제로 할까요?</span>
-                  <div class="match-toggle-group" role="group" aria-label="매칭 문제 수 고르기">
-                    <button class="level-button is-active" type="button" data-match-count="5" aria-pressed="true">5문제</button>
-                    <button class="level-button" type="button" data-match-count="10" aria-pressed="false">10문제</button>
-                    <button class="level-button" type="button" data-match-count="15" aria-pressed="false">15문제</button>
-                    <button class="level-button" type="button" data-match-count="20" aria-pressed="false">20문제</button>
-                  </div>
-                </div>
-                <div class="study-options-group">
-                  <span>시간은 어떻게 할까요?</span>
-                  <div class="match-toggle-group" role="group" aria-label="매칭 시간 고르기">
-                    <button class="level-button" type="button" data-match-time="0" aria-pressed="false">천천히</button>
-                    <button class="level-button" type="button" data-match-time="10" aria-pressed="false">10초</button>
-                    <button class="level-button is-active" type="button" data-match-time="15" aria-pressed="true">15초</button>
-                    <button class="level-button" type="button" data-match-time="20" aria-pressed="false">20초</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="vocab-select-toolbar vocab-select-toolbar-sidebar" aria-label="매칭 필터">
-              <label class="vocab-select-field" for="match-level-select">
-                <span>난이도</span>
-                <div class="vocab-select-wrap">
-                  <select class="vocab-select" id="match-level-select" aria-label="매칭 난이도 고르기">
-                    <option value="all">전체</option>
-                    <option value="N5">N5</option>
-                    <option value="N4">N4</option>
-                    <option value="N3">N3</option>
-                  </select>
-                  <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-                </div>
-              </label>
-              <label class="vocab-select-field" for="match-filter-select">
-                <span>묶음</span>
-                <div class="vocab-select-wrap">
-                  <select class="vocab-select" id="match-filter-select" aria-label="매칭 묶음 고르기">
-                    <option value="all">전체</option>
-                    <option value="review">다시 보기</option>
-                    <option value="mastered">익힌 단어</option>
-                  </select>
-                  <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-                </div>
-              </label>
-              <label class="vocab-select-field" for="match-part-select">
-                <span>품사</span>
-                <div class="vocab-select-wrap">
-                  <select class="vocab-select" id="match-part-select" aria-label="매칭 품사 고르기">
-                    <option value="all">전체 품사</option>
-                  </select>
-                  <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-                </div>
-              </label>
-            </div>
-            <div class="match-stats-grid">
-              <div class="match-stat-card"><span>푼 문제</span><strong id="match-progress">0 / 5</strong></div>
-              <div class="match-stat-card"><span>남은 시간</span><strong id="match-timer">15초</strong></div>
-            </div>
-            <div class="match-actions">
-              <button class="primary-btn button-with-icon" id="match-new-round" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span id="match-new-round-label">시작하기</span></button>
-            </div>
-          </aside>
-          <div class="match-board" id="match-board" hidden>
-            <div class="match-play-view" id="match-play-view">
-              <div class="match-feedback" id="match-feedback" hidden></div>
-              <div class="match-columns">
-                <section class="match-column"><div class="match-column-head"><h3>읽기 카드</h3></div><div class="match-card-list" id="match-left-list"></div></section>
-                <section class="match-column"><div class="match-column-head"><h3>뜻 카드</h3></div><div class="match-card-list" id="match-right-list"></div></section>
-              </div>
-            </div>
-            <div class="match-result-view" id="match-result-view" hidden>
-              <p class="match-result-title">결과보기</p>
-              <div class="match-result-grid">
-                <article class="match-result-stat"><span>전체</span><strong id="match-result-total">0</strong></article>
-                <article class="match-result-stat"><span>정답</span><strong id="match-result-correct">0</strong></article>
-                <article class="match-result-stat"><span>오답</span><strong id="match-result-wrong">0</strong></article>
-              </div>
-              <div class="match-result-filters">
-                <label class="match-result-filter-field" for="match-result-filter">
-                  <div class="match-result-filter-select-wrap">
-                    <select class="match-result-filter-select" id="match-result-filter" aria-label="매칭 결과 필터">
-                      <option value="all">전체</option>
-                      <option value="correct">정답</option>
-                      <option value="wrong">오답</option>
-                    </select>
-                    <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-                  </div>
-                </label>
-                <button class="secondary-btn button-with-icon match-result-bulk-btn" id="match-result-bulk-action" type="button">
-                  <span class="material-symbols-rounded" aria-hidden="true">bookmark_add</span>
-                  <span id="match-result-bulk-label">전체 저장</span>
-                </button>
-              </div>
-              <p class="match-result-empty" id="match-result-empty" hidden>보여줄 결과가 아직 없어요.</p>
-              <div class="match-result-list" id="match-result-list"></div>
-            </div>
-          </div>
-        </div>
+        <div data-shared-quiz-layout="match-round"></div>
       </section>
     </main>
   </div>
-  <script src="assets/js/theme.js"></script><script src="assets/js/jlpt-vocab-data.js"></script><script src="assets/js/vocab-registry.js"></script><script src="assets/js/match-game.js"></script>
+  <script src="assets/js/theme.js"></script><script src="assets/js/jlpt-vocab-data.js"></script><script src="assets/js/vocab-registry.js"></script><script src="assets/js/shared-quiz-layouts.js"></script><script src="assets/js/match-game.js"></script>
 </body>
 </html>
-

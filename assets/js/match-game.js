@@ -473,6 +473,7 @@ function setMatchFeedback(message, tone = "") {
 function renderMatchActionCopy() {
   const newRound = document.getElementById("match-new-round");
   const newRoundLabel = document.getElementById("match-new-round-label");
+  const newRoundIcon = newRound?.querySelector(".material-symbols-rounded");
   const isResetState = matchState.hasStarted || matchState.showResults;
 
   if (newRound) {
@@ -482,6 +483,10 @@ function renderMatchActionCopy() {
 
   if (newRoundLabel) {
     newRoundLabel.textContent = isResetState ? "다시하기" : "시작하기";
+  }
+
+  if (newRoundIcon) {
+    newRoundIcon.textContent = isResetState ? "autorenew" : "play_arrow";
   }
 }
 
@@ -792,15 +797,25 @@ function renderMatchResults() {
 
 function renderMatchScreen() {
   const board = document.getElementById("match-board");
+  const empty = document.getElementById("match-empty");
   const playView = document.getElementById("match-play-view");
   const resultView = document.getElementById("match-result-view");
   const feedback = document.getElementById("match-feedback");
   const hasVisibleFeedback = Boolean(feedback?.textContent);
   const shouldShowPlayView = !matchState.showResults && (matchState.hasStarted || hasVisibleFeedback);
-  const shouldShowBoard = shouldShowPlayView || matchState.showResults;
+  const shouldShowEmpty = !matchState.hasStarted && !matchState.showResults && !hasVisibleFeedback;
+  const shouldShowBoard = shouldShowPlayView || matchState.showResults || shouldShowEmpty;
 
   if (board) {
     board.hidden = !shouldShowBoard;
+  }
+
+  if (empty) {
+    empty.hidden = !shouldShowEmpty;
+
+    if (shouldShowEmpty) {
+      empty.textContent = "설정을 마쳤다면 시작하기를 눌러주세요.";
+    }
   }
 
   if (playView) {

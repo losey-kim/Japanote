@@ -2347,9 +2347,17 @@ body.is-kana-quiz-sheet-open .page-shell {
 
 .vocab-select-toolbar {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
+}
+
+#vocab-options-panel .study-options-group:first-child {
+  display: none;
+}
+
+#vocab-options-panel .study-options-group:last-child {
+  grid-column: 1 / -1;
 }
 
 .vocab-select-field {
@@ -2358,12 +2366,22 @@ body.is-kana-quiz-sheet-open .page-shell {
   min-width: 0;
 }
 
+.vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select-field {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
 .vocab-select-field > span {
   font-size: 0.86rem;
   font-weight: 700;
   color: var(--muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select-field > span {
+  white-space: nowrap;
 }
 
 .vocab-select-wrap {
@@ -2734,6 +2752,11 @@ body.is-kana-quiz-sheet-open .page-shell {
   gap: 12px;
 }
 
+.grammar-practice-board,
+.reading-practice-board {
+  align-content: start;
+}
+
 .reading-card {
   margin-top: 18px;
   padding: 28px;
@@ -2743,6 +2766,10 @@ body.is-kana-quiz-sheet-open .page-shell {
     linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 247, 240, 0.88)),
     linear-gradient(135deg, rgba(93, 133, 207, 0.08), rgba(222, 107, 72, 0.08));
   box-shadow: var(--shadow);
+}
+
+.reading-practice-board .reading-card {
+  margin-top: 0;
 }
 
 .reading-meta {
@@ -4579,6 +4606,31 @@ body::after {
 
   .vocab-select-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select-field {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select-field > span {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+  }
+
+  .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select {
+    padding: 12px 34px 12px 12px;
+    font-size: 0.92rem;
+  }
+
+  .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select-wrap .material-symbols-rounded {
+    right: 10px;
+    font-size: 1rem;
   }
 
   .vocab-filter-toggle,
