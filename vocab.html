@@ -124,18 +124,36 @@
                 <div class="match-sidebar-head"><span class="eyebrow">QUIZ HUD</span><h3>단어 퀴즈</h3></div>
                 <div class="study-options-shell match-options-shell" id="vocab-quiz-options-shell">
                   <button class="study-options-toggle" id="vocab-quiz-options-toggle" type="button" aria-expanded="true" aria-controls="vocab-quiz-options-panel">
-                    <div class="study-options-toggle-copy"><strong>퀴즈 설정</strong><p class="study-options-toggle-summary" id="vocab-quiz-options-summary">뜻 맞히기 · 10문제 · 15초</p></div>
+                    <div class="study-options-toggle-copy"><strong>퀴즈 설정</strong><p class="study-options-toggle-summary" id="vocab-quiz-options-summary">히라가나·가타카나 → 뜻 · 10문제 · 15초</p></div>
                     <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
                   </button>
                   <div class="study-options-panel study-options-panel-wide" id="vocab-quiz-options-panel">
                     <div class="study-options-group">
-                      <span>어떤 문제로 풀까요?</span>
-                      <div class="match-toggle-group" role="group" aria-label="단어 퀴즈 방식 고르기">
-                        <button class="level-button is-active" type="button" data-vocab-quiz-mode="meaning" aria-pressed="true">뜻 맞히기</button>
-                        <button class="level-button" type="button" data-vocab-quiz-mode="word" aria-pressed="false">단어 맞히기</button>
-                      </div>
+                      <label class="vocab-select-field" for="vocab-quiz-question-field">
+                        <span>문제 영역</span>
+                        <div class="vocab-select-wrap">
+                          <select class="vocab-select" id="vocab-quiz-question-field" aria-label="단어 퀴즈 문제 영역 고르기">
+                            <option value="reading">히라가나·가타카나</option>
+                            <option value="word">한자</option>
+                            <option value="meaning">뜻</option>
+                          </select>
+                          <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+                        </div>
+                      </label>
                     </div>
                     <div class="study-options-group">
+                      <label class="vocab-select-field" for="vocab-quiz-option-field">
+                        <span>보기 영역</span>
+                        <div class="vocab-select-wrap">
+                          <select class="vocab-select" id="vocab-quiz-option-field" aria-label="단어 퀴즈 보기 영역 고르기">
+                            <option value="reading">히라가나·가타카나</option>
+                            <option value="word">한자</option>
+                            <option value="meaning">뜻</option>
+                          </select>
+                          <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+                        </div>
+                      </label>
+                    </div>                    <div class="study-options-group">
                       <span>총 몇 문제로 할까요?</span>
                       <div class="match-toggle-group" role="group" aria-label="단어 퀴즈 문제 수 고르기">
                         <button class="level-button" type="button" data-vocab-quiz-count="5" aria-pressed="false">5문제</button>
