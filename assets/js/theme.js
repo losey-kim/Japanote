@@ -1,8 +1,17 @@
 const themeStorageKey = "japanote-theme";
 const themeModes = ["system", "light", "dark"];
 
+function getThemeSyncStore() {
+  if (globalThis.japanoteSync && typeof globalThis.japanoteSync.readValue === "function") {
+    return globalThis.japanoteSync;
+  }
+
+  return null;
+}
+
 function getSavedThemeMode() {
-  const saved = localStorage.getItem(themeStorageKey);
+  const syncStore = getThemeSyncStore();
+  const saved = syncStore ? syncStore.readValue(themeStorageKey, "system") : localStorage.getItem(themeStorageKey);
   return themeModes.includes(saved) ? saved : "system";
 }
 
@@ -45,7 +54,14 @@ function cycleThemeMode() {
   const currentIndex = themeModes.indexOf(current);
   const nextMode = themeModes[(currentIndex + 1) % themeModes.length];
 
-  localStorage.setItem(themeStorageKey, nextMode);
+  const syncStore = getThemeSyncStore();
+
+  if (syncStore) {
+    syncStore.writeValue(themeStorageKey, nextMode);
+  } else {
+    localStorage.setItem(themeStorageKey, nextMode);
+  }
+
   applyThemeMode(nextMode);
 }
 
@@ -74,6 +90,7 @@ function initializeMobileNav() {
   document.querySelectorAll(".topbar").forEach((header, index) => {
     const nav = header.querySelector(".nav-links");
     const themeButton = header.querySelector("[data-theme-toggle]");
+    const authRoot = header.querySelector("[data-auth-root]");
 
     if (!nav || !themeButton) {
       return;
@@ -88,6 +105,10 @@ function initializeMobileNav() {
 
     if (!actions.contains(themeButton)) {
       actions.appendChild(themeButton);
+    }
+
+    if (authRoot && !actions.contains(authRoot)) {
+      actions.insertBefore(authRoot, themeButton);
     }
 
     let navToggle = actions.querySelector("[data-nav-toggle]");
@@ -130,6 +151,14 @@ function initializeTheme() {
 
   document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
     button.addEventListener("click", cycleThemeMode);
+  });
+
+  window.addEventListener("japanote:storage-updated", (event) => {
+    if (event.detail?.key !== themeStorageKey) {
+      return;
+    }
+
+    applyThemeMode(event.detail.value);
   });
 }
 

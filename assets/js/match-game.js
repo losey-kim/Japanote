@@ -1,5 +1,14 @@
 const matchStorageKey = "japanote-match-state";
 const studyStateStorageKey = "jlpt-compass-state";
+
+function getMatchSyncStore() {
+  if (globalThis.japanoteSync && typeof globalThis.japanoteSync.readValue === "function") {
+    return globalThis.japanoteSync;
+  }
+
+  return null;
+}
+
 const matchSourceLevels = ["N5", "N4", "N3"];
 const matchLevelOptions = [...matchSourceLevels, "all"];
 const matchDurationOptions = [0, 10, 15, 20];
@@ -40,6 +49,19 @@ const matchFilterLabels = {
 };
 
 function loadMatchPreferences() {
+  const syncStore = getMatchSyncStore();
+
+  if (syncStore) {
+    const saved = syncStore.readValue(matchStorageKey, null);
+
+    if (saved && typeof saved === "object") {
+      return {
+        ...defaultMatchPreferences,
+        ...saved
+      };
+    }
+  }
+
   try {
     const saved = JSON.parse(localStorage.getItem(matchStorageKey) || "{}");
     return {
@@ -54,15 +76,40 @@ function loadMatchPreferences() {
 const matchPreferences = loadMatchPreferences();
 
 function saveMatchPreferences() {
+  const syncStore = getMatchSyncStore();
+
+  if (syncStore) {
+    syncStore.writeValue(matchStorageKey, matchPreferences);
+    return;
+  }
+
   localStorage.setItem(matchStorageKey, JSON.stringify(matchPreferences));
 }
 
 function loadSharedStudyState() {
+  const syncStore = getMatchSyncStore();
+
+  if (syncStore) {
+    const saved = syncStore.readValue(studyStateStorageKey, null);
+    return saved && typeof saved === "object" ? saved : {};
+  }
+
   try {
     return JSON.parse(localStorage.getItem(studyStateStorageKey) || "{}");
   } catch (error) {
     return {};
   }
+}
+
+function saveSharedStudyState(studyState) {
+  const syncStore = getMatchSyncStore();
+
+  if (syncStore) {
+    syncStore.writeValue(studyStateStorageKey, studyState);
+    return;
+  }
+
+  localStorage.setItem(studyStateStorageKey, JSON.stringify(studyState));
 }
 
 function saveWordToMemorizationList(id) {
@@ -76,7 +123,7 @@ function saveWordToMemorizationList(id) {
 
   studyState.reviewIds = Array.from(new Set([...reviewIds, id]));
   studyState.masteredIds = masteredIds.filter((itemId) => itemId !== id);
-  localStorage.setItem(studyStateStorageKey, JSON.stringify(studyState));
+  saveSharedStudyState(studyState);
 }
 
 function removeWordFromMemorizationList(id) {
@@ -88,7 +135,7 @@ function removeWordFromMemorizationList(id) {
   const reviewIds = Array.isArray(studyState.reviewIds) ? studyState.reviewIds : [];
 
   studyState.reviewIds = reviewIds.filter((itemId) => itemId !== id);
-  localStorage.setItem(studyStateStorageKey, JSON.stringify(studyState));
+  saveSharedStudyState(studyState);
 }
 
 function isWordSavedToMemorizationList(id) {
@@ -1319,4 +1366,25 @@ function attachMatchEventListeners() {
 
 renderMatchSettings();
 attachMatchEventListeners();
+window.addEventListener("japanote:storage-updated", (event) => {
+  if (event.detail?.source !== "remote") {
+    return;
+  }
+
+  if (event.detail.key === matchStorageKey) {
+    const nextPreferences = loadMatchPreferences();
+    Object.keys(matchPreferences).forEach((key) => {
+      delete matchPreferences[key];
+    });
+    Object.assign(matchPreferences, nextPreferences);
+    renderMatchSettings();
+    enterMatchReadyState();
+    return;
+  }
+
+  if (event.detail.key === studyStateStorageKey) {
+    renderMatchSettings();
+    enterMatchReadyState();
+  }
+});
 enterMatchReadyState();

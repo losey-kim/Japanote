@@ -1,4 +1,13 @@
 const storageKey = "jlpt-compass-state";
+let state = null;
+
+function getStudyStateStore() {
+  if (globalThis.japanoteSync && typeof globalThis.japanoteSync.readValue === "function") {
+    return globalThis.japanoteSync;
+  }
+
+  return null;
+}
 
 const contentLevels = ["N5", "N4", "N3"];
 const allLevelValue = "all";
@@ -1061,7 +1070,7 @@ function getGrammarTab(value) {
 }
 
 function getVocabTab(value = state?.vocabTab) {
-  return value === "quiz" ? "quiz" : "study";
+  return ["study", "quiz", "match"].includes(value) ? value : "study";
 }
 
 function getKanjiTab(value = state?.kanjiTab) {
@@ -1567,6 +1576,11 @@ const quizHeadingCopy = {
     title: "전체 단어 퀴즈로 감각을 섞어봐요",
     description: "N5부터 N3까지 섞어서 문제 수와 시간에 맞춰 풀어봐요."
   }
+};
+
+const matchHeadingCopy = {
+  title: "단어 짝맞추기, 바로 감각 올려봐요",
+  description: "읽기와 뜻을 빠르게 묶으면서 오늘 볼 단어를 가볍게 몸에 붙여봐요."
 };
 
 function getVocabItemPart(item) {
@@ -3788,6 +3802,28 @@ const defaultState = {
 };
 
 function loadState() {
+  const syncStore = getStudyStateStore();
+
+  if (syncStore) {
+    const saved = syncStore.readValue(storageKey, null);
+
+    if (saved && typeof saved === "object") {
+      return {
+        ...defaultState,
+        ...saved,
+        basicPracticeIndexes: {
+          ...defaultState.basicPracticeIndexes,
+          ...(saved?.basicPracticeIndexes || {})
+        },
+        readingIndexes: { ...defaultState.readingIndexes, ...(saved?.readingIndexes || {}) },
+        grammarPracticeIndexes: {
+          ...defaultState.grammarPracticeIndexes,
+          ...(saved?.grammarPracticeIndexes || {})
+        }
+      };
+    }
+  }
+
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey));
     return {
@@ -3827,73 +3863,88 @@ function normalizeBasicPracticeState(inputState) {
   return nextState;
 }
 
-let state = normalizeBasicPracticeState(loadState());
-state.quizLevel = getQuizLevel(state.quizLevel);
-state.quizMode = getQuizMode(state.quizMode);
-state.quizSessionSize = getQuizSessionSize(state.quizSessionSize);
-state.quizDuration = getQuizDuration(state.quizDuration);
-state.quizSessionFinished = false;
-state.quizIndex = 0;
-state.quizMistakes = Array.isArray(state.quizMistakes) ? state.quizMistakes : [];
-state.quizSessionMistakeIds = [];
-state.masteredIds = Array.from(new Set(Array.isArray(state.masteredIds) ? state.masteredIds : []));
-state.reviewIds = Array.from(
-  new Set((Array.isArray(state.reviewIds) ? state.reviewIds : []).filter((id) => !state.masteredIds.includes(id)))
-);
-state.vocabTab = getVocabTab(state.vocabTab);
-state.vocabLevel = getVocabLevel(state.vocabLevel);
-state.vocabView = ["card", "list"].includes(state.vocabView) ? state.vocabView : "card";
-if (isVocabPagePath() && window.location.hash.replace(/^#/, "").toLowerCase() === "quiz") {
-  state.vocabTab = "quiz";
+function normalizeLoadedState(inputState) {
+  const nextState = normalizeBasicPracticeState(inputState);
+
+  nextState.quizLevel = getQuizLevel(nextState.quizLevel);
+  nextState.quizMode = getQuizMode(nextState.quizMode);
+  nextState.quizSessionSize = getQuizSessionSize(nextState.quizSessionSize);
+  nextState.quizDuration = getQuizDuration(nextState.quizDuration);
+  nextState.quizSessionFinished = false;
+  nextState.quizIndex = 0;
+  nextState.quizMistakes = Array.isArray(nextState.quizMistakes) ? nextState.quizMistakes : [];
+  nextState.quizSessionMistakeIds = [];
+  nextState.masteredIds = Array.from(new Set(Array.isArray(nextState.masteredIds) ? nextState.masteredIds : []));
+  nextState.reviewIds = Array.from(
+    new Set(
+      (Array.isArray(nextState.reviewIds) ? nextState.reviewIds : []).filter(
+        (id) => !nextState.masteredIds.includes(id)
+      )
+    )
+  );
+  nextState.vocabTab = getVocabTab(nextState.vocabTab);
+  nextState.vocabLevel = getVocabLevel(nextState.vocabLevel);
+  nextState.vocabView = ["card", "list"].includes(nextState.vocabView) ? nextState.vocabView : "card";
+  if (isVocabPagePath()) {
+    const hashTab = window.location.hash.replace(/^#/, "").toLowerCase();
+
+    if (["quiz", "match"].includes(hashTab)) {
+      nextState.vocabTab = hashTab;
+    }
+  }
+  nextState.vocabFilter = ["all", "review", "mastered"].includes(nextState.vocabFilter)
+    ? nextState.vocabFilter
+    : "all";
+  nextState.vocabPartFilter =
+    normalizeQuizText(nextState.vocabPartFilter) === vocabPartAllValue
+      ? vocabPartAllValue
+      : normalizeQuizText(nextState.vocabPartFilter);
+  nextState.vocabPage = Number.isFinite(Number(nextState.vocabPage)) ? Math.max(1, Number(nextState.vocabPage)) : 1;
+  nextState.vocabQuizMode = getVocabQuizMode(nextState.vocabQuizMode);
+  nextState.vocabQuizQuestionField = getVocabQuizQuestionField(nextState.vocabQuizQuestionField, nextState.vocabQuizMode);
+  nextState.vocabQuizOptionField = getVocabQuizOptionField(
+    nextState.vocabQuizOptionField,
+    nextState.vocabQuizQuestionField,
+    nextState.vocabQuizMode
+  );
+  nextState.vocabQuizCount = getVocabQuizCount(nextState.vocabQuizCount);
+  nextState.vocabQuizDuration = getVocabQuizDuration(nextState.vocabQuizDuration);
+  nextState.vocabQuizOptionsOpen = nextState.vocabQuizOptionsOpen !== false;
+  nextState.vocabQuizStarted = false;
+  nextState.vocabQuizResultFilter = ["all", "correct", "wrong"].includes(nextState.vocabQuizResultFilter)
+    ? nextState.vocabQuizResultFilter
+    : "all";
+  nextState.vocabQuizIndex = 0;
+  nextState.vocabQuizFinished = false;
+  nextState.starterKanjiQuizCount = getStarterKanjiQuizCount(nextState.starterKanjiQuizCount);
+  nextState.starterKanjiQuizDuration = getStarterKanjiQuizDuration(nextState.starterKanjiQuizDuration);
+  nextState.starterKanjiQuizOptionsOpen = nextState.starterKanjiQuizOptionsOpen !== false;
+  nextState.starterKanjiQuizStarted = false;
+  nextState.starterKanjiQuizFinished = false;
+  nextState.kanjiTab = getKanjiTab(nextState.kanjiTab);
+  nextState.grammarPracticeOptionsOpen = nextState.grammarPracticeOptionsOpen !== false;
+  nextState.grammarPracticeStarted = false;
+  nextState.readingLevel = getReadingLevel(nextState.readingLevel);
+  nextState.readingDuration = getReadingDuration(nextState.readingDuration);
+  nextState.readingStarted = false;
+  nextState.charactersTab = getCharactersTab(nextState.charactersTab ?? nextState.charactersPracticeTab);
+  nextState.charactersLibraryTab = getCharactersLibraryTab(nextState.charactersLibraryTab);
+  nextState.grammarTab = getGrammarTab(nextState.grammarTab);
+  nextState.kanaSetupOpen = nextState.kanaSetupOpen !== false;
+  nextState.writingSetupOpen = nextState.writingSetupOpen !== false;
+  nextState.quizOptionsOpen = nextState.quizOptionsOpen !== false;
+  nextState.vocabOptionsOpen = nextState.vocabOptionsOpen !== false;
+  nextState.readingOptionsOpen = nextState.readingOptionsOpen !== false;
+  refreshDynamicVocabContent("N5");
+  refreshQuizContent(nextState.quizLevel);
+  refreshVocabPageContent(nextState.vocabLevel);
+  nextState.vocabPartFilter = getVocabPartFilter(nextState.vocabPartFilter);
+  activeQuizQuestions = createQuizSession(nextState.quizMode, nextState.quizSessionSize, nextState.quizLevel);
+
+  return nextState;
 }
-state.vocabFilter = ["all", "review", "mastered"].includes(state.vocabFilter)
-  ? state.vocabFilter
-  : "all";
-state.vocabPartFilter =
-  normalizeQuizText(state.vocabPartFilter) === vocabPartAllValue
-    ? vocabPartAllValue
-    : normalizeQuizText(state.vocabPartFilter);
-state.vocabPage = Number.isFinite(Number(state.vocabPage)) ? Math.max(1, Number(state.vocabPage)) : 1;
-state.vocabQuizMode = getVocabQuizMode(state.vocabQuizMode);
-state.vocabQuizQuestionField = getVocabQuizQuestionField(state.vocabQuizQuestionField, state.vocabQuizMode);
-state.vocabQuizOptionField = getVocabQuizOptionField(
-  state.vocabQuizOptionField,
-  state.vocabQuizQuestionField,
-  state.vocabQuizMode
-);
-state.vocabQuizCount = getVocabQuizCount(state.vocabQuizCount);
-state.vocabQuizDuration = getVocabQuizDuration(state.vocabQuizDuration);
-state.vocabQuizOptionsOpen = state.vocabQuizOptionsOpen !== false;
-state.vocabQuizStarted = false;
-state.vocabQuizResultFilter = ["all", "correct", "wrong"].includes(state.vocabQuizResultFilter)
-  ? state.vocabQuizResultFilter
-  : "all";
-state.vocabQuizIndex = 0;
-state.vocabQuizFinished = false;
-state.starterKanjiQuizCount = getStarterKanjiQuizCount(state.starterKanjiQuizCount);
-state.starterKanjiQuizDuration = getStarterKanjiQuizDuration(state.starterKanjiQuizDuration);
-state.starterKanjiQuizOptionsOpen = state.starterKanjiQuizOptionsOpen !== false;
-state.starterKanjiQuizStarted = false;
-state.starterKanjiQuizFinished = false;
-state.kanjiTab = getKanjiTab(state.kanjiTab);
-state.grammarPracticeOptionsOpen = state.grammarPracticeOptionsOpen !== false;
-state.grammarPracticeStarted = false;
-state.readingLevel = getReadingLevel(state.readingLevel);
-state.readingDuration = getReadingDuration(state.readingDuration);
-state.readingStarted = false;
-state.charactersTab = getCharactersTab(state.charactersTab ?? state.charactersPracticeTab);
-state.charactersLibraryTab = getCharactersLibraryTab(state.charactersLibraryTab);
-state.grammarTab = getGrammarTab(state.grammarTab);
-state.kanaSetupOpen = state.kanaSetupOpen !== false;
-state.writingSetupOpen = state.writingSetupOpen !== false;
-state.quizOptionsOpen = state.quizOptionsOpen !== false;
-state.vocabOptionsOpen = state.vocabOptionsOpen !== false;
-state.readingOptionsOpen = state.readingOptionsOpen !== false;
-refreshDynamicVocabContent("N5");
-refreshQuizContent(state.quizLevel);
-refreshVocabPageContent(state.vocabLevel);
-state.vocabPartFilter = getVocabPartFilter(state.vocabPartFilter);
-activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize, state.quizLevel);
+
+state = normalizeLoadedState(loadState());
 
 const quizSessions = {
   basic: {
@@ -4109,11 +4160,46 @@ function finalizeQuizSession(key, correct) {
 }
 
 function saveState() {
+  const syncStore = getStudyStateStore();
+
+  if (syncStore) {
+    syncStore.writeValue(storageKey, state);
+    return;
+  }
+
   try {
     localStorage.setItem(storageKey, JSON.stringify(state));
   } catch (error) {
     // Ignore storage failures so UI interactions still work in restricted environments.
   }
+}
+
+function resetStateDrivenQuizSessions() {
+  stopQuizSessionTimer("vocab");
+  stopQuizSessionTimer("reading");
+  stopQuizSessionTimer("quiz");
+  stopQuizSessionTimer("starterKanji");
+  quizSessions.vocab.correct = 0;
+  quizSessions.vocab.streak = 0;
+  quizSessions.reading.correct = 0;
+  quizSessions.reading.streak = 0;
+  quizSessions.quiz.correct = 0;
+  quizSessions.quiz.streak = 0;
+  quizSessions.starterKanji.correct = 0;
+  quizSessions.starterKanji.streak = 0;
+  setQuizSessionDuration("vocab", state.vocabQuizDuration);
+  setQuizSessionDuration("reading", state.readingDuration);
+  setQuizSessionDuration("quiz", state.quizDuration);
+  setQuizSessionDuration("starterKanji", state.starterKanjiQuizDuration);
+}
+
+function applyExternalStudyState(nextState) {
+  state = normalizeLoadedState({
+    ...defaultState,
+    ...(nextState || {})
+  });
+  resetStateDrivenQuizSessions();
+  renderAll();
 }
 
 function getLocalDateKey() {
@@ -5091,7 +5177,8 @@ function syncVocabLocationHash(tab = state.vocabTab) {
     return;
   }
 
-  const nextHash = getVocabTab(tab) === "quiz" ? "#quiz" : "";
+  const activeTab = getVocabTab(tab);
+  const nextHash = activeTab === "quiz" ? "#quiz" : activeTab === "match" ? "#match" : "";
   const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
 
   if (`${window.location.pathname}${window.location.search}${window.location.hash}` === nextUrl) {
@@ -6228,8 +6315,8 @@ function renderVocabPage() {
   const activeLevel = getVocabLevel();
   const activePart = getVocabPartFilter();
   const activeTab = getVocabTab();
-  const headingMap = activeTab === "quiz" ? quizHeadingCopy : vocabHeadingCopy;
-  const heading = headingMap[activeLevel] || headingMap.N5;
+  const activeHeadingMap = activeTab === "quiz" ? quizHeadingCopy : vocabHeadingCopy;
+  const heading = activeTab === "match" ? matchHeadingCopy : activeHeadingMap[activeLevel] || activeHeadingMap.N5;
   const availableParts = getAvailableVocabParts();
 
   if (headingTitle) {
@@ -6271,7 +6358,7 @@ function renderVocabPage() {
     renderVocabQuiz();
   } else {
     stopQuizSessionTimer("vocab");
-    syncVocabLocationHash("study");
+    syncVocabLocationHash(activeTab);
   }
 }
 
@@ -7993,6 +8080,21 @@ refreshDynamicVocabContent("N5");
 refreshQuizContent(state.quizLevel);
 activeQuizQuestions = createQuizSession(state.quizMode, state.quizSessionSize, state.quizLevel);
 attachEventListeners();
+window.addEventListener("hashchange", () => {
+  if (!isVocabPagePath()) {
+    return;
+  }
+
+  const hashTab = window.location.hash.replace(/^#/, "").toLowerCase();
+  setVocabTab(["quiz", "match"].includes(hashTab) ? hashTab : "study");
+});
+window.addEventListener("japanote:storage-updated", (event) => {
+  if (event.detail?.key !== storageKey || event.detail?.source !== "remote") {
+    return;
+  }
+
+  applyExternalStudyState(event.detail.value);
+});
 renderAll();
 
 

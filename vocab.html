@@ -40,7 +40,6 @@
         <a href="vocab.html" aria-current="page">단어</a>
         <a href="grammar.html">문법</a>
         <a href="reading.html">독해</a>
-        <a href="match.html">짝 맞추기</a>
       </nav>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="테마 바꿔볼까요?" title="테마 바꿔볼까요?"></button>
     </header>
@@ -54,6 +53,7 @@
         <div class="vocab-tab-list" role="tablist" aria-label="단어 학습 탭">
           <button class="level-button vocab-tab-button is-active" type="button" data-vocab-tab="study" id="vocab-tab-study" role="tab" aria-selected="true" aria-controls="vocab-tab-panel-study">익히기</button>
           <button class="level-button vocab-tab-button" type="button" data-vocab-tab="quiz" id="vocab-tab-quiz" role="tab" aria-selected="false" aria-controls="vocab-tab-panel-quiz" tabindex="-1">퀴즈</button>
+          <button class="level-button vocab-tab-button" type="button" data-vocab-tab="match" id="vocab-tab-match" role="tab" aria-selected="false" aria-controls="vocab-tab-panel-match" tabindex="-1">짝맞추기</button>
         </div>
         <div class="vocab-tab-panels">
           <section class="vocab-tab-panel" id="vocab-tab-panel-study" data-vocab-tab-panel="study" role="tabpanel" aria-labelledby="vocab-tab-study">
@@ -154,10 +154,14 @@
           <section class="vocab-tab-panel" id="vocab-tab-panel-quiz" data-vocab-tab-panel="quiz" role="tabpanel" aria-labelledby="vocab-tab-quiz" hidden aria-hidden="true">
             <div data-shared-quiz-layout="vocab-quiz"></div>
           </section>
+
+          <section class="vocab-tab-panel" id="vocab-tab-panel-match" data-vocab-tab-panel="match" role="tabpanel" aria-labelledby="vocab-tab-match" hidden aria-hidden="true">
+            <div data-shared-quiz-layout="match-round"></div>
+          </section>
         </div>
       </section>
     </main>
   </div>
-  <script src="assets/js/theme.js"></script><script src="assets/js/jlpt-vocab-data.js"></script><script src="assets/js/vocab-registry.js"></script><script src="assets/js/shared-quiz-layouts.js"></script><script src="assets/js/app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="assets/js/supabase-config.js"></script><script src="assets/js/supabase-sync.js"></script><script src="assets/js/theme.js"></script><script src="assets/js/jlpt-vocab-data.js"></script><script src="assets/js/vocab-registry.js"></script><script src="assets/js/shared-quiz-layouts.js"></script><script src="assets/js/app.js"></script><script src="assets/js/match-game.js"></script>
 </body>
 </html>

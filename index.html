@@ -40,12 +40,86 @@
         <a href="vocab.html">단어</a>
         <a href="grammar.html">문법</a>
         <a href="reading.html">독해</a>
-        <a href="match.html">짝 맞추기</a>
       </nav>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="테마 바꿔볼까요?" title="테마 바꿔볼까요?"></button>
     </header>
 
     <main>
+      <section class="hero" aria-labelledby="home-hero-title">
+        <article class="hero-copy">
+          <span class="eyebrow">DAILY JAPANESE</span>
+          <h1 id="home-hero-title">오늘은<br>일본어 감각부터<br>가볍게 깨워봐요</h1>
+          <p>문자부터 단어, 문법, 독해까지 한 흐름으로 이어가요. 짧게 시작해도 다음에 뭘 볼지 바로 떠오르게 모아뒀어요.</p>
+          <div class="hero-chip-row" aria-label="추천 포인트">
+            <span class="hero-chip">문자부터 차근차근</span>
+            <span class="hero-chip">하루 5분이면 충분해요</span>
+            <span class="hero-chip">N5부터 N3까지</span>
+            <span class="hero-chip">퀴즈로 바로 확인해요</span>
+          </div>
+          <div class="hero-actions">
+            <a class="primary-btn button-with-icon" href="starter.html">
+              <span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>
+              첫걸음부터 가볼까요?
+            </a>
+            <a class="secondary-btn button-with-icon" href="kanji.html">
+              <span class="material-symbols-rounded" aria-hidden="true">ink_pen</span>
+              한자도 볼래요
+            </a>
+          </div>
+        </article>
+        <aside class="hero-panel" aria-label="추천 학습 흐름">
+          <span class="eyebrow">TODAY FLOW</span>
+          <ul class="routine-list">
+            <li>
+              <span>1</span>
+              <div>
+                <strong>문자 감각부터 깨워요</strong>
+                <p>히라가나랑 카타카나를 먼저 훑으면 시작이 훨씬 편해져요.</p>
+              </div>
+            </li>
+            <li>
+              <span>2</span>
+              <div>
+                <strong>단어 하나 더 익혀봐요</strong>
+                <p>많이 보기보다 자주 보는 쪽이 더 오래 남아요.</p>
+              </div>
+            </li>
+            <li>
+              <span>3</span>
+              <div>
+                <strong>짧은 퀴즈로 확인해요</strong>
+                <p>바로 맞혀보면 헷갈리는 포인트가 금방 보여요.</p>
+              </div>
+            </li>
+          </ul>
+          <div class="panel-summary">
+            <strong>오늘은 한 칸만 가도 충분해요</strong>
+            <p>조금만 해도 기록은 이어지고, 다음 학습까지 자연스럽게 연결돼요.</p>
+          </div>
+          <div class="panel-metrics">
+            <div>
+              <span>추천 시작</span>
+              <strong>첫걸음</strong>
+              <p>N5 기초부터 가볍게 잡아요</p>
+            </div>
+            <div>
+              <span>가벼운 호흡</span>
+              <strong>5분</strong>
+              <p>짧게 해도 흐름이 이어져요</p>
+            </div>
+            <div>
+              <span>쌓는 범위</span>
+              <strong>N5~N3</strong>
+              <p>천천히 넓혀가면 돼요</p>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <span>오늘은 여기부터</span>
+            <strong>마음 가는 코스 하나만 눌러도 바로 이어가요</strong>
+          </div>
+        </aside>
+      </section>
+
       <section class="stats-grid" aria-label="오늘의 기록">
         <article class="stat-card accent-coral"><p>이어온 날</p><strong id="streak-value">0일</strong></article>
         <article class="stat-card accent-mint"><p>익힌 단어</p><strong id="mastered-count">0개</strong></article>
@@ -53,8 +127,86 @@
         <article class="stat-card accent-sky"><p>퀴즈 정답률</p><strong id="quiz-accuracy">0%</strong></article>
       </section>
 
+      <section class="content-section" aria-labelledby="home-quick-title">
+        <div class="section-heading">
+          <span>QUICK START</span>
+          <h2 id="home-quick-title">오늘 뭐 해볼까요?</h2>
+          <p class="section-copy">지금 하고 싶은 방식으로 바로 들어가봐요. 가볍게 시작할수록 더 오래 가요.</p>
+        </div>
+        <div class="starter-grid">
+          <article class="starter-item tone-coral">
+            <div class="starter-item-head"><span class="starter-track">STARTER</span><span>차근차근</span></div>
+            <h3>첫걸음으로 흐름 잡기</h3>
+            <p>문자부터 짧은 문장까지 순서대로 이어가며 감각을 붙여봐요.</p>
+            <div class="starter-item-actions">
+              <a class="primary-btn starter-learn button-with-icon" href="starter.html">
+                <span class="material-symbols-rounded" aria-hidden="true">play_circle</span>
+                첫걸음 보기
+              </a>
+            </div>
+          </article>
+          <article class="starter-item tone-sky">
+            <div class="starter-item-head"><span class="starter-track">CHARACTERS</span><span>읽기부터</span></div>
+            <h3>문자부터 빠르게 익히기</h3>
+            <p>히라가나와 카타카나를 한눈에 보고, 바로 퀴즈까지 이어가요.</p>
+            <div class="starter-item-actions">
+              <a class="secondary-btn starter-learn button-with-icon" href="characters.html">
+                <span class="material-symbols-rounded" aria-hidden="true">translate</span>
+                문자 보러 가기
+              </a>
+            </div>
+          </article>
+          <article class="starter-item tone-gold">
+            <div class="starter-item-head"><span class="starter-track">VOCAB</span><span>자주 보기</span></div>
+            <h3>단어 감각 쌓기</h3>
+            <p>카드처럼 넘기며 보고, 필요한 단어만 다시 담아두고 익혀봐요.</p>
+            <div class="starter-item-actions">
+              <a class="secondary-btn starter-learn button-with-icon" href="vocab.html">
+                <span class="material-symbols-rounded" aria-hidden="true">style</span>
+                단어 보러 가기
+              </a>
+            </div>
+          </article>
+          <article class="starter-item tone-mint">
+            <div class="starter-item-head"><span class="starter-track">GRAMMAR</span><span>헷갈림 정리</span></div>
+            <h3>문법 포인트 다지기</h3>
+            <p>헷갈리는 조사와 표현을 짧은 문제로 바로 확인해볼까요?</p>
+            <div class="starter-item-actions">
+              <a class="secondary-btn starter-learn button-with-icon" href="grammar.html">
+                <span class="material-symbols-rounded" aria-hidden="true">rule</span>
+                문법 보러 가기
+              </a>
+            </div>
+          </article>
+          <article class="starter-item tone-sky">
+            <div class="starter-item-head"><span class="starter-track">READING</span><span>짧게 읽기</span></div>
+            <h3>짧은 글 읽어보기</h3>
+            <p>공지나 메모처럼 짧은 글부터 읽으며 일본어 흐름을 익혀봐요.</p>
+            <div class="starter-item-actions">
+              <a class="secondary-btn starter-learn button-with-icon" href="reading.html">
+                <span class="material-symbols-rounded" aria-hidden="true">menu_book</span>
+                독해 보러 가기
+              </a>
+            </div>
+          </article>
+          <article class="starter-item tone-coral">
+            <div class="starter-item-head"><span class="starter-track">MATCH</span><span>가볍게 몸풀기</span></div>
+            <h3>짝 맞추기로 감각 깨우기</h3>
+            <p>단어를 빠르게 묶어보며 오늘 감각을 가볍게 올려봐요.</p>
+            <div class="starter-item-actions">
+              <a class="secondary-btn starter-learn button-with-icon" href="vocab.html#match">
+                <span class="material-symbols-rounded" aria-hidden="true">neurology</span>
+                짝 맞추기 가기
+              </a>
+            </div>
+          </article>
+        </div>
+      </section>
     </main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-config.js"></script>
+  <script src="assets/js/supabase-sync.js"></script>
   <script src="assets/js/theme.js"></script>
   <script src="assets/js/app.js"></script>
 </body>
