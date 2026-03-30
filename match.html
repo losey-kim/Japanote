@@ -27,7 +27,7 @@
   <div class="page-shell">
     <header class="topbar">
       <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/images/favicon.png" alt=""></span><div><p class="brand-name">Japanote</p><p class="brand-sub">오늘도 가볍게 일본어, 같이 해봐요</p></div></a>
-      <nav class="nav-links"><a href="index.html">홈</a><a href="starter.html">첫걸음</a><a href="characters.html">문자</a><a href="vocab.html">단어</a><a href="grammar.html">문법</a><a href="reading.html">독해</a><a href="match.html" aria-current="page">매칭</a></nav>
+      <nav class="nav-links"><a href="index.html">홈</a><a href="starter.html">첫걸음</a><a href="characters.html">문자</a><a href="kanji.html">한자</a><a href="vocab.html">단어</a><a href="grammar.html">문법</a><a href="reading.html">독해</a><a href="match.html" aria-current="page">매칭</a></nav>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="테마 바꿔보기" title="테마 바꿔보기"></button>
     </header>
     <main>
@@ -37,19 +37,10 @@
             <div class="match-sidebar-head"><span class="eyebrow">ROUND HUD</span></div>
             <div class="study-options-shell match-options-shell" id="match-options-shell">
               <button class="study-options-toggle" id="match-options-toggle" type="button" aria-expanded="true" aria-controls="match-options-panel">
-                <div class="study-options-toggle-copy"><strong>매칭 설정</strong><p class="study-options-toggle-summary" id="match-options-summary">N5 · 5문제 · 15초</p></div>
+                <div class="study-options-toggle-copy"><strong>매칭 설정</strong><p class="study-options-toggle-summary" id="match-options-summary">5문제 · 15초</p></div>
                 <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
               </button>
               <div class="study-options-panel study-options-panel-wide" id="match-options-panel">
-                <div class="study-options-group">
-                  <span>어느 난이도로 할까요?</span>
-                  <div class="match-toggle-group" role="group" aria-label="매칭 난이도 고르기">
-                    <button class="level-button is-active" type="button" data-match-level="N5" aria-pressed="true">N5</button>
-                    <button class="level-button" type="button" data-match-level="N4" aria-pressed="false">N4</button>
-                    <button class="level-button" type="button" data-match-level="N3" aria-pressed="false">N3</button>
-                    <button class="level-button" type="button" data-match-level="all" aria-pressed="false">전체</button>
-                  </div>
-                </div>
                 <div class="study-options-group">
                   <span>총 몇 문제로 할까요?</span>
                   <div class="match-toggle-group" role="group" aria-label="매칭 문제 수 고르기">
@@ -69,6 +60,40 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <div class="vocab-select-toolbar vocab-select-toolbar-sidebar" aria-label="매칭 필터">
+              <label class="vocab-select-field" for="match-level-select">
+                <span>난이도</span>
+                <div class="vocab-select-wrap">
+                  <select class="vocab-select" id="match-level-select" aria-label="매칭 난이도 고르기">
+                    <option value="all">전체</option>
+                    <option value="N5">N5</option>
+                    <option value="N4">N4</option>
+                    <option value="N3">N3</option>
+                  </select>
+                  <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+                </div>
+              </label>
+              <label class="vocab-select-field" for="match-filter-select">
+                <span>묶음</span>
+                <div class="vocab-select-wrap">
+                  <select class="vocab-select" id="match-filter-select" aria-label="매칭 묶음 고르기">
+                    <option value="all">전체</option>
+                    <option value="review">다시 보기</option>
+                    <option value="mastered">익힌 단어</option>
+                  </select>
+                  <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+                </div>
+              </label>
+              <label class="vocab-select-field" for="match-part-select">
+                <span>품사</span>
+                <div class="vocab-select-wrap">
+                  <select class="vocab-select" id="match-part-select" aria-label="매칭 품사 고르기">
+                    <option value="all">전체 품사</option>
+                  </select>
+                  <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+                </div>
+              </label>
             </div>
             <div class="match-stats-grid">
               <div class="match-stat-card"><span>푼 문제</span><strong id="match-progress">0 / 5</strong></div>

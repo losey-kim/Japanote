@@ -4,6 +4,7 @@ const matchSourceLevels = ["N5", "N4", "N3"];
 const matchLevelOptions = [...matchSourceLevels, "all"];
 const matchDurationOptions = [0, 10, 15, 20];
 const matchTotalCountOptions = [5, 10, 15, 20];
+const matchFilterOptions = ["all", "review", "mastered"];
 const matchResultFilterOptions = ["all", "correct", "wrong"];
 const matchPageSize = 5;
 const matchWrongFlashDuration = 520;
@@ -11,6 +12,8 @@ const matchPageTransitionDelay = 720;
 
 const defaultMatchPreferences = {
   level: "N5",
+  filter: "all",
+  part: "all",
   totalCount: 5,
   duration: 15,
   optionsOpen: true
@@ -28,6 +31,12 @@ const matchResultFilterLabels = {
   all: "전체",
   correct: "정답",
   wrong: "오답"
+};
+
+const matchFilterLabels = {
+  all: "전체",
+  review: "다시 보기",
+  mastered: "익힌 단어"
 };
 
 function loadMatchPreferences() {
@@ -152,11 +161,31 @@ function getMatchDurationLabel(duration = matchPreferences.duration) {
 }
 
 function getMatchOptionsSummaryText() {
-  return [getMatchLevelLabel(), `${getMatchTotalCount()}문제`, getMatchDurationLabel()].join(" · ");
+  return [`${getMatchTotalCount()}문제`, getMatchDurationLabel()].join(" · ");
 }
 
 function getMatchResultFilter(value = matchState.resultFilter) {
   return matchResultFilterOptions.includes(value) ? value : "all";
+}
+
+function getMatchFilter(value = matchPreferences.filter) {
+  return matchFilterOptions.includes(value) ? value : "all";
+}
+
+function getMatchPartValue(item) {
+  if (!Array.isArray(item.parts)) {
+    return "";
+  }
+
+  return normalizeMatchText(item.parts[0] || "");
+}
+
+function getMatchStudyBuckets() {
+  const studyState = loadSharedStudyState();
+  return {
+    reviewIds: Array.isArray(studyState.reviewIds) ? studyState.reviewIds : [],
+    masteredIds: Array.isArray(studyState.masteredIds) ? studyState.masteredIds : []
+  };
 }
 
 function getMatchLevelSource(level) {
@@ -219,6 +248,7 @@ function buildMatchPool(source) {
     .map((item) => ({
       id: normalizeMatchText(item.id || item.entry_id),
       level: formatMatchLevelLabel(item._level || item.level || "N5"),
+      part: getMatchPartValue(item),
       reading: getMatchReading(item),
       meaning: getMatchMeaning(item)
     }))
@@ -231,6 +261,70 @@ function buildMatchPool(source) {
             candidate.meaning === item.meaning
         ) === index
     );
+}
+
+function getBaseMatchPool(level = matchPreferences.level) {
+  return buildMatchPool(getMatchSource(level));
+}
+
+function getAvailableMatchParts(items = getBaseMatchPool()) {
+  const counts = new Map();
+
+  items.forEach((item) => {
+    const part = normalizeMatchText(item.part);
+
+    if (!part) {
+      return;
+    }
+
+    counts.set(part, (counts.get(part) || 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .map(([value, count]) => ({ value, count }))
+    .sort((left, right) => left.value.localeCompare(right.value, "ko"));
+}
+
+function getMatchPartFilter(value = matchPreferences.part, items = getBaseMatchPool()) {
+  const normalizedPart = normalizeMatchText(value);
+
+  if (!normalizedPart || normalizedPart === "all") {
+    return "all";
+  }
+
+  const exists = getAvailableMatchParts(items).some((item) => item.value === normalizedPart);
+  return exists ? normalizedPart : "all";
+}
+
+function filterMatchPool(items, filter = matchPreferences.filter, part = matchPreferences.part) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  const activeFilter = getMatchFilter(filter);
+  const activePart = getMatchPartFilter(part, items);
+  const { reviewIds, masteredIds } = getMatchStudyBuckets();
+  const filteredByPart =
+    activePart === "all" ? items : items.filter((item) => normalizeMatchText(item.part) === activePart);
+
+  if (activeFilter === "review") {
+    return filteredByPart.filter((item) => reviewIds.includes(item.id));
+  }
+
+  if (activeFilter === "mastered") {
+    return filteredByPart.filter((item) => masteredIds.includes(item.id));
+  }
+
+  return filteredByPart;
+}
+
+function getMatchFilterCounts(items = getBaseMatchPool()) {
+  const activePart = getMatchPartFilter(matchPreferences.part, items);
+  return {
+    all: filterMatchPool(items, "all", activePart).length,
+    review: filterMatchPool(items, "review", activePart).length,
+    mastered: filterMatchPool(items, "mastered", activePart).length
+  };
 }
 
 const matchState = {
@@ -259,6 +353,8 @@ let matchRoundTimer = null;
 let matchTransitionTimer = null;
 
 matchPreferences.level = getMatchLevel(matchPreferences.level);
+matchPreferences.filter = getMatchFilter(matchPreferences.filter);
+matchPreferences.part = getMatchPartFilter(matchPreferences.part, getBaseMatchPool(matchPreferences.level));
 matchPreferences.totalCount = getMatchTotalCount(matchPreferences.totalCount);
 matchPreferences.duration = getMatchDuration(matchPreferences.duration);
 matchPreferences.optionsOpen = matchPreferences.optionsOpen !== false;
@@ -297,8 +393,9 @@ function clearAllMatchTimers() {
 }
 
 function refreshMatchPool() {
-  const nextPool = buildMatchPool(getMatchSource(matchPreferences.level));
-  matchPool = nextPool.length >= matchPageSize ? nextPool : [...fallbackMatchPool];
+  const basePool = getBaseMatchPool(matchPreferences.level);
+  matchPreferences.part = getMatchPartFilter(matchPreferences.part, basePool);
+  matchPool = filterMatchPool(basePool, matchPreferences.filter, matchPreferences.part);
 }
 
 function getMatchPageCount() {
@@ -374,10 +471,17 @@ function setMatchFeedback(message, tone = "") {
 }
 
 function renderMatchActionCopy() {
+  const newRound = document.getElementById("match-new-round");
   const newRoundLabel = document.getElementById("match-new-round-label");
+  const isResetState = matchState.hasStarted || matchState.showResults;
+
+  if (newRound) {
+    newRound.classList.toggle("primary-btn", !isResetState);
+    newRound.classList.toggle("secondary-btn", isResetState);
+  }
 
   if (newRoundLabel) {
-    newRoundLabel.textContent = matchState.showResults ? "다시하기" : "시작하기";
+    newRoundLabel.textContent = isResetState ? "다시하기" : "시작하기";
   }
 }
 
@@ -407,34 +511,91 @@ function renderMatchStats() {
   renderMatchTimer();
 }
 
+function populateMatchFilterSelect(select, counts) {
+  if (!select) {
+    return;
+  }
+
+  select.innerHTML = "";
+
+  matchFilterOptions.forEach((filter) => {
+    const option = document.createElement("option");
+    option.value = filter;
+    option.textContent = `${matchFilterLabels[filter]} (${counts[filter] ?? 0})`;
+    select.appendChild(option);
+  });
+
+  select.value = getMatchFilter(matchPreferences.filter);
+}
+
+function populateMatchPartSelect(select, parts, activePart) {
+  if (!select) {
+    return;
+  }
+
+  select.innerHTML = "";
+  [{ value: "all", count: parts.reduce((sum, item) => sum + item.count, 0) }, ...parts].forEach((partOption) => {
+    const option = document.createElement("option");
+    const label = partOption.value === "all" ? "전체 품사" : partOption.value;
+    option.value = partOption.value;
+    option.textContent = `${label} (${partOption.count})`;
+    select.appendChild(option);
+  });
+
+  select.value = activePart;
+}
+
 function renderMatchSettings() {
   const optionsShell = document.getElementById("match-options-shell");
   const optionsToggle = document.getElementById("match-options-toggle");
   const optionsPanel = document.getElementById("match-options-panel");
   const optionsSummary = document.getElementById("match-options-summary");
+  const levelSelect = document.getElementById("match-level-select");
+  const filterSelect = document.getElementById("match-filter-select");
+  const partSelect = document.getElementById("match-part-select");
+  const basePool = getBaseMatchPool(matchPreferences.level);
+  const filterCounts = getMatchFilterCounts(basePool);
+  const activePart = getMatchPartFilter(matchPreferences.part, basePool);
+  const availableParts = getAvailableMatchParts(basePool);
+  const isSettingsLocked = matchState.hasStarted && !matchState.showResults;
+  const shouldShowOptionsPanel = !isSettingsLocked && matchPreferences.optionsOpen !== false;
 
   if (optionsSummary) {
     optionsSummary.textContent = getMatchOptionsSummaryText();
   }
 
+  if (levelSelect) {
+    levelSelect.value = getMatchLevel(matchPreferences.level);
+    levelSelect.disabled = isSettingsLocked;
+  }
+
+  populateMatchFilterSelect(filterSelect, filterCounts);
+  populateMatchPartSelect(partSelect, availableParts, activePart);
+
+  if (filterSelect) {
+    filterSelect.disabled = isSettingsLocked;
+  }
+
+  if (partSelect) {
+    partSelect.disabled = isSettingsLocked;
+  }
+
+  refreshMatchPool();
+  setMatchActionAvailability(matchPool.length > 0);
+
   if (optionsShell) {
-    optionsShell.classList.toggle("is-open", matchPreferences.optionsOpen !== false);
+    optionsShell.classList.toggle("is-open", shouldShowOptionsPanel);
   }
 
   if (optionsToggle) {
-    optionsToggle.setAttribute("aria-expanded", String(matchPreferences.optionsOpen !== false));
+    optionsToggle.disabled = isSettingsLocked;
+    optionsToggle.setAttribute("aria-expanded", String(shouldShowOptionsPanel));
   }
 
   if (optionsPanel) {
-    optionsPanel.hidden = matchPreferences.optionsOpen === false;
-    optionsPanel.setAttribute("aria-hidden", String(matchPreferences.optionsOpen === false));
+    optionsPanel.hidden = !shouldShowOptionsPanel;
+    optionsPanel.setAttribute("aria-hidden", String(!shouldShowOptionsPanel));
   }
-
-  document.querySelectorAll("[data-match-level]").forEach((button) => {
-    const active = button.dataset.matchLevel === getMatchLevel(matchPreferences.level);
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
 
   document.querySelectorAll("[data-match-count]").forEach((button) => {
     const active = Number(button.dataset.matchCount) === getMatchTotalCount(matchPreferences.totalCount);
@@ -650,6 +811,7 @@ function renderMatchScreen() {
     resultView.hidden = !matchState.showResults;
   }
 
+  renderMatchSettings();
   renderMatchActionCopy();
   renderMatchStats();
 
@@ -946,6 +1108,11 @@ function handleMatchTimeout() {
 }
 
 function startNewMatchSession() {
+  if (matchState.hasStarted || matchState.showResults) {
+    enterMatchReadyState();
+    return;
+  }
+
   startMatchSession();
 }
 
@@ -957,6 +1124,33 @@ function setMatchLevel(level) {
   }
 
   matchPreferences.level = nextLevel;
+  matchPreferences.part = getMatchPartFilter(matchPreferences.part, getBaseMatchPool(nextLevel));
+  saveMatchPreferences();
+  renderMatchSettings();
+  enterMatchReadyState();
+}
+
+function setMatchFilterPreference(filter) {
+  const nextFilter = getMatchFilter(filter);
+
+  if (matchPreferences.filter === nextFilter) {
+    return;
+  }
+
+  matchPreferences.filter = nextFilter;
+  saveMatchPreferences();
+  renderMatchSettings();
+  enterMatchReadyState();
+}
+
+function setMatchPartPreference(part) {
+  const nextPart = getMatchPartFilter(part, getBaseMatchPool(matchPreferences.level));
+
+  if (matchPreferences.part === nextPart) {
+    return;
+  }
+
+  matchPreferences.part = nextPart;
   saveMatchPreferences();
   renderMatchSettings();
   enterMatchReadyState();
@@ -1011,6 +1205,9 @@ function handleMatchResetAction() {
 function attachMatchEventListeners() {
   const newRound = document.getElementById("match-new-round");
   const optionsToggle = document.getElementById("match-options-toggle");
+  const levelSelect = document.getElementById("match-level-select");
+  const filterSelect = document.getElementById("match-filter-select");
+  const partSelect = document.getElementById("match-part-select");
   const resultFilterSelect = document.getElementById("match-result-filter");
   const resultBulkAction = document.getElementById("match-result-bulk-action");
   const resultList = document.getElementById("match-result-list");
@@ -1027,11 +1224,23 @@ function attachMatchEventListeners() {
     });
   }
 
-  document.querySelectorAll("[data-match-level]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setMatchLevel(button.dataset.matchLevel);
+  if (levelSelect) {
+    levelSelect.addEventListener("change", (event) => {
+      setMatchLevel(event.target.value);
     });
-  });
+  }
+
+  if (filterSelect) {
+    filterSelect.addEventListener("change", (event) => {
+      setMatchFilterPreference(event.target.value);
+    });
+  }
+
+  if (partSelect) {
+    partSelect.addEventListener("change", (event) => {
+      setMatchPartPreference(event.target.value);
+    });
+  }
 
   document.querySelectorAll("[data-match-count]").forEach((button) => {
     button.addEventListener("click", () => {
