@@ -37,7 +37,7 @@
             <div class="match-sidebar-head"><span class="eyebrow">ROUND HUD</span><h3>이번 라운드</h3></div>
             <div class="study-options-shell match-options-shell" id="match-options-shell">
               <button class="study-options-toggle" id="match-options-toggle" type="button" aria-expanded="true" aria-controls="match-options-panel">
-                <div class="study-options-toggle-copy"><strong>매칭 설정</strong><p class="study-options-toggle-summary" id="match-options-summary">N5 · 5문제 · 45초</p></div>
+                <div class="study-options-toggle-copy"><strong>매칭 설정</strong><p class="study-options-toggle-summary" id="match-options-summary">N5 · 5문제 · 15초</p></div>
                 <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
               </button>
               <div class="study-options-panel study-options-panel-wide" id="match-options-panel">
@@ -63,16 +63,16 @@
                   <span>시간은 어떻게 할까요?</span>
                   <div class="match-toggle-group" role="group" aria-label="매칭 시간 고르기">
                     <button class="level-button" type="button" data-match-time="0" aria-pressed="false">천천히</button>
-                    <button class="level-button" type="button" data-match-time="30" aria-pressed="false">30초</button>
-                    <button class="level-button is-active" type="button" data-match-time="45" aria-pressed="true">45초</button>
-                    <button class="level-button" type="button" data-match-time="60" aria-pressed="false">60초</button>
+                    <button class="level-button" type="button" data-match-time="10" aria-pressed="false">10초</button>
+                    <button class="level-button is-active" type="button" data-match-time="15" aria-pressed="true">15초</button>
+                    <button class="level-button" type="button" data-match-time="20" aria-pressed="false">20초</button>
                   </div>
                 </div>
               </div>
             </div>
             <div class="match-stats-grid">
               <div class="match-stat-card"><span>진행</span><strong id="match-progress">0 / 5</strong><p>푼 문제</p></div>
-              <div class="match-stat-card"><span>남은 시간</span><strong id="match-timer">45초</strong><p>페이지 타이머</p></div>
+              <div class="match-stat-card"><span>남은 시간</span><strong id="match-timer">15초</strong><p>페이지 타이머</p></div>
             </div>
             <div class="match-actions">
               <button class="primary-btn button-with-icon" id="match-new-round" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span id="match-new-round-label">새 세트 시작</span></button>
@@ -95,13 +95,25 @@
               </div>
               <div class="match-result-grid">
                 <article class="match-result-stat"><span>전체</span><strong id="match-result-total">0</strong></article>
-                <article class="match-result-stat"><span>맞춘 문제</span><strong id="match-result-correct">0</strong></article>
-                <article class="match-result-stat"><span>틀린 문제</span><strong id="match-result-wrong">0</strong></article>
+                <article class="match-result-stat"><span>정답</span><strong id="match-result-correct">0</strong></article>
+                <article class="match-result-stat"><span>오답</span><strong id="match-result-wrong">0</strong></article>
               </div>
-              <div class="match-result-filters" id="match-result-filters" role="group" aria-label="매칭 결과 필터">
-                <button class="secondary-btn vocab-filter-button is-active" type="button" data-match-result-filter="all" aria-pressed="true"><span>전체</span><strong data-match-result-count="all">0</strong></button>
-                <button class="secondary-btn vocab-filter-button" type="button" data-match-result-filter="correct" aria-pressed="false"><span>맞춘 문제</span><strong data-match-result-count="correct">0</strong></button>
-                <button class="secondary-btn vocab-filter-button" type="button" data-match-result-filter="wrong" aria-pressed="false"><span>틀린 문제</span><strong data-match-result-count="wrong">0</strong></button>
+              <div class="match-result-filters">
+                <label class="match-result-filter-field" for="match-result-filter">
+                  <span class="match-result-filter-label">결과 보기</span>
+                  <div class="match-result-filter-select-wrap">
+                    <select class="match-result-filter-select" id="match-result-filter" aria-label="매칭 결과 필터">
+                      <option value="all">전체</option>
+                      <option value="correct">정답</option>
+                      <option value="wrong">오답</option>
+                    </select>
+                    <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
+                  </div>
+                </label>
+                <button class="secondary-btn button-with-icon match-result-bulk-btn" id="match-result-bulk-action" type="button">
+                  <span class="material-symbols-rounded" aria-hidden="true">bookmark_add</span>
+                  <span id="match-result-bulk-label">전체 저장</span>
+                </button>
               </div>
               <p class="match-result-empty" id="match-result-empty" hidden>보여줄 결과가 아직 없어요.</p>
               <div class="match-result-list" id="match-result-list"></div>

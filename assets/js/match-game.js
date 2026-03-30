@@ -2,7 +2,7 @@ const matchStorageKey = "japanote-match-state";
 const studyStateStorageKey = "jlpt-compass-state";
 const matchSourceLevels = ["N5", "N4", "N3"];
 const matchLevelOptions = [...matchSourceLevels, "all"];
-const matchDurationOptions = [0, 30, 45, 60];
+const matchDurationOptions = [0, 10, 15, 20];
 const matchTotalCountOptions = [5, 10, 15, 20];
 const matchResultFilterOptions = ["all", "correct", "wrong"];
 const matchPageSize = 5;
@@ -12,7 +12,7 @@ const matchPageTransitionDelay = 720;
 const defaultMatchPreferences = {
   level: "N5",
   totalCount: 5,
-  duration: 45,
+  duration: 15,
   optionsOpen: true
 };
 
@@ -26,8 +26,8 @@ const fallbackMatchPool = [
 
 const matchResultFilterLabels = {
   all: "전체",
-  correct: "맞춘 문제",
-  wrong: "틀린 문제"
+  correct: "정답",
+  wrong: "오답"
 };
 
 function loadMatchPreferences() {
@@ -70,6 +70,18 @@ function saveWordToMemorizationList(id) {
   localStorage.setItem(studyStateStorageKey, JSON.stringify(studyState));
 }
 
+function removeWordFromMemorizationList(id) {
+  if (!id) {
+    return;
+  }
+
+  const studyState = loadSharedStudyState();
+  const reviewIds = Array.isArray(studyState.reviewIds) ? studyState.reviewIds : [];
+
+  studyState.reviewIds = reviewIds.filter((itemId) => itemId !== id);
+  localStorage.setItem(studyStateStorageKey, JSON.stringify(studyState));
+}
+
 function isWordSavedToMemorizationList(id) {
   if (!id) {
     return false;
@@ -97,9 +109,31 @@ function getMatchLevel(value = matchPreferences.level) {
   return matchLevelOptions.includes(value) ? value : "N5";
 }
 
+function formatMatchLevelLabel(level) {
+  const normalizedLevel = normalizeMatchText(level).toUpperCase();
+
+  if (!normalizedLevel) {
+    return "N5";
+  }
+
+  if (normalizedLevel === "ALL" || normalizedLevel === "전체") {
+    return "전체";
+  }
+
+  if (/^N\d+$/.test(normalizedLevel)) {
+    return normalizedLevel;
+  }
+
+  if (/^\d+$/.test(normalizedLevel)) {
+    return `N${normalizedLevel}`;
+  }
+
+  return normalizedLevel;
+}
+
 function getMatchLevelLabel(level = matchPreferences.level) {
   const activeLevel = getMatchLevel(level);
-  return activeLevel === "all" ? "전체" : activeLevel;
+  return activeLevel === "all" ? "전체" : formatMatchLevelLabel(activeLevel);
 }
 
 function getMatchTotalCount(value = matchPreferences.totalCount) {
@@ -109,7 +143,7 @@ function getMatchTotalCount(value = matchPreferences.totalCount) {
 
 function getMatchDuration(value = matchPreferences.duration) {
   const numericValue = Number(value);
-  return matchDurationOptions.includes(numericValue) ? numericValue : 45;
+  return matchDurationOptions.includes(numericValue) ? numericValue : 15;
 }
 
 function getMatchDurationLabel(duration = matchPreferences.duration) {
@@ -184,7 +218,7 @@ function buildMatchPool(source) {
   return source
     .map((item) => ({
       id: normalizeMatchText(item.id || item.entry_id),
-      level: normalizeMatchText(item._level || item.level) || "N5",
+      level: formatMatchLevelLabel(item._level || item.level || "N5"),
       reading: getMatchReading(item),
       meaning: getMatchMeaning(item)
     }))
@@ -502,6 +536,49 @@ function getFilteredMatchResults(filter = getMatchResultFilter(matchState.result
   return matchState.results;
 }
 
+function renderMatchBulkActionButton(results) {
+  const bulkActionButton = document.getElementById("match-result-bulk-action");
+  const bulkActionLabel = document.getElementById("match-result-bulk-label");
+  const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
+
+  if (!bulkActionButton || !bulkActionLabel || !bulkActionIcon) {
+    return;
+  }
+
+  const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
+  const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
+  const actionLabel = allSaved ? "전체 제거" : "전체 저장";
+  const actionTitle =
+    uniqueIds.length === 0
+      ? "현재 필터에 해당하는 단어가 없어요"
+      : allSaved
+        ? "현재 필터의 단어를 암기 리스트에서 모두 제거"
+        : "현재 필터의 단어를 암기 리스트에 모두 저장";
+
+  bulkActionButton.disabled = uniqueIds.length === 0;
+  bulkActionButton.dataset.matchBulkAction = allSaved ? "remove" : "save";
+  bulkActionButton.setAttribute("aria-label", actionTitle);
+  bulkActionButton.title = actionTitle;
+  bulkActionLabel.textContent = actionLabel;
+  bulkActionIcon.textContent = allSaved ? "delete_sweep" : "bookmark_add";
+}
+
+function renderMatchResultFilterOptions(counts) {
+  const filterSelect = document.getElementById("match-result-filter");
+
+  if (!filterSelect) {
+    return;
+  }
+
+  filterSelect.innerHTML = matchResultFilterOptions
+    .map(
+      (filter) =>
+        `<option value="${filter}">${matchResultFilterLabels[filter]} (${counts[filter]})</option>`
+    )
+    .join("");
+  filterSelect.value = getMatchResultFilter(matchState.resultFilter);
+}
+
 function renderMatchResults() {
   const resultView = document.getElementById("match-result-view");
   const summary = document.getElementById("match-result-summary");
@@ -510,38 +587,29 @@ function renderMatchResults() {
   const wrong = document.getElementById("match-result-wrong");
   const empty = document.getElementById("match-result-empty");
   const list = document.getElementById("match-result-list");
+  const filterSelect = document.getElementById("match-result-filter");
+  const bulkActionButton = document.getElementById("match-result-bulk-action");
   const counts = getMatchResultCounts();
   const filteredResults = getFilteredMatchResults();
   const levelLabel = getMatchLevelLabel(matchPreferences.level);
 
-  if (!resultView || !summary || !total || !correct || !wrong || !empty || !list) {
+  if (!resultView || !summary || !total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
     return;
   }
 
   summary.textContent =
     counts.wrong === 0
-      ? `${levelLabel} ${counts.all}문제 전부 맞혔어요. 암기할 단어가 있으면 바로 저장해둘까요?`
-      : `${levelLabel} ${counts.all}문제 중 ${counts.correct}개 맞히고 ${counts.wrong}개 놓쳤어요.`;
+      ? `${levelLabel} ${counts.all}문제 모두 정답이에요. 암기할 단어가 있으면 바로 저장해둘까요?`
+      : `${levelLabel} ${counts.all}문제 중 정답 ${counts.correct}개, 오답 ${counts.wrong}개예요.`;
   total.textContent = String(counts.all);
   correct.textContent = String(counts.correct);
   wrong.textContent = String(counts.wrong);
-
-  document.querySelectorAll("[data-match-result-filter]").forEach((button) => {
-    const filter = getMatchResultFilter(button.dataset.matchResultFilter);
-    const count = button.querySelector("[data-match-result-count]");
-    const active = filter === getMatchResultFilter(matchState.resultFilter);
-
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-
-    if (count) {
-      count.textContent = String(counts[filter]);
-    }
-  });
+  renderMatchResultFilterOptions(counts);
+  renderMatchBulkActionButton(filteredResults);
 
   if (!filteredResults.length) {
     empty.hidden = false;
-    empty.textContent = `${matchResultFilterLabels[getMatchResultFilter(matchState.resultFilter)]}가 없어요.`;
+    empty.textContent = `${matchResultFilterLabels[getMatchResultFilter(matchState.resultFilter)]} 결과가 없어요.`;
     list.innerHTML = "";
     return;
   }
@@ -550,17 +618,26 @@ function renderMatchResults() {
   list.innerHTML = filteredResults
     .map((item) => {
       const saved = isWordSavedToMemorizationList(item.id);
-      const statusLabel = item.status === "correct" ? "맞춤" : "틀림";
+      const statusLabel = item.status === "correct" ? "정답" : "오답";
+      const actionLabel = saved ? "암기 리스트에서 제거" : "암기 리스트에 저장";
+      const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
         <article class="match-result-item is-${item.status}">
           <div class="match-result-item-head">
             <div class="match-result-item-badges">
               <span class="match-result-badge is-${item.status}">${statusLabel}</span>
-              <span class="match-result-level">${item.level}</span>
+              <span class="match-result-level">${formatMatchLevelLabel(item.level)}</span>
             </div>
-            <button class="secondary-btn match-save-btn" type="button" data-match-save="${item.id}" ${saved ? "disabled" : ""}>
-              ${saved ? "암기 리스트 저장됨" : "암기 리스트에 저장"}
+            <button
+              class="secondary-btn match-save-btn icon-only-btn${saved ? " is-saved" : ""}"
+              type="button"
+              data-match-save="${item.id}"
+              aria-label="${actionLabel}"
+              aria-pressed="${saved ? "true" : "false"}"
+              title="${actionLabel}"
+            >
+              <span class="material-symbols-rounded" aria-hidden="true">${actionIcon}</span>
             </button>
           </div>
           <div class="match-result-item-main">
@@ -851,12 +928,12 @@ function handleMatchTimeout() {
   renderMatchBoard();
 
   if (matchState.pageIndex + 1 >= getMatchPageCount()) {
-    setMatchFeedback("시간이 끝났어요. 남은 단어는 틀린 문제로 처리하고 결과로 넘어갈게요.", "is-fail");
+    setMatchFeedback("시간이 끝났어요. 남은 단어는 오답으로 처리하고 결과로 넘어갈게요.", "is-fail");
     queueMatchPageTransition(showMatchResults);
     return;
   }
 
-  setMatchFeedback("시간이 끝났어요. 지금 보이는 단어는 틀린 문제로 처리하고 다음 페이지로 갈게요.", "is-fail");
+  setMatchFeedback("시간이 끝났어요. 지금 보이는 단어는 오답으로 처리하고 다음 페이지로 갈게요.", "is-fail");
   queueMatchPageTransition(moveToNextMatchPage);
 }
 
@@ -932,7 +1009,8 @@ function attachMatchEventListeners() {
   const newRound = document.getElementById("match-new-round");
   const resetRound = document.getElementById("match-reset-round");
   const optionsToggle = document.getElementById("match-options-toggle");
-  const resultFilters = document.getElementById("match-result-filters");
+  const resultFilterSelect = document.getElementById("match-result-filter");
+  const resultBulkAction = document.getElementById("match-result-bulk-action");
   const resultList = document.getElementById("match-result-list");
 
   if (newRound) {
@@ -969,15 +1047,32 @@ function attachMatchEventListeners() {
     });
   });
 
-  if (resultFilters) {
-    resultFilters.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-match-result-filter]");
+  if (resultFilterSelect) {
+    resultFilterSelect.addEventListener("change", (event) => {
+      setMatchResultFilter(event.target.value);
+    });
+  }
 
-      if (!button) {
+  if (resultBulkAction) {
+    resultBulkAction.addEventListener("click", () => {
+      const filteredResults = getFilteredMatchResults();
+      const uniqueIds = Array.from(new Set(filteredResults.map((item) => item.id).filter(Boolean)));
+
+      if (!uniqueIds.length) {
         return;
       }
 
-      setMatchResultFilter(button.dataset.matchResultFilter);
+      if (resultBulkAction.dataset.matchBulkAction === "remove") {
+        uniqueIds.forEach((id) => {
+          removeWordFromMemorizationList(id);
+        });
+      } else {
+        uniqueIds.forEach((id) => {
+          saveWordToMemorizationList(id);
+        });
+      }
+
+      renderMatchResults();
     });
   }
 
@@ -989,7 +1084,12 @@ function attachMatchEventListeners() {
         return;
       }
 
-      saveWordToMemorizationList(button.dataset.matchSave);
+      if (isWordSavedToMemorizationList(button.dataset.matchSave)) {
+        removeWordFromMemorizationList(button.dataset.matchSave);
+      } else {
+        saveWordToMemorizationList(button.dataset.matchSave);
+      }
+
       renderMatchResults();
     });
   }
