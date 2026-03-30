@@ -567,6 +567,126 @@ const basicPracticeSets = {
         options: ["たけ", "き", "いと", "くち"],
         answer: 0,
         explanation: "竹은 たけ, 대나무입니다. 자연 관련 한자를 넓힐 때 같이 보기 좋습니다."
+      },
+      {
+        id: "bp-j21",
+        source: "한자 21",
+        title: "실 한자",
+        note: "모양이 단순한 기초 한자",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "糸",
+        displaySub: "뜻: 실",
+        options: ["いと", "いし", "みみ", "はな"],
+        answer: 0,
+        explanation: "糸는 いと, 실입니다. 글자 모양이 독특해서 초반에 기억해두기 좋습니다."
+      },
+      {
+        id: "bp-j22",
+        source: "한자 22",
+        title: "조개 한자",
+        note: "사물 이름으로 익히기",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "貝",
+        displaySub: "뜻: 조개",
+        options: ["かい", "かわ", "こ", "たけ"],
+        answer: 0,
+        explanation: "貝는 かい, 조개입니다. 간단한 명사 한자로 익히기 좋습니다."
+      },
+      {
+        id: "bp-j23",
+        source: "한자 23",
+        title: "구슬 한자",
+        note: "짧은 읽기로 외우기",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "玉",
+        displaySub: "뜻: 구슬, 공",
+        options: ["たま", "そら", "くるま", "め"],
+        answer: 0,
+        explanation: "玉는 たま, 구슬입니다. 짧은 읽기라 초급에서 금방 익히기 좋습니다."
+      },
+      {
+        id: "bp-j24",
+        source: "한자 24",
+        title: "아이 한자",
+        note: "사람 관련 한자 시작",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "子",
+        displaySub: "뜻: 아이",
+        options: ["こ", "て", "おとこ", "あめ"],
+        answer: 0,
+        explanation: "子는 こ, 아이입니다. 이름이나 단어 끝에서도 자주 보이는 글자입니다."
+      },
+      {
+        id: "bp-j25",
+        source: "한자 25",
+        title: "여자 한자",
+        note: "사람 표현의 기본",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "女",
+        displaySub: "뜻: 여자",
+        options: ["おんな", "おとこ", "ひと", "こ"],
+        answer: 0,
+        explanation: "女는 おんな, 여자입니다. 男과 같이 묶어서 외우면 편합니다."
+      },
+      {
+        id: "bp-j26",
+        source: "한자 26",
+        title: "남자 한자",
+        note: "사람 표현 짝으로 익히기",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "男",
+        displaySub: "뜻: 남자",
+        options: ["おとこ", "おんな", "こ", "みみ"],
+        answer: 0,
+        explanation: "男는 おとこ, 남자입니다. 女와 짝으로 보면서 같이 익히면 좋습니다."
+      },
+      {
+        id: "bp-j27",
+        source: "한자 27",
+        title: "개 한자",
+        note: "동물 한자 시작",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "犬",
+        displaySub: "뜻: 개",
+        options: ["いぬ", "ねこ", "うま", "さかな"],
+        answer: 0,
+        explanation: "犬는 いぬ, 개입니다. 생활 단어에서 자주 보는 대표 동물 한자입니다."
+      },
+      {
+        id: "bp-j28",
+        source: "한자 28",
+        title: "물고기 한자",
+        note: "동물 표현 확장",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "魚",
+        displaySub: "뜻: 물고기",
+        options: ["さかな", "いぬ", "かわ", "たま"],
+        answer: 0,
+        explanation: "魚는 さかな, 물고기입니다. 음식이나 시장 관련 단어로도 이어집니다."
+      },
+      {
+        id: "bp-j29",
+        source: "한자 29",
+        title: "위 한자",
+        note: "위치 표현의 기본",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "上",
+        displaySub: "뜻: 위",
+        options: ["うえ", "した", "なか", "そと"],
+        answer: 0,
+        explanation: "上는 うえ, 위입니다. 방향과 위치 표현에서 매우 자주 보입니다."
+      },
+      {
+        id: "bp-j30",
+        source: "한자 30",
+        title: "아래 한자",
+        note: "방향 표현 마무리",
+        prompt: "이 한자, 어떻게 읽을까요?",
+        display: "下",
+        displaySub: "뜻: 아래",
+        options: ["した", "うえ", "みぎ", "ひだり"],
+        answer: 0,
+        explanation: "下는 した, 아래입니다. 上와 함께 묶어두면 방향 한자를 빨리 익힐 수 있습니다."
       }
     ]
   },
@@ -4239,7 +4359,7 @@ function renderStarterKanjiPractice() {
   source.textContent = formatQuizLineBreaks(current.source);
   progress.textContent = `${state.basicPracticeIndexes.kanji + 1} / ${track.items.length}`;
   display.textContent = formatQuizLineBreaks(current.display);
-  displaySub.textContent = formatQuizLineBreaks(current.displaySub || "");
+  displaySub.textContent = formatQuizLineBreaks(normalizeQuizText(current.displaySub).replace(/^뜻:\s*/, ""));
 
   card.className = `basic-practice-card kanji-practice-card ${current.tone || "tone-gold"}`;
   nextButton.textContent =
@@ -4990,17 +5110,9 @@ function renderVocabQuizResults() {
     const main = document.createElement("div");
     const title = document.createElement("strong");
     const meaning = document.createElement("p");
-    const extra = document.createElement("p");
     const statusLabel = item.status === "correct" ? "정답" : "오답";
     const saved = isWordSavedToReviewList(item.id);
     const actionLabel = saved ? "다시 볼게요에서 제거" : "다시 볼게요에 저장";
-    let extraText = `${vocabQuizModeLabels[item.mode] || getVocabQuizModeLabel(item.mode)} 성공`;
-
-    if (item.status === "wrong") {
-      extraText = item.timedOut
-        ? `시간 종료 · 정답: ${item.answerOption}`
-        : `선택: ${item.selectedOption} · 정답: ${item.answerOption}`;
-    }
 
     article.className = `match-result-item is-${item.status}`;
     head.className = "match-result-item-head";
@@ -5021,14 +5133,12 @@ function renderVocabQuizResults() {
     main.className = "match-result-item-main";
     title.textContent = item.reading ? `${item.word} · ${item.reading}` : item.word;
     meaning.textContent = item.meaning;
-    extra.className = "vocab-quiz-result-extra";
-    extra.textContent = extraText;
 
     actionButton.appendChild(actionIcon);
     badges.append(statusBadge, levelBadge);
     head.append(badges, actionButton);
     main.append(title, meaning);
-    article.append(head, main, extra);
+    article.append(head, main);
     list.appendChild(article);
   });
 }
