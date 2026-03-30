@@ -7,7 +7,7 @@ globalThis.japanoteContent.reading = {
         id: "n5-r1",
         source: "N5R p1",
         title: "아침 식사",
-        korean: "늦잠을 자서 아침을 못 먹고 학교에 간 상황입니다.",
+        korean: "늦잠을 자서 아침을 못 먹고 학교에 간 상황이에요.",
         tone: "tone-coral",
         passageStyle: "plain",
         passage: [
@@ -23,13 +23,13 @@ globalThis.japanoteContent.reading = {
           "バナナを 食べました。"
         ],
         answer: 2,
-        explanation: "늦게 일어나서 학교 가기 전에 아무것도 먹지 못했고, 바나나는 학교에 가져갔습니다."
+        explanation: "늦게 일어나서 학교 가기 전에 아무것도 못 먹었고, 바나나는 학교에 가져갔어요."
       },
       {
         id: "n5-r2",
         source: "N5R p2",
         title: "수업 공지",
-        korean: "일본어 1반 학생에게 전달하는 공지문입니다.",
+        korean: "일본어 1반 학생에게 전하는 공지예요.",
         tone: "tone-gold",
         passageStyle: "note",
         passage: [
@@ -46,13 +46,13 @@ globalThis.japanoteContent.reading = {
           "今日 クラスが ありますから、しゅくだいを 出してください。"
         ],
         answer: 1,
-        explanation: "일본어 1반은 오전 수업이 없고, 숙제는 다음 주에 제출하라고 공지하고 있습니다."
+        explanation: "일본어 1반은 오전 수업이 없고, 숙제는 다음 주에 내라고 알려주고 있어요."
       },
       {
         id: "n5-r3",
         source: "N5R p3",
         title: "메모 확인",
-        korean: "우체국 사람이 오기 전에 무엇을 먼저 해야 하는지 묻는 메모 문제입니다.",
+        korean: "우체국 사람이 오기 전에 뭘 먼저 해야 하는지 묻는 메모 문제예요.",
         tone: "tone-sky",
         passageStyle: "note",
         passage: [
@@ -69,7 +69,7 @@ globalThis.japanoteContent.reading = {
           "ゆうびんきょくの 人に にもつと お金を わたします。"
         ],
         answer: 0,
-        explanation: "우체국 사람이 오기 전에 먼저 중西さん에게서 돈을 받아 와야 합니다."
+        explanation: "우체국 사람이 오기 전에 먼저 중西さん에게서 돈을 받아 와야 해요."
       }
     ],
     N4: [
@@ -77,7 +77,7 @@ globalThis.japanoteContent.reading = {
         id: "n4-r1",
         source: "N4R p1",
         title: "분실물 안내",
-        korean: "시험 기간에 분실물을 찾으러 가는 방법을 묻는 공지입니다.",
+        korean: "시험 기간에 분실물을 찾으러 가는 방법을 묻는 공지예요.",
         tone: "tone-coral",
         passageStyle: "note",
         passage: [
@@ -96,13 +96,13 @@ globalThis.japanoteContent.reading = {
           "教室で、自分の クラスの 先生に 話します。"
         ],
         answer: 3,
-        explanation: "시험 기간에는 선생님 방에 들어갈 수 없으므로 교실에서 자기 반 선생님에게 말해야 합니다."
+        explanation: "시험 기간에는 선생님 방에 들어갈 수 없어서 교실에서 자기 반 선생님에게 말해야 해요."
       },
       {
         id: "n4-r2",
         source: "N4R p2",
         title: "겨울 아이스크림",
-        korean: "글쓴이가 무엇을 즐거움으로 느끼는지 파악하는 문제입니다.",
+        korean: "글쓴이가 뭘 즐거움으로 느끼는지 파악하는 문제예요.",
         tone: "tone-gold",
         passageStyle: "plain",
         passage: [
@@ -118,13 +118,13 @@ globalThis.japanoteContent.reading = {
           "夏に 高い アイスクリームを 食べること"
         ],
         answer: 1,
-        explanation: "글쓴이는 겨울에 따뜻한 방에서 좋은 아이스크림을 먹는 것을 즐거움이라고 말합니다."
+        explanation: "글쓴이는 겨울에 따뜻한 방에서 좋은 아이스크림을 먹는 걸 즐거움이라고 말해요."
       },
       {
         id: "n4-r3",
         source: "N4R p3",
         title: "공장 견학 메모",
-        korean: "견학 날짜와 시간, 인원 수까지 함께 알려야 하는 메모입니다.",
+        korean: "견학 날짜와 시간, 인원 수까지 함께 알려야 하는 메모예요.",
         tone: "tone-sky",
         passageStyle: "note",
         passage: [
@@ -142,13 +142,13 @@ globalThis.japanoteContent.reading = {
           "工場見学に 行く 日と 時間が、いつごろ 決まるか"
         ],
         answer: 2,
-        explanation: "메모에는 날짜와 시간뿐 아니라 가는 사람 수까지 알려 달라고 적혀 있습니다."
+        explanation: "메모에는 날짜와 시간뿐 아니라 가는 사람 수까지 알려 달라고 적혀 있어요."
       },
       {
         id: "n4-r4",
         source: "N4R p4",
         title: "검은 지우개",
-        korean: "글쓴이가 검은 지우개를 산 이유를 찾는 짧은 독해입니다.",
+        korean: "글쓴이가 검은 지우개를 산 이유를 찾는 짧은 독해예요.",
         tone: "tone-mint",
         passageStyle: "plain",
         passage: [
@@ -164,7 +164,7 @@ globalThis.japanoteContent.reading = {
           "黒い 消しゴムは、色が かっこいいと 思ったから"
         ],
         answer: 3,
-        explanation: "글쓴이는 성능 때문이 아니라 색이 멋있다고 생각해서 샀다고 말합니다."
+        explanation: "글쓴이는 성능 때문이 아니라 색이 멋있다고 생각해서 샀다고 말해요."
       }
     ],
     N3: [
@@ -172,7 +172,7 @@ globalThis.japanoteContent.reading = {
         id: "n3-r1",
         source: "N3R p1",
         title: "폭설 안내 메일",
-        korean: "오전 수업 취소와 오후 수업 여부 공지를 어떻게 이해해야 하는지 묻습니다.",
+        korean: "오전 수업 취소와 오후 수업 여부 공지를 어떻게 이해해야 할지 묻고 있어요.",
         tone: "tone-coral",
         passageStyle: "note",
         passage: [
@@ -189,13 +189,13 @@ globalThis.japanoteContent.reading = {
           "10時に メールが 届いたら、今日の 午後の 授業は ある。"
         ],
         answer: 2,
-        explanation: "오전 수업은 취소됐고, 오후 수업 여부는 10시에 오는 메일을 확인해야 합니다."
+        explanation: "오전 수업은 취소됐고, 오후 수업 여부는 10시에 오는 메일을 확인해야 해요."
       },
       {
         id: "n3-r2",
         source: "N3R p2",
         title: "휴대전화에 대한 생각",
-        korean: "편리하지만 항상 신경 써야 하는 생활이 싫어서 갖고 싶지 않다는 의견입니다.",
+        korean: "편리하지만 항상 신경 써야 하는 생활이 싫어서 갖고 싶지 않다는 의견이에요.",
         tone: "tone-gold",
         passageStyle: "plain",
         passage: [
@@ -212,13 +212,13 @@ globalThis.japanoteContent.reading = {
           "持ちたくは なかったが、ないと 不便なので、もう 一度 持つ つもりだ。"
         ],
         answer: 1,
-        explanation: "편리함은 인정하지만 항상 전화를 의식하는 생활이 싫어서 지금은 다시 가질 생각이 없습니다."
+        explanation: "편리함은 인정하지만 항상 전화를 의식하는 생활이 싫어서 지금은 다시 가질 생각이 없어요."
       },
       {
         id: "n3-r3",
         source: "N3R p3",
         title: "따뜻한 음료 자판기",
-        korean: "겨울에도 따뜻한 음료를 살 수 있는 자판기가 생긴 이유를 묻는 문제입니다.",
+        korean: "겨울에도 따뜻한 음료를 살 수 있는 자판기가 생긴 이유를 묻는 문제예요.",
         tone: "tone-sky",
         passageStyle: "plain",
         passage: [
@@ -236,13 +236,13 @@ globalThis.japanoteContent.reading = {
           "温かい 物も 買える 販売機が あれば 喜ばれるだろうと、社長が 考えたから"
         ],
         answer: 3,
-        explanation: "추운 겨울에 따뜻한 음료도 살 수 있으면 좋겠다고 사장이 생각한 것이 계기였습니다."
+        explanation: "추운 겨울에 따뜻한 음료도 살 수 있으면 좋겠다고 사장이 생각한 게 계기였어요."
       },
       {
         id: "n3-r4",
         source: "N3R p4",
         title: "설명회 보고 자료",
-        korean: "보고 자료를 손보고 회의 전에 준비해야 하는 일을 묻는 메모입니다.",
+        korean: "보고 자료를 손보고 회의 전에 준비해야 하는 일을 묻는 메모예요.",
         tone: "tone-mint",
         passageStyle: "note",
         passage: [
@@ -260,7 +260,7 @@ globalThis.japanoteContent.reading = {
           "黒田課長が モリムラ工業に 行く までに、説明会の 報告資料を 完成させる。"
         ],
         answer: 3,
-        explanation: "보고 자료와 준비물이 오전 11시 전까지 필요하며, 회의에서 직접 보고하는 사람은 パクさん이 아니라 黒田課長입니다."
+        explanation: "보고 자료와 준비물은 오전 11시 전까지 필요하고, 회의에서 직접 보고하는 사람은 パクさん이 아니라 黒田課長이에요."
       }
     ]
   }

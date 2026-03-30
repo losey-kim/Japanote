@@ -35,8 +35,8 @@ const matchResultFilterLabels = {
 
 const matchFilterLabels = {
   all: "전체",
-  review: "다시 보기",
-  mastered: "익힌 단어"
+  review: "다시 볼래요",
+  mastered: "익혔어요"
 };
 
 function loadMatchPreferences() {
@@ -482,7 +482,7 @@ function renderMatchActionCopy() {
   }
 
   if (newRoundLabel) {
-    newRoundLabel.textContent = isResetState ? "다시하기" : "시작하기";
+    newRoundLabel.textContent = isResetState ? "다시 해볼까요?" : "시작해볼까요?";
   }
 
   if (newRoundIcon) {
@@ -698,13 +698,13 @@ function renderMatchBulkActionButton(results) {
 
   const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
   const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
-  const actionLabel = allSaved ? "전체 제거" : "전체 저장";
+  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
   const actionTitle =
     uniqueIds.length === 0
-      ? "현재 필터에 해당하는 단어가 없어요"
+      ? "지금 담아둘 단어가 없어요."
       : allSaved
-        ? "현재 필터의 단어를 암기 리스트에서 모두 제거"
-        : "현재 필터의 단어를 암기 리스트에 모두 저장";
+        ? "지금 보이는 단어를 다시 볼래요에서 모두 뺄게요."
+        : "지금 보이는 단어를 다시 볼래요에 모두 담아둘게요.";
 
   bulkActionButton.disabled = uniqueIds.length === 0;
   bulkActionButton.dataset.matchBulkAction = allSaved ? "remove" : "save";
@@ -754,7 +754,7 @@ function renderMatchResults() {
 
   if (!filteredResults.length) {
     empty.hidden = false;
-    empty.textContent = `${matchResultFilterLabels[getMatchResultFilter(matchState.resultFilter)]} 결과가 없어요.`;
+    empty.textContent = `${matchResultFilterLabels[getMatchResultFilter(matchState.resultFilter)]} 결과는 아직 없어요.`;
     list.innerHTML = "";
     return;
   }
@@ -764,7 +764,7 @@ function renderMatchResults() {
     .map((item) => {
       const saved = isWordSavedToMemorizationList(item.id);
       const statusLabel = item.status === "correct" ? "정답" : "오답";
-      const actionLabel = saved ? "암기 리스트에서 제거" : "암기 리스트에 저장";
+      const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
       const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
@@ -814,7 +814,7 @@ function renderMatchScreen() {
     empty.hidden = !shouldShowEmpty;
 
     if (shouldShowEmpty) {
-      empty.textContent = "설정을 마쳤다면 시작하기를 눌러주세요.";
+      empty.textContent = "준비됐다면 시작해볼까요?";
     }
   }
 
@@ -946,7 +946,7 @@ function startMatchSession(items = buildMatchSessionItems()) {
   clearAllMatchTimers();
 
   if (!items.length) {
-    renderMatchUnavailableState("단어 데이터를 불러오는 중이에요. 잠시 후 다시 해볼까요?");
+    renderMatchUnavailableState("단어를 불러오는 중이에요. 잠시 후 다시 해볼까요?");
     return;
   }
 
@@ -1113,12 +1113,12 @@ function handleMatchTimeout() {
   renderMatchBoard();
 
   if (matchState.pageIndex + 1 >= getMatchPageCount()) {
-    setMatchFeedback("시간이 끝났어요. 남은 단어는 오답으로 처리하고 결과로 넘어갈게요.", "is-fail");
+    setMatchFeedback("아깝네요! 시간이 끝났어요. 남은 단어는 틀린 문제로 넘기고 결과로 갈게요.", "is-fail");
     queueMatchPageTransition(showMatchResults);
     return;
   }
 
-  setMatchFeedback("시간이 끝났어요. 지금 보이는 단어는 오답으로 처리하고 다음 페이지로 갈게요.", "is-fail");
+  setMatchFeedback("아깝네요! 시간이 끝났어요. 지금 보이는 단어는 틀린 문제로 넘기고 다음으로 갈게요.", "is-fail");
   queueMatchPageTransition(moveToNextMatchPage);
 }
 

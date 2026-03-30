@@ -233,7 +233,7 @@
 
     return `
       <div class="${escapeHtml(className)}" id="${escapeHtml(viewId)}" hidden>
-        <p class="match-result-title">결과보기</p>
+        <p class="match-result-title">결과를 볼까요?</p>
         <div class="match-result-grid">
           <article class="match-result-stat"><span>전체</span><strong id="${escapeHtml(totalId)}">0</strong></article>
           <article class="match-result-stat"><span>정답</span><strong id="${escapeHtml(correctId)}">0</strong></article>
@@ -268,7 +268,7 @@
             shellId: "vocab-quiz-options-shell",
             shellClassName: "match-options-shell",
             toggleId: "vocab-quiz-options-toggle",
-            toggleTitle: "퀴즈 설정",
+            toggleTitle: "퀴즈 설정, 어떻게 할까요?",
             summaryId: "vocab-quiz-options-summary",
             summaryText: "히라가나·가타카나 → 뜻 · 10문제 · 15초",
             panelId: "vocab-quiz-options-panel",
@@ -303,7 +303,7 @@
                 })
               },
               {
-                label: "총 몇 문제로 할까요?",
+                label: "몇 문제 풀까요?",
                 content: createToggleButtonGroup({
                   ariaLabel: "단어 퀴즈 문제 수 고르기",
                   buttons: [
@@ -342,12 +342,12 @@
             })}
             ${createSelectField({
               id: "vocab-quiz-filter-select",
-              label: "묶음",
-              ariaLabel: "단어 퀴즈 묶음 고르기",
+              label: "모아보기",
+              ariaLabel: "단어 퀴즈 모아보기 고르기",
               options: [
                 { value: "all", label: "전체" },
-                { value: "review", label: "다시 보기" },
-                { value: "mastered", label: "익힌 단어" }
+                { value: "review", label: "다시 볼래요" },
+                { value: "mastered", label: "익혔어요" }
               ]
             })}
             ${createSelectField({
@@ -360,7 +360,7 @@
           ${createActionButton({
             id: "vocab-quiz-restart",
             labelId: "vocab-quiz-restart-label",
-            label: "시작하기"
+            label: "시작해볼까요?"
           })}
         </aside>
         <div class="match-board vocab-quiz-board">
@@ -389,7 +389,7 @@
                 title: "단어 퀴즈",
                 noteClassName: "basic-practice-note",
                 noteId: "vocab-quiz-note",
-                note: "선택한 단어로 바로 테스트할게요."
+                note: "고른 단어로 바로 풀어봐요."
               },
               promptBox: {
                 className: "basic-practice-prompt-box",
@@ -408,7 +408,7 @@
               feedbackId: "vocab-quiz-feedback",
               explanationId: "vocab-quiz-explanation",
               nextButtonId: "vocab-quiz-next",
-              nextButtonLabel: "다음으로 가볼까요?"
+              nextButtonLabel: "다음 문제 볼까요?"
             })}
           </div>
           ${createResultView({
@@ -419,12 +419,12 @@
             filterId: "vocab-quiz-result-filter",
             filterAriaLabel: "단어 퀴즈 결과 필터",
             emptyId: "vocab-quiz-result-empty",
-            emptyText: "보여줄 결과가 아직 없어요.",
+            emptyText: "아직 보여줄 결과가 없어요.",
             listId: "vocab-quiz-result-list",
             bulkAction: {
               id: "vocab-quiz-result-bulk-action",
               labelId: "vocab-quiz-result-bulk-label",
-              label: "전체 저장"
+              label: "전체 담기"
             }
           })}
         </div>
@@ -439,12 +439,12 @@
           <div class="match-sidebar-head"><span class="eyebrow">QUIZ HUD</span><h3>한자 퀴즈</h3></div>
           <div class="study-options-shell match-options-shell kanji-options-shell" id="starter-kanji-options-shell">
             <button class="study-options-toggle" id="starter-kanji-options-toggle" type="button" aria-expanded="true" aria-controls="starter-kanji-options-panel">
-              <div class="study-options-toggle-copy"><strong>퀴즈 설정</strong><p class="study-options-toggle-summary" id="starter-kanji-options-summary">10문제 · 15초</p></div>
+              <div class="study-options-toggle-copy"><strong>퀴즈 설정, 어떻게 할까요?</strong><p class="study-options-toggle-summary" id="starter-kanji-options-summary">10문제 · 15초</p></div>
               <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
             </button>
             <div class="study-options-panel study-options-panel-wide" id="starter-kanji-options-panel">
               <div class="study-options-group">
-                <span>총 몇 문제로 할까요?</span>
+                <span>몇 문제 풀까요?</span>
                 ${createToggleButtonGroup({
                   ariaLabel: "한자 퀴즈 문제 수 고르기",
                   buttons: [
@@ -472,11 +472,11 @@
           ${createActionButton({
             id: "starter-kanji-start",
             labelId: "starter-kanji-start-label",
-            label: "시작하기"
+            label: "시작해볼까요?"
           })}
         </aside>
         <div class="match-board">
-          <p class="vocab-list-empty" id="starter-kanji-empty" hidden>설정을 마쳤다면 시작하기를 눌러주세요.</p>
+          <p class="vocab-list-empty" id="starter-kanji-empty" hidden>준비됐다면 시작해볼까요?</p>
           <div id="starter-kanji-practice-view">
             ${createChoiceQuizCard({
               articleId: "starter-kanji-card",
@@ -511,10 +511,10 @@
             filterId: "starter-kanji-result-filter",
             filterAriaLabel: "한자 결과 필터",
             emptyId: "starter-kanji-result-empty",
-            emptyText: "보여줄 결과가 아직 없어요.",
+            emptyText: "아직 보여줄 결과가 없어요.",
             listId: "starter-kanji-result-list",
             footerHtml:
-              '<div class="quiz-actions"><button class="primary-btn button-with-icon" id="starter-kanji-restart" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span>다시하기</span></button></div>'
+              '<div class="quiz-actions"><button class="primary-btn button-with-icon" id="starter-kanji-restart" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span>다시 해볼까요?</span></button></div>'
           })}
         </div>
       </div>
@@ -530,16 +530,16 @@
             shellId: "match-options-shell",
             shellClassName: "match-options-shell",
             toggleId: "match-options-toggle",
-            toggleTitle: "매칭 설정",
+            toggleTitle: "짝 맞추기 설정",
             summaryId: "match-options-summary",
             summaryText: "5문제 · 15초",
             panelId: "match-options-panel",
             panelClassName: "study-options-panel-wide",
             groups: [
               {
-                label: "총 몇 문제로 할까요?",
+                label: "몇 문제 풀까요?",
                 content: createToggleButtonGroup({
-                  ariaLabel: "매칭 문제 수 고르기",
+                  ariaLabel: "짝 맞추기 문제 수 고르기",
                   buttons: [
                     { label: "5문제", className: "level-button is-active", attributes: { "data-match-count": "5", "aria-pressed": "true" } },
                     { label: "10문제", attributes: { "data-match-count": "10", "aria-pressed": "false" } },
@@ -551,7 +551,7 @@
               {
                 label: "시간은 어떻게 할까요?",
                 content: createToggleButtonGroup({
-                  ariaLabel: "매칭 시간 고르기",
+                  ariaLabel: "짝 맞추기 시간 고르기",
                   buttons: [
                     { label: "천천히", attributes: { "data-match-time": "0", "aria-pressed": "false" } },
                     { label: "10초", attributes: { "data-match-time": "10", "aria-pressed": "false" } },
@@ -562,11 +562,11 @@
               }
             ]
           })}
-          <div class="vocab-select-toolbar vocab-select-toolbar-sidebar" aria-label="매칭 필터">
+          <div class="vocab-select-toolbar vocab-select-toolbar-sidebar" aria-label="짝 맞추기 필터">
             ${createSelectField({
               id: "match-level-select",
-              label: "난이도",
-              ariaLabel: "매칭 난이도 고르기",
+              label: "레벨",
+              ariaLabel: "짝 맞추기 레벨 고르기",
               options: [
                 { value: "all", label: "전체" },
                 { value: "N5", label: "N5" },
@@ -576,35 +576,35 @@
             })}
             ${createSelectField({
               id: "match-filter-select",
-              label: "묶음",
-              ariaLabel: "매칭 묶음 고르기",
+              label: "모아보기",
+              ariaLabel: "짝 맞추기 모아보기 고르기",
               options: [
                 { value: "all", label: "전체" },
-                { value: "review", label: "다시 보기" },
-                { value: "mastered", label: "익힌 단어" }
+                { value: "review", label: "다시 볼래요" },
+                { value: "mastered", label: "익혔어요" }
               ]
             })}
             ${createSelectField({
               id: "match-part-select",
               label: "품사",
-              ariaLabel: "매칭 품사 고르기",
+              ariaLabel: "짝 맞추기 품사 고르기",
               options: [{ value: "all", label: "전체 품사" }]
             })}
           </div>
           ${createStatsGrid({
             items: [
-              { label: "푼 문제", valueId: "match-progress", value: "0 / 5" },
+              { label: "진행", valueId: "match-progress", value: "0 / 5" },
               { label: "남은 시간", valueId: "match-timer", value: "15초" }
             ]
           })}
           ${createActionButton({
             id: "match-new-round",
             labelId: "match-new-round-label",
-            label: "시작하기"
+            label: "시작해볼까요?"
           })}
         </aside>
         <div class="match-board" id="match-board" hidden>
-          <p class="vocab-list-empty" id="match-empty" hidden>설정을 마쳤다면 시작하기를 눌러주세요.</p>
+          <p class="vocab-list-empty" id="match-empty" hidden>준비됐다면 시작해볼까요?</p>
           <div class="match-play-view" id="match-play-view">
             <div class="match-feedback" id="match-feedback" hidden></div>
             <div class="match-columns">
@@ -618,14 +618,14 @@
             correctId: "match-result-correct",
             wrongId: "match-result-wrong",
             filterId: "match-result-filter",
-            filterAriaLabel: "매칭 결과 필터",
+            filterAriaLabel: "짝 맞추기 결과 필터",
             emptyId: "match-result-empty",
-            emptyText: "보여줄 결과가 아직 없어요.",
+            emptyText: "아직 보여줄 결과가 없어요.",
             listId: "match-result-list",
             bulkAction: {
               id: "match-result-bulk-action",
               labelId: "match-result-bulk-label",
-              label: "전체 저장"
+              label: "전체 담기"
             }
           })}
         </div>
@@ -637,7 +637,7 @@
     return `
       <div class="match-shell">
         <aside class="match-sidebar">
-          <div class="match-sidebar-head"><span class="eyebrow">GRAMMAR HUD</span><h3>문법 문제</h3></div>
+          <div class="match-sidebar-head"><span class="eyebrow">GRAMMAR HUD</span><h3>문법 퀴즈</h3></div>
           ${createStudyOptionsShell({
             shellId: "grammar-practice-options-shell",
             shellClassName: "match-options-shell",
@@ -658,21 +658,21 @@
           ${createActionButton({
             id: "grammar-practice-start",
             labelId: "grammar-practice-start-label",
-            label: "시작하기"
+            label: "시작해볼까요?"
           })}
         </aside>
         <div class="match-board grammar-practice-board">
-          <p class="vocab-list-empty" id="grammar-practice-empty" hidden>설정을 마쳤다면 시작하기를 눌러주세요.</p>
+          <p class="vocab-list-empty" id="grammar-practice-empty" hidden>준비됐다면 시작해볼까요?</p>
           <div id="grammar-practice-view">
             <article class="grammar-practice-card">
               <div class="grammar-practice-meta"><span id="grammar-practice-level">N5</span><span id="grammar-practice-source">N5G 1</span><span id="grammar-practice-progress">1 / 4</span></div>
               <div class="quiz-hud"><div class="quiz-hud-item"><span>남은 시간</span><strong id="grammar-timer">25초</strong></div></div>
-              <div class="grammar-practice-header"><div><span class="eyebrow">GRAMMAR SET</span><h3 id="grammar-practice-title">문법 연습</h3></div><p class="grammar-practice-note" id="grammar-practice-note"></p></div>
-              <div class="grammar-practice-question"><span class="eyebrow">SENTENCE</span><p id="grammar-practice-sentence">문장을 데려오고 있어요.</p></div>
+              <div class="grammar-practice-header"><div><span class="eyebrow">GRAMMAR SET</span><h3 id="grammar-practice-title">문법 퀴즈</h3></div><p class="grammar-practice-note" id="grammar-practice-note"></p></div>
+              <div class="grammar-practice-question"><span class="eyebrow">SENTENCE</span><p id="grammar-practice-sentence">문장을 불러오고 있어요.</p></div>
               <div class="grammar-practice-options" id="grammar-practice-options"></div>
               <p class="grammar-practice-feedback" id="grammar-practice-feedback"></p>
               <p class="grammar-practice-explanation" id="grammar-practice-explanation"></p>
-              <div class="quiz-actions"><button class="primary-btn" id="grammar-practice-next" type="button">다음으로 가볼까요?</button></div>
+              <div class="quiz-actions"><button class="primary-btn" id="grammar-practice-next" type="button">다음 문제 볼까요?</button></div>
             </article>
           </div>
         </div>
@@ -684,7 +684,7 @@
     return `
       <div class="match-shell">
         <aside class="match-sidebar">
-          <div class="match-sidebar-head"><span class="eyebrow">READING HUD</span><h3>독해 문제</h3></div>
+          <div class="match-sidebar-head"><span class="eyebrow">READING HUD</span><h3>독해 퀴즈</h3></div>
           ${createStudyOptionsShell({
             shellId: "reading-options-shell",
             shellClassName: "match-options-shell",
@@ -710,18 +710,18 @@
           ${createActionButton({
             id: "reading-start",
             labelId: "reading-start-label",
-            label: "시작하기"
+            label: "시작해볼까요?"
           })}
         </aside>
         <div class="match-board reading-practice-board">
-          <p class="vocab-list-empty" id="reading-empty" hidden>설정을 마쳤다면 시작하기를 눌러주세요.</p>
+          <p class="vocab-list-empty" id="reading-empty" hidden>준비됐다면 시작해볼까요?</p>
           <div id="reading-practice-view">
             <article class="reading-card">
               <div class="reading-meta"><span id="reading-level">N5</span><span id="reading-source">N5R p1</span></div>
               <div class="quiz-hud"><div class="quiz-hud-item"><span>진행</span><strong id="reading-progress">1 / 3</strong></div><div class="quiz-hud-item"><span>남은 시간</span><strong id="reading-timer">45초</strong></div></div>
-              <div class="reading-header"><div><span class="eyebrow">READING SET</span><h3 id="reading-title">독해 한 문제</h3></div><p class="reading-korean" id="reading-korean"></p></div>
+              <div class="reading-header"><div><span class="eyebrow">READING SET</span><h3 id="reading-title">한 문제씩 읽어봐요</h3></div><p class="reading-korean" id="reading-korean"></p></div>
               <div class="reading-passage" id="reading-passage"></div>
-              <div class="reading-question-box"><span class="eyebrow">QUESTION</span><h4 id="reading-question">질문을 데려오고 있어요.</h4></div>
+              <div class="reading-question-box"><span class="eyebrow">QUESTION</span><h4 id="reading-question">질문을 불러오고 있어요.</h4></div>
               <div class="reading-options" id="reading-options"></div>
               <p class="reading-feedback" id="reading-feedback"></p>
               <p class="reading-explanation" id="reading-explanation"></p>
