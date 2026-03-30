@@ -248,6 +248,7 @@ const matchState = {
   isLocked: false,
   timedOut: false,
   timeLeft: getMatchDuration(),
+  hasStarted: false,
   showResults: false,
   resultFilter: "all"
 };
@@ -305,7 +306,7 @@ function getMatchPageCount() {
 }
 
 function getMatchResolvedCount() {
-  return matchState.results.filter((item) => item.status !== "pending").length;
+  return matchState.results.filter((item) => item.status === "correct").length;
 }
 
 function getMatchResultCounts() {
@@ -363,6 +364,7 @@ function setMatchFeedback(message, tone = "") {
     return;
   }
 
+  feedback.hidden = !message;
   feedback.textContent = message;
   feedback.classList.remove("is-success", "is-fail");
 
@@ -373,21 +375,9 @@ function setMatchFeedback(message, tone = "") {
 
 function renderMatchActionCopy() {
   const newRoundLabel = document.getElementById("match-new-round-label");
-  const resetRoundLabel = document.getElementById("match-reset-round-label");
-  const note = document.getElementById("match-actions-note");
 
   if (newRoundLabel) {
-    newRoundLabel.textContent = "새 세트 시작";
-  }
-
-  if (resetRoundLabel) {
-    resetRoundLabel.textContent = matchState.showResults ? "같은 세트 다시" : "현재 페이지 다시";
-  }
-
-  if (note) {
-    note.textContent = matchState.showResults
-      ? "새 세트는 문제 전체를 새로 뽑고, 같은 세트 다시는 방금 푼 문제들로 처음부터 다시 시작해요."
-      : "새 세트는 문제 전체를 새로 뽑고, 현재 페이지 다시는 지금 보이는 단어만 처음부터 다시 시작해요.";
+    newRoundLabel.textContent = matchState.showResults ? "다시하기" : "시작하기";
   }
 }
 
@@ -459,16 +449,11 @@ function renderMatchSettings() {
   });
 }
 
-function setMatchActionAvailability(enabled) {
+function setMatchActionAvailability(startEnabled) {
   const newRound = document.getElementById("match-new-round");
-  const resetRound = document.getElementById("match-reset-round");
 
   if (newRound) {
-    newRound.disabled = !enabled;
-  }
-
-  if (resetRound) {
-    resetRound.disabled = !enabled;
+    newRound.disabled = !startEnabled;
   }
 }
 
@@ -581,7 +566,6 @@ function renderMatchResultFilterOptions(counts) {
 
 function renderMatchResults() {
   const resultView = document.getElementById("match-result-view");
-  const summary = document.getElementById("match-result-summary");
   const total = document.getElementById("match-result-total");
   const correct = document.getElementById("match-result-correct");
   const wrong = document.getElementById("match-result-wrong");
@@ -591,16 +575,11 @@ function renderMatchResults() {
   const bulkActionButton = document.getElementById("match-result-bulk-action");
   const counts = getMatchResultCounts();
   const filteredResults = getFilteredMatchResults();
-  const levelLabel = getMatchLevelLabel(matchPreferences.level);
 
-  if (!resultView || !summary || !total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
+  if (!resultView || !total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
     return;
   }
 
-  summary.textContent =
-    counts.wrong === 0
-      ? `${levelLabel} ${counts.all}문제 모두 정답이에요. 암기할 단어가 있으면 바로 저장해둘까요?`
-      : `${levelLabel} ${counts.all}문제 중 정답 ${counts.correct}개, 오답 ${counts.wrong}개예요.`;
   total.textContent = String(counts.all);
   correct.textContent = String(counts.correct);
   wrong.textContent = String(counts.wrong);
@@ -694,7 +673,25 @@ function startMatchRoundTimer() {
   }, 1000);
 }
 
+function enterMatchReadyState(message = "") {
+  clearAllMatchTimers();
+  matchState.sessionItems = [];
+  matchState.pageItems = [];
+  matchState.results = [];
+  matchState.leftCards = [];
+  matchState.rightCards = [];
+  matchState.pageIndex = 0;
+  matchState.resultFilter = "all";
+  matchState.showResults = false;
+  matchState.hasStarted = false;
+  resetCurrentPageState();
+  setMatchActionAvailability(true);
+  setMatchFeedback(message);
+  renderMatchScreen();
+}
+
 function openMatchPage(pageItems) {
+  matchState.hasStarted = true;
   matchState.showResults = false;
   matchState.pageItems = pageItems;
   resetCurrentPageState();
@@ -713,9 +710,7 @@ function openMatchPage(pageItems) {
     }))
   );
   setMatchActionAvailability(true);
-  setMatchFeedback(
-    `왼쪽이랑 오른쪽에서 하나씩 골라 짝을 맞춰봐요. ${matchState.pageIndex + 1} / ${getMatchPageCount()} 페이지예요.`
-  );
+  setMatchFeedback("");
   renderMatchScreen();
   startMatchRoundTimer();
 }
@@ -779,6 +774,7 @@ function startMatchSession(items = buildMatchSessionItems()) {
   }));
   matchState.pageIndex = 0;
   matchState.resultFilter = "all";
+  matchState.hasStarted = true;
   openMatchPage(getCurrentPageItems(0));
 }
 
@@ -815,7 +811,10 @@ function renderMatchUnavailableState(message) {
   matchState.sessionItems = [];
   matchState.pageItems = [];
   matchState.results = [];
+  matchState.leftCards = [];
+  matchState.rightCards = [];
   matchState.pageIndex = 0;
+  matchState.hasStarted = false;
   matchState.showResults = false;
   resetCurrentPageState();
 
@@ -845,12 +844,12 @@ function finalizeCompletedMatchPage() {
   renderMatchBoard();
 
   if (matchState.pageIndex + 1 >= getMatchPageCount()) {
-    setMatchFeedback("이번 페이지까지 다 맞혔어요. 결과로 바로 넘어갈게요!", "is-success");
+    setMatchFeedback("");
     queueMatchPageTransition(showMatchResults);
     return;
   }
 
-  setMatchFeedback("이번 페이지를 전부 맞혔어요. 다음 페이지로 넘어갈게요!", "is-success");
+  setMatchFeedback("");
   queueMatchPageTransition(moveToNextMatchPage);
 }
 
@@ -864,11 +863,11 @@ function handleSuccessfulMatch(id) {
     return;
   }
 
-  setMatchFeedback("잘했어요! 다음 짝도 이어서 찾아봐요.", "is-success");
+  setMatchFeedback("");
 }
 
 function handleFailedMatch() {
-  setMatchFeedback("조금 아쉬워요. 다른 카드를 골라볼까요?", "is-fail");
+  setMatchFeedback("");
 }
 
 function queueFailedMatchReset() {
@@ -951,7 +950,7 @@ function setMatchLevel(level) {
   matchPreferences.level = nextLevel;
   saveMatchPreferences();
   renderMatchSettings();
-  startNewMatchSession();
+  enterMatchReadyState();
 }
 
 function setMatchTotalCount(totalCount) {
@@ -964,7 +963,7 @@ function setMatchTotalCount(totalCount) {
   matchPreferences.totalCount = nextCount;
   saveMatchPreferences();
   renderMatchSettings();
-  startNewMatchSession();
+  enterMatchReadyState();
 }
 
 function setMatchDuration(duration) {
@@ -977,12 +976,7 @@ function setMatchDuration(duration) {
   matchPreferences.duration = nextDuration;
   saveMatchPreferences();
   renderMatchSettings();
-  if (matchState.showResults) {
-    replayCurrentMatchSet();
-    return;
-  }
-
-  replayCurrentMatchPage();
+  enterMatchReadyState();
 }
 
 function setMatchResultFilter(filter) {
@@ -1007,7 +1001,6 @@ function handleMatchResetAction() {
 
 function attachMatchEventListeners() {
   const newRound = document.getElementById("match-new-round");
-  const resetRound = document.getElementById("match-reset-round");
   const optionsToggle = document.getElementById("match-options-toggle");
   const resultFilterSelect = document.getElementById("match-result-filter");
   const resultBulkAction = document.getElementById("match-result-bulk-action");
@@ -1015,10 +1008,6 @@ function attachMatchEventListeners() {
 
   if (newRound) {
     newRound.addEventListener("click", startNewMatchSession);
-  }
-
-  if (resetRound) {
-    resetRound.addEventListener("click", handleMatchResetAction);
   }
 
   if (optionsToggle) {
@@ -1097,4 +1086,4 @@ function attachMatchEventListeners() {
 
 renderMatchSettings();
 attachMatchEventListeners();
-startNewMatchSession();
+enterMatchReadyState();

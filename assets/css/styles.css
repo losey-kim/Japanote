@@ -3285,7 +3285,7 @@ body.is-kana-quiz-sheet-open .page-shell {
 .match-play-view,
 .match-result-view {
   display: grid;
-  gap: 18px;
+  gap: 16px;
 }
 
 .match-feedback {
@@ -3417,7 +3417,7 @@ body.is-kana-quiz-sheet-open .page-shell {
 .match-result-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .match-result-stat,
@@ -3450,10 +3450,22 @@ body.is-kana-quiz-sheet-open .page-shell {
 
 .match-result-filters {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: flex-start;
   gap: 12px;
   flex-wrap: nowrap;
+}
+
+.match-result-title {
+  margin: 0;
+  padding-left: 4px;
+  color: var(--muted);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
 .match-result-filter-field {
@@ -3462,14 +3474,6 @@ body.is-kana-quiz-sheet-open .page-shell {
   flex: 1 1 auto;
   min-width: 0;
   max-width: 220px;
-}
-
-.match-result-filter-label {
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .match-result-filter-select-wrap {
@@ -3500,10 +3504,11 @@ body.is-kana-quiz-sheet-open .page-shell {
 }
 
 .match-result-bulk-btn {
-  min-height: 52px;
+  min-height: 50px;
   padding-inline: 18px;
   white-space: nowrap;
   flex-shrink: 0;
+  align-self: stretch;
 }
 
 .match-result-bulk-btn:disabled {
