@@ -1919,6 +1919,54 @@ button {
   background: rgba(255, 255, 255, 0.8);
 }
 
+.quiz-hud-item.is-timer {
+  position: relative;
+  overflow: hidden;
+  --timer-progress: 1;
+}
+
+.quiz-hud-item.is-timer > * {
+  position: relative;
+  z-index: 1;
+}
+
+.quiz-hud-item.is-timer::before,
+.quiz-hud-item.is-timer::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.quiz-hud-item.is-timer::before {
+  background: var(--line);
+}
+
+.quiz-hud-item.is-timer::after {
+  right: auto;
+  width: calc((100% - 32px) * var(--timer-progress));
+  background: linear-gradient(90deg, rgba(95, 174, 139, 0.95), rgba(93, 133, 207, 0.88));
+  box-shadow: 0 4px 10px rgba(95, 174, 139, 0.18);
+  transition: width 900ms linear, background 160ms ease, box-shadow 160ms ease;
+}
+
+.quiz-hud-item.is-timer.is-warning::after {
+  background: linear-gradient(90deg, rgba(222, 107, 72, 0.96), rgba(216, 166, 58, 0.9));
+  box-shadow: 0 4px 10px rgba(222, 107, 72, 0.2);
+}
+
+.quiz-hud-item.is-timer.is-resetting::after {
+  transition: none;
+}
+
+.quiz-hud-item.is-timer.is-static::before,
+.quiz-hud-item.is-timer.is-static::after {
+  content: none;
+}
+
 .quiz-hud-item span {
   display: block;
   color: var(--muted);
@@ -1933,8 +1981,17 @@ button {
   font-family: "Space Grotesk", sans-serif;
   font-size: 1.5rem;
   line-height: 1.1;
+  padding-bottom: 12px;
   color: var(--text);
   transition: color 140ms ease, transform 140ms ease;
+}
+
+.quiz-hud-item:not(.is-timer) strong {
+  padding-bottom: 0;
+}
+
+.quiz-hud-item.is-timer.is-static strong {
+  padding-bottom: 0;
 }
 
 .quiz-hud-item strong.is-warning {

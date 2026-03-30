@@ -3935,6 +3935,29 @@ function stopQuizSessionTimer(key) {
   session.timerId = null;
 }
 
+function updateQuizTimerItem(timerItem, progress, warning, isStatic) {
+  const nextProgress = progress.toFixed(3);
+  const previousProgress = Number(timerItem.dataset.timerProgress || "1");
+  const shouldReset = progress > previousProgress + 0.01;
+
+  timerItem.classList.add("is-timer");
+  timerItem.classList.toggle("is-warning", warning);
+  timerItem.classList.toggle("is-static", isStatic);
+
+  if (shouldReset) {
+    timerItem.classList.add("is-resetting");
+  }
+
+  timerItem.style.setProperty("--timer-progress", nextProgress);
+  timerItem.dataset.timerProgress = nextProgress;
+
+  if (shouldReset) {
+    window.requestAnimationFrame(() => {
+      timerItem.classList.remove("is-resetting");
+    });
+  }
+}
+
 function renderQuizSessionHud(key) {
   const session = quizSessions[key];
 
@@ -3951,11 +3974,19 @@ function renderQuizSessionHud(key) {
   }
 
   if (timer) {
+    const warning = session.duration > 0 && session.timeLeft <= Math.max(5, Math.floor(session.duration / 3));
+    const timerItem = timer.closest(".quiz-hud-item");
+    const progress = session.duration > 0 ? Math.max(0, Math.min(1, session.timeLeft / session.duration)) : 0;
+
     timer.textContent = session.duration <= 0 ? "천천히" : `${session.timeLeft}초`;
     timer.classList.toggle(
       "is-warning",
-      session.duration > 0 && session.timeLeft <= Math.max(5, Math.floor(session.duration / 3))
+      warning
     );
+
+    if (timerItem) {
+      updateQuizTimerItem(timerItem, progress, warning, session.duration <= 0);
+    }
   }
 
   if (correct) {
