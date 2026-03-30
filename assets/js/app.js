@@ -1743,9 +1743,24 @@ function resetWritingPracticeRound() {
   writingPracticeState.guideVisible = true;
   writingPracticeState.answerVisible = false;
   writingPracticeState.strokes = [];
+  resetWritingOverlayCanvas();
   writingPracticeState.score = null;
   writingPracticeState.feedback = getWritingPracticeDefaultFeedback();
   writingPracticeState.tip = getWritingPracticeDefaultTip();
+}
+
+const writingPracticeCompoundFollowers = new Set(["ゃ", "ゅ", "ょ", "ャ", "ュ", "ョ"]);
+
+function splitWritingPracticeUnits(text = "") {
+  return Array.from(text).reduce((units, character) => {
+    if (writingPracticeCompoundFollowers.has(character) && units.length) {
+      units[units.length - 1] += character;
+      return units;
+    }
+
+    units.push(character);
+    return units;
+  }, []);
 }
 
 function rewriteSvgReference(value, idMap) {
@@ -1944,7 +1959,7 @@ function buildWritingPracticeStage(current) {
     return;
   }
 
-  const characters = Array.from(current.char);
+  const units = splitWritingPracticeUnits(current.char);
   const renderPrefix = `writing-${current.id}-${writingPracticeState.renderSeed + 1}`;
 
   writingPracticeState.renderSeed += 1;
@@ -1952,100 +1967,118 @@ function buildWritingPracticeStage(current) {
   writingPracticeState.hasVectorGuide = false;
 
   layer.innerHTML = "";
-  layer.style.setProperty("--slot-count", String(characters.length || 1));
+  layer.style.setProperty("--slot-count", String(units.length || 1));
 
-  characters.forEach((character, index) => {
+  units.forEach((unit, unitIndex) => {
+    const characters = Array.from(unit);
     const slot = document.createElement("div");
     slot.className = "writing-character-slot";
-    slot.dataset.char = character;
+    slot.dataset.char = unit;
+    slot.classList.toggle("is-compound", characters.length > 1);
+    slot.style.setProperty("--glyph-count", String(characters.length));
 
-    const rawSvg = kanaStrokeSvgs[character];
+    characters.forEach((character, glyphIndex) => {
+      const glyph = document.createElement("div");
+      glyph.className = "writing-character-glyph";
+      glyph.classList.toggle("is-leading", glyphIndex === 0);
+      glyph.classList.toggle("is-trailing", glyphIndex === characters.length - 1);
+      glyph.classList.toggle("is-small", glyphIndex > 0 && writingPracticeCompoundFollowers.has(character));
+      glyph.dataset.char = character;
+      slot.appendChild(glyph);
 
-    if (!rawSvg) {
-      const fallback = document.createElement("div");
-      fallback.className = "writing-character-fallback";
-      fallback.textContent = character;
-      slot.appendChild(fallback);
-      layer.appendChild(slot);
-      writingPracticeState.slotEntries.push({
-        char: character,
-        slot,
-        svg: null,
-        baseViewBox: { x: 0, y: 0, width: 1024, height: 1024 },
-        viewBox: { x: 0, y: 0, width: 1024, height: 1024 },
-        viewBoxMeasured: true,
-        shadowPaths: [],
-        shadowMasks: [],
-        strokeEntries: []
-      });
-      return;
-    }
+      const rawSvg = kanaStrokeSvgs[character];
 
-    const svg = parseWritingPracticeSvg(rawSvg);
-
-    if (!svg) {
-      const fallback = document.createElement("div");
-      fallback.className = "writing-character-fallback";
-      fallback.textContent = character;
-      slot.appendChild(fallback);
-      layer.appendChild(slot);
-      writingPracticeState.slotEntries.push({
-        char: character,
-        slot,
-        svg: null,
-        baseViewBox: { x: 0, y: 0, width: 1024, height: 1024 },
-        viewBox: { x: 0, y: 0, width: 1024, height: 1024 },
-        viewBoxMeasured: true,
-        shadowPaths: [],
-        shadowMasks: [],
-        strokeEntries: []
-      });
-      return;
-    }
-
-    slot.appendChild(svg);
-    svg.classList.add("writing-character-svg");
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    uniquifyWritingSvgIds(svg, `${renderPrefix}-${index}`);
-
-    const baseViewBox = svg.viewBox?.baseVal
-      ? {
-          x: svg.viewBox.baseVal.x,
-          y: svg.viewBox.baseVal.y,
-          width: svg.viewBox.baseVal.width || 1024,
-          height: svg.viewBox.baseVal.height || 1024
-        }
-      : { x: 0, y: 0, width: 1024, height: 1024 };
-
-    const shadowPaths = Array.from(svg.querySelectorAll('g[data-strokesvg="shadows"] path'))
-      .map((path) => path.getAttribute("d"))
-      .filter(Boolean);
-    const shadowMasks = shadowPaths.map((pathData) => {
-      try {
-        return new Path2D(pathData);
-      } catch (error) {
-        return null;
+      if (!rawSvg) {
+        const fallback = document.createElement("div");
+        fallback.className = "writing-character-fallback";
+        fallback.textContent = character;
+        glyph.appendChild(fallback);
+        writingPracticeState.slotEntries.push({
+          char: character,
+          unit,
+          slot,
+          glyph,
+          svg: null,
+          baseViewBox: { x: 0, y: 0, width: 1024, height: 1024 },
+          viewBox: { x: 0, y: 0, width: 1024, height: 1024 },
+          viewBoxMeasured: true,
+          shadowPaths: [],
+          shadowMasks: [],
+          strokeEntries: []
+        });
+        return;
       }
-    }).filter(Boolean);
 
-    writingPracticeState.hasVectorGuide = writingPracticeState.hasVectorGuide || shadowPaths.length > 0;
+      const svg = parseWritingPracticeSvg(rawSvg);
+
+      if (!svg) {
+        const fallback = document.createElement("div");
+        fallback.className = "writing-character-fallback";
+        fallback.textContent = character;
+        glyph.appendChild(fallback);
+        writingPracticeState.slotEntries.push({
+          char: character,
+          unit,
+          slot,
+          glyph,
+          svg: null,
+          baseViewBox: { x: 0, y: 0, width: 1024, height: 1024 },
+          viewBox: { x: 0, y: 0, width: 1024, height: 1024 },
+          viewBoxMeasured: true,
+          shadowPaths: [],
+          shadowMasks: [],
+          strokeEntries: []
+        });
+        return;
+      }
+
+      glyph.appendChild(svg);
+      svg.classList.add("writing-character-svg");
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      uniquifyWritingSvgIds(svg, `${renderPrefix}-${unitIndex}-${glyphIndex}`);
+
+      const baseViewBox = svg.viewBox?.baseVal
+        ? {
+            x: svg.viewBox.baseVal.x,
+            y: svg.viewBox.baseVal.y,
+            width: svg.viewBox.baseVal.width || 1024,
+            height: svg.viewBox.baseVal.height || 1024
+          }
+        : { x: 0, y: 0, width: 1024, height: 1024 };
+
+      const shadowPaths = Array.from(svg.querySelectorAll('g[data-strokesvg="shadows"] path'))
+        .map((path) => path.getAttribute("d"))
+        .filter(Boolean);
+      const shadowMasks = shadowPaths.map((pathData) => {
+        try {
+          return new Path2D(pathData);
+        } catch (error) {
+          return null;
+        }
+      }).filter(Boolean);
+
+      writingPracticeState.hasVectorGuide = writingPracticeState.hasVectorGuide || shadowPaths.length > 0;
+
+      const { viewBox, hasMeasuredBounds } = getWritingSvgViewBox(svg, baseViewBox);
+      svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+      const strokeEntries = collectWritingStrokeEntries(svg);
+
+      writingPracticeState.slotEntries.push({
+        char: character,
+        unit,
+        slot,
+        glyph,
+        svg,
+        baseViewBox,
+        viewBox,
+        viewBoxMeasured: hasMeasuredBounds,
+        shadowPaths,
+        shadowMasks,
+        strokeEntries
+      });
+    });
 
     layer.appendChild(slot);
-    const { viewBox, hasMeasuredBounds } = getWritingSvgViewBox(svg, baseViewBox);
-    svg.setAttribute("viewBox", `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
-    const strokeEntries = collectWritingStrokeEntries(svg);
-
-    writingPracticeState.slotEntries.push({
-      char: character,
-      slot,
-      svg,
-      baseViewBox,
-      viewBox,
-      viewBoxMeasured: hasMeasuredBounds,
-      shadowPaths,
-      shadowMasks,
-      strokeEntries
-    });
   });
 
   stageEmpty.hidden = writingPracticeState.hasVectorGuide;
@@ -2233,8 +2266,27 @@ function updateWritingPracticePanel() {
   updateWritingPracticeControls();
 }
 
+function getWritingCanvasReferenceRect(canvas) {
+  const layer = document.getElementById("writing-svg-layer");
+  const layerRect = layer?.getBoundingClientRect();
+
+  if (layerRect?.width && layerRect?.height) {
+    return layerRect;
+  }
+
+  return canvas.getBoundingClientRect();
+}
+
+function getWritingCanvasScaleRatio(canvas) {
+  const rect = canvas.getBoundingClientRect();
+  return canvas.width / Math.max(rect.width, 1);
+}
+
 function getWritingBrushWidth(canvas) {
-  return clampValue(Math.round(Math.min(canvas.width, canvas.height) * 0.026), 18, 44);
+  const referenceRect = getWritingCanvasReferenceRect(canvas);
+  const scaleRatio = getWritingCanvasScaleRatio(canvas);
+  const cssBrushWidth = clampValue(Math.round(Math.min(referenceRect.width, referenceRect.height) * 0.015), 5, 12);
+  return Math.max(1, Math.round(cssBrushWidth * scaleRatio));
 }
 
 function drawWritingStroke(ctx, canvas, points) {
@@ -2311,6 +2363,18 @@ function clearWritingOverlayRegion(ctx, canvas, bounds) {
   }
 
   ctx.clearRect(bounds.x, bounds.y, bounds.width, bounds.height);
+}
+
+function resetWritingOverlayCanvas() {
+  const canvas = document.getElementById("writing-overlay-canvas");
+  const ctx = canvas?.getContext("2d");
+
+  if (canvas && ctx) {
+    clearWritingOverlayRegion(ctx, canvas, null);
+  }
+
+  writingPracticeState.overlayHasInk = false;
+  writingPracticeState.overlayBounds = null;
 }
 
 function renderWritingOverlay() {
@@ -2417,14 +2481,15 @@ function syncWritingPracticeCanvas() {
   }
 
   const rect = canvas.getBoundingClientRect();
+  const referenceRect = getWritingCanvasReferenceRect(canvas);
 
   if (!rect.width || !rect.height) {
     return;
   }
 
-  const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-  const nextWidth = Math.max(1, Math.round(rect.width * ratio));
-  const nextHeight = Math.max(1, Math.round(rect.height * ratio));
+  const ratio = Math.min(window.devicePixelRatio || 1, 1.25);
+  const nextWidth = Math.max(1, Math.round(Math.max(referenceRect.width, rect.width * 0.82) * ratio));
+  const nextHeight = Math.max(1, Math.round(Math.max(referenceRect.height, rect.height * 0.82) * ratio));
   const resized = canvas.width !== nextWidth || canvas.height !== nextHeight;
 
   if (resized) {
