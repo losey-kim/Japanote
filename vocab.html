@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -189,10 +189,7 @@
                     </div>
                   </label>
                 </div>
-                <div class="match-stats-grid vocab-quiz-stats-grid">
-                  <div class="match-stat-card"><span>진행</span><strong id="vocab-quiz-progress-side">0 / 0</strong></div>
-                  <div class="match-stat-card"><span>남은 시간</span><strong id="vocab-quiz-timer">15초</strong></div>
-                </div>
+
                 <div class="match-actions">
                   <button class="primary-btn button-with-icon" id="vocab-quiz-restart" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span id="vocab-quiz-restart-label">시작하기</span></button>
                 </div>
@@ -201,6 +198,10 @@
               <div class="match-board vocab-quiz-board">
                 <div class="vocab-quiz-view" id="vocab-quiz">
                   <p class="vocab-list-empty" id="vocab-quiz-empty" hidden>퀴즈를 준비하고 있어요.</p>
+                  <div class="match-stats-grid vocab-quiz-stats-grid" id="vocab-quiz-stats" hidden>
+                    <div class="match-stat-card"><span>진행</span><strong id="vocab-quiz-progress-side">0 / 0</strong></div>
+                    <div class="match-stat-card"><span>남은 시간</span><strong id="vocab-quiz-timer">15초</strong></div>
+                  </div>
                   <article class="basic-practice-card vocab-quiz-card" id="vocab-quiz-card">
                     <div class="basic-practice-meta"><span id="vocab-quiz-track">단어</span><span id="vocab-quiz-source">N5 단어</span></div>
                     <div class="basic-practice-header"><div><span class="eyebrow">VOCAB QUIZ</span><h3 id="vocab-quiz-title">단어 퀴즈</h3></div><p class="basic-practice-note" id="vocab-quiz-note">선택한 단어로 바로 풀어볼게요.</p></div>

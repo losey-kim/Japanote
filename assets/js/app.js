@@ -1,4 +1,4 @@
-﻿const storageKey = "jlpt-compass-state";
+const storageKey = "jlpt-compass-state";
 
 const contentLevels = ["N5", "N4", "N3"];
 const allLevelValue = "all";
@@ -5602,6 +5602,7 @@ function renderVocabQuiz() {
   const view = document.getElementById("vocab-quiz");
   const resultView = document.getElementById("vocab-quiz-result-view");
   const empty = document.getElementById("vocab-quiz-empty");
+  const stats = document.getElementById("vocab-quiz-stats");
   const card = document.getElementById("vocab-quiz-card");
   const track = document.getElementById("vocab-quiz-track");
   const source = document.getElementById("vocab-quiz-source");
@@ -5654,6 +5655,9 @@ function renderVocabQuiz() {
     empty.textContent = canStart
       ? "설정을 마쳤다면 시작하기를 눌러주세요."
       : getVocabQuizEmptyText(items);
+    if (stats) {
+      stats.hidden = true;
+    }
     card.hidden = true;
     progress.textContent = `0 / ${getVocabQuizCount()}`;
     restart.classList.add("primary-btn");
@@ -5676,6 +5680,9 @@ function renderVocabQuiz() {
     resultView.hidden = true;
     empty.hidden = false;
     empty.textContent = getVocabQuizEmptyText(items);
+    if (stats) {
+      stats.hidden = true;
+    }
     card.hidden = true;
     progress.textContent = "0 / 0";
     restart.classList.add("primary-btn");
@@ -5690,6 +5697,9 @@ function renderVocabQuiz() {
   view.hidden = false;
   resultView.hidden = true;
   empty.hidden = true;
+  if (stats) {
+    stats.hidden = false;
+  }
   card.hidden = false;
   track.textContent = getVocabQuizModeLabel();
   source.textContent = getVocabQuizSourceLabel();
@@ -5704,6 +5714,9 @@ function renderVocabQuiz() {
     stopQuizSessionTimer("vocab");
     renderQuizSessionHud("vocab");
     view.hidden = true;
+    if (stats) {
+      stats.hidden = true;
+    }
     resultView.hidden = false;
     progress.textContent = `${total} / ${total}`;
     next.hidden = true;
