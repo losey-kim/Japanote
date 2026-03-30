@@ -1482,7 +1482,7 @@ const vocabFilterLabels = {
 const vocabHeadingCopy = {
   N5: {
     title: "N5 단어, 카드로 익혀봐요",
-    description: "카드를 넘기며 읽기랑 뜻을 같이 익혀봐요."
+    description: ""
   },
   N4: {
     title: "N4 단어, 카드로 익혀봐요",
@@ -1501,7 +1501,7 @@ const vocabHeadingCopy = {
 const quizHeadingCopy = {
   N5: {
     title: "N5 단어 퀴즈 한 판 해볼까요?",
-    description: "문제 수랑 모드를 고르고 바로 시작해보세요."
+    description: ""
   },
   N4: {
     title: "N4 단어 퀴즈로 감각 올려볼까요?",
@@ -6102,6 +6102,7 @@ function renderVocabPage() {
 
   if (headingCopy) {
     headingCopy.textContent = heading.description;
+    headingCopy.hidden = !heading.description;
   }
 
   if (summary) {
