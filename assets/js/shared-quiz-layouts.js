@@ -108,7 +108,7 @@
     summaryText,
     panelId,
     panelClassName = "",
-    isOpen = true,
+    isOpen = false,
     groups = []
   }) {
     const shellClass = ["study-options-shell", shellClassName].filter(Boolean).join(" ").trim();
@@ -133,7 +133,7 @@
           </div>
           <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
         </button>
-        <div class="${escapeHtml(panelClass)}" id="${escapeHtml(panelId)}"${isOpen ? "" : " hidden"}>
+        <div class="${escapeHtml(panelClass)}" id="${escapeHtml(panelId)}" aria-hidden="${isOpen ? "false" : "true"}"${isOpen ? "" : " hidden"}>
           ${groupMarkup}
         </div>
       </div>

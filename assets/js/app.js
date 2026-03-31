@@ -1958,7 +1958,7 @@ function renderKanaQuizSetup() {
   const setupToggle = document.getElementById("kana-setup-toggle");
   const setupPanel = document.getElementById("kana-setup-panel");
   const setupSummary = document.getElementById("kana-setup-summary");
-  const isOpen = state.kanaSetupOpen !== false;
+  const isOpen = state.kanaSetupOpen === true;
 
   document.querySelectorAll("[data-kana-mode]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.kanaMode === kanaQuizSettings.mode);
@@ -2468,7 +2468,7 @@ function renderWritingPracticeSetup() {
   const setupToggle = document.getElementById("writing-setup-toggle");
   const setupPanel = document.getElementById("writing-setup-panel");
   const setupSummary = document.getElementById("writing-setup-summary");
-  const isOpen = state.writingSetupOpen !== false;
+  const isOpen = state.writingSetupOpen === true;
   const summaryText = [
     getWritingPracticeModeLabel(writingPracticeSettings.mode),
     getWritingPracticeOrderLabel(writingPracticeSettings.order)
@@ -4149,7 +4149,7 @@ const defaultState = {
   vocabView: "card",
   vocabFilter: "all",
   vocabPartFilter: "all",
-  vocabOptionsOpen: true,
+  vocabOptionsOpen: false,
   vocabPage: 1,
   vocabQuizMode: "meaning",
   vocabQuizQuestionField: "reading",
@@ -4171,7 +4171,7 @@ const defaultState = {
   kanjiMatchCount: 5,
   kanjiMatchDuration: 15,
   kanjiMatchOptionsOpen: false,
-  kanjiOptionsOpen: true,
+  kanjiOptionsOpen: false,
   kanjiTab: "list",
   kanjiView: "card",
   kanjiGrade: allLevelValue,
@@ -4194,7 +4194,7 @@ const defaultState = {
   reviewIds: [],
   grammarDoneIds: [],
   grammarTab: "list",
-  grammarPracticeOptionsOpen: true,
+  grammarPracticeOptionsOpen: false,
   grammarPracticeStarted: false,
   grammarPracticeLevel: "N5",
   grammarPracticeDuration: 25,
@@ -4204,7 +4204,7 @@ const defaultState = {
   quizMode: "meaning",
   quizSessionSize: 20,
   quizDuration: 15,
-  quizOptionsOpen: true,
+  quizOptionsOpen: false,
   quizSessionFinished: false,
   quizMistakes: [],
   quizSessionMistakeIds: [],
@@ -4212,13 +4212,13 @@ const defaultState = {
   quizAnsweredCount: 0,
   readingLevel: "N5",
   readingDuration: 45,
-  readingOptionsOpen: true,
+  readingOptionsOpen: false,
   readingStarted: false,
   readingIndexes: { N5: 0, N4: 0, N3: 0 },
   charactersTab: "library",
   charactersLibraryTab: "hiragana",
-  kanaSetupOpen: true,
-  writingSetupOpen: true,
+  kanaSetupOpen: false,
+  writingSetupOpen: false,
   lastStudyDate: null,
   streak: 0
 };
@@ -4361,7 +4361,7 @@ function normalizeLoadedState(inputState) {
     : 5;
   nextState.kanjiMatchDuration = getQuizDuration(nextState.kanjiMatchDuration);
   nextState.kanjiMatchOptionsOpen = false;
-  nextState.kanjiOptionsOpen = nextState.kanjiOptionsOpen !== false;
+  nextState.kanjiOptionsOpen = false;
   nextState.kanjiTab = getKanjiTab(nextState.kanjiTab);
   nextState.kanjiView = ["card", "list"].includes(nextState.kanjiView) ? nextState.kanjiView : "card";
   nextState.kanjiGrade = getKanjiGrade(nextState.kanjiGrade);
@@ -4371,7 +4371,7 @@ function normalizeLoadedState(inputState) {
     ? Math.max(0, Number(nextState.kanjiFlashcardIndex))
     : 0;
   nextState.kanjiFlashcardRevealed = nextState.kanjiFlashcardRevealed === true;
-  nextState.grammarPracticeOptionsOpen = nextState.grammarPracticeOptionsOpen !== false;
+  nextState.grammarPracticeOptionsOpen = false;
   nextState.grammarPracticeStarted = false;
   nextState.grammarPracticeLevel = getGrammarPracticeLevel(nextState.grammarPracticeLevel);
   nextState.grammarPracticeDuration = getGrammarPracticeDuration(nextState.grammarPracticeDuration);
@@ -4381,11 +4381,11 @@ function normalizeLoadedState(inputState) {
   nextState.charactersTab = getCharactersTab(nextState.charactersTab ?? nextState.charactersPracticeTab);
   nextState.charactersLibraryTab = getCharactersLibraryTab(nextState.charactersLibraryTab);
   nextState.grammarTab = getGrammarTab(nextState.grammarTab);
-  nextState.kanaSetupOpen = nextState.kanaSetupOpen !== false;
-  nextState.writingSetupOpen = nextState.writingSetupOpen !== false;
-  nextState.quizOptionsOpen = nextState.quizOptionsOpen !== false;
-  nextState.vocabOptionsOpen = nextState.vocabOptionsOpen !== false;
-  nextState.readingOptionsOpen = nextState.readingOptionsOpen !== false;
+  nextState.kanaSetupOpen = false;
+  nextState.writingSetupOpen = false;
+  nextState.quizOptionsOpen = false;
+  nextState.vocabOptionsOpen = false;
+  nextState.readingOptionsOpen = false;
   refreshDynamicVocabContent("N5");
   refreshQuizContent(nextState.quizLevel);
   refreshVocabPageContent(nextState.vocabLevel);
@@ -6274,7 +6274,7 @@ function renderStarterKanjiControls() {
   const startLabel = document.getElementById("starter-kanji-start-label");
   const countSpinner = document.querySelector('[data-spinner-id="starter-kanji-count"]');
   const timeSpinner = document.querySelector('[data-spinner-id="starter-kanji-time"]');
-  const isOptionsOpen = state.starterKanjiQuizOptionsOpen !== false;
+  const isOptionsOpen = state.starterKanjiQuizOptionsOpen === true;
   const activeCount = getStarterKanjiQuizCount();
   const activeDuration = getStarterKanjiQuizDuration();
   const activeQuestionField = getStarterKanjiQuestionField();
@@ -7868,7 +7868,7 @@ function renderVocabQuizControls(counts, availableParts, activePart) {
   const partSelect = document.getElementById("vocab-quiz-part-select");
   const countSpinner = document.querySelector('[data-spinner-id="vocab-quiz-count"]');
   const timeSpinner = document.querySelector('[data-spinner-id="vocab-quiz-time"]');
-  const isOptionsOpen = state.vocabQuizOptionsOpen !== false;
+  const isOptionsOpen = state.vocabQuizOptionsOpen === true;
   const activeQuestionField = getVocabQuizQuestionField();
   const activeOptionField = getVocabQuizOptionField();
   const activeCount = getVocabQuizCount();
@@ -8251,6 +8251,14 @@ function setGrammarPracticeDuration(duration) {
   renderGrammarPractice();
 }
 
+function invalidateGrammarPracticeSession() {
+  state.grammarPracticeStarted = false;
+  quizSessions.grammar.correct = 0;
+  quizSessions.grammar.streak = 0;
+  setQuizSessionDuration("grammar", getGrammarPracticeDuration());
+  stopQuizSessionTimer("grammar");
+}
+
 function renderGrammarPracticeControls() {
   const optionsShell = document.getElementById("grammar-practice-options-shell");
   const optionsToggle = document.getElementById("grammar-practice-options-toggle");
@@ -8262,7 +8270,9 @@ function renderGrammarPracticeControls() {
   const startLabel = document.getElementById("grammar-practice-start-label");
   const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
   const activeDuration = getGrammarPracticeDuration(state.grammarPracticeDuration);
-  const isOptionsOpen = state.grammarPracticeOptionsOpen !== false;
+  const isOptionsOpen = state.grammarPracticeOptionsOpen === true;
+  const canStart = (grammarPracticeSets[activeLevel] || []).length > 0;
+  const isSettingsLocked = state.grammarPracticeStarted;
 
   renderStudyOptionsControls({
     shell: optionsShell,
@@ -8270,14 +8280,15 @@ function renderGrammarPracticeControls() {
     panel: optionsPanel,
     summary: optionsSummary,
     summaryText: getGrammarPracticeOptionsSummaryText(),
-    isLocked: false,
+    isLocked: isSettingsLocked,
     isOpen: isOptionsOpen,
     spinnerConfigs: [
       {
         spinner: timeSpinner,
         options: grammarPracticeDurationOptions,
         activeValue: activeDuration,
-        formatValue: getDurationLabel
+        formatValue: getDurationLabel,
+        disabled: isSettingsLocked
       }
     ],
     selectConfigs: [
@@ -8290,7 +8301,7 @@ function renderGrammarPracticeControls() {
       button: startButton,
       label: startLabel,
       isStarted: state.grammarPracticeStarted,
-      canStart: true
+      canStart: state.grammarPracticeStarted || canStart
     }
   });
 }
@@ -8471,6 +8482,13 @@ function nextGrammarPracticeSet() {
 }
 
 function restartGrammarPractice() {
+  if (state.grammarPracticeStarted) {
+    invalidateGrammarPracticeSession();
+    saveState();
+    renderGrammarPractice();
+    return;
+  }
+
   stopQuizSessionTimer("grammar");
   quizSessions.grammar.correct = 0;
   quizSessions.grammar.streak = 0;
@@ -8564,7 +8582,7 @@ function renderQuizControls() {
   const modeButtons = document.querySelectorAll("[data-quiz-mode]");
   const levelButtons = document.querySelectorAll("[data-quiz-level]");
   const timeButtons = document.querySelectorAll("[data-quiz-time]");
-  const isOptionsOpen = state.quizOptionsOpen !== false;
+  const isOptionsOpen = state.quizOptionsOpen === true;
 
   if (headingTitle) {
     headingTitle.textContent = heading.title;
@@ -8940,6 +8958,14 @@ function setReadingDuration(duration) {
   renderReadingPractice();
 }
 
+function invalidateReadingPracticeSession() {
+  state.readingStarted = false;
+  quizSessions.reading.correct = 0;
+  quizSessions.reading.streak = 0;
+  setQuizSessionDuration("reading", getReadingDuration());
+  stopQuizSessionTimer("reading");
+}
+
 function renderReadingControls() {
   const optionsShell = document.getElementById("reading-options-shell");
   const optionsToggle = document.getElementById("reading-options-toggle");
@@ -8951,7 +8977,9 @@ function renderReadingControls() {
   const startLabel = document.getElementById("reading-start-label");
   const activeLevel = getReadingLevel(state.readingLevel);
   const activeDuration = getReadingDuration(state.readingDuration);
-  const isOptionsOpen = state.readingOptionsOpen !== false;
+  const isOptionsOpen = state.readingOptionsOpen === true;
+  const canStart = (readingSets[activeLevel] || []).length > 0;
+  const isSettingsLocked = state.readingStarted;
 
   renderStudyOptionsControls({
     shell: optionsShell,
@@ -8959,14 +8987,15 @@ function renderReadingControls() {
     panel: optionsPanel,
     summary: optionsSummary,
     summaryText: getReadingOptionsSummaryText(),
-    isLocked: false,
+    isLocked: isSettingsLocked,
     isOpen: isOptionsOpen,
     spinnerConfigs: [
       {
         spinner: timeSpinner,
         options: readingDurationOptions,
         activeValue: activeDuration,
-        formatValue: getDurationLabel
+        formatValue: getDurationLabel,
+        disabled: isSettingsLocked
       }
     ],
     selectConfigs: [
@@ -8979,7 +9008,7 @@ function renderReadingControls() {
       button: startButton,
       label: startLabel,
       isStarted: state.readingStarted,
-      canStart: true
+      canStart: state.readingStarted || canStart
     }
   });
 }
@@ -9160,6 +9189,13 @@ function nextReadingSet() {
 }
 
 function restartReadingPractice() {
+  if (state.readingStarted) {
+    invalidateReadingPracticeSession();
+    saveState();
+    renderReadingPractice();
+    return;
+  }
+
   stopQuizSessionTimer("reading");
   quizSessions.reading.correct = 0;
   quizSessions.reading.streak = 0;
