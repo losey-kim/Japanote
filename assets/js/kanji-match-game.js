@@ -3,7 +3,7 @@ const kanjiStudyStateStorageKey = "jlpt-compass-state";
 const sharedMatchGame = globalThis.japanoteSharedMatchGame;
 
 const kanjiMatchGradeOptions = ["all", "1", "2", "3", "4", "5", "6"];
-const kanjiMatchDurationOptions = [0, 10, 15, 20];
+const kanjiMatchDurationOptions = [10, 15, 20, 0];
 const kanjiMatchTotalCountOptions = [5, 10, 15, 20];
 const kanjiMatchFilterOptions = ["all", "review", "mastered", "unmarked"];
 const kanjiMatchResultFilterOptions = ["all", "correct", "wrong"];
@@ -461,6 +461,8 @@ function renderKanjiMatchStats() {
 function renderKanjiMatchSettings() {
   const gradeSelect = document.getElementById("kanji-match-grade-select");
   const filterSelect = document.getElementById("kanji-match-filter-select");
+  const countSpinner = document.querySelector('[data-spinner-id="kanji-match-count"]');
+  const timeSpinner = document.querySelector('[data-spinner-id="kanji-match-time"]');
   const basePool = getBaseKanjiMatchPool();
   const filterCounts = getKanjiMatchFilterCounts(basePool);
   const gradeCounts = getKanjiMatchGradeCounts(basePool);
@@ -487,16 +489,20 @@ function renderKanjiMatchSettings() {
         disabled: isSettingsLocked
       }
     ],
-    buttonGroups: [
+    spinnerConfigs: [
       {
-        selector: "[data-kanji-match-count]",
+        spinner: countSpinner,
+        options: kanjiMatchTotalCountOptions,
         activeValue: getKanjiMatchTotalCount(kanjiMatchPreferences.totalCount),
-        getValue: (button) => Number(button.dataset.kanjiMatchCount)
+        formatValue: (value) => `${value}문제`,
+        disabled: isSettingsLocked
       },
       {
-        selector: "[data-kanji-match-time]",
+        spinner: timeSpinner,
+        options: kanjiMatchDurationOptions,
         activeValue: getKanjiMatchDuration(kanjiMatchPreferences.duration),
-        getValue: (button) => Number(button.dataset.kanjiMatchTime)
+        formatValue: getKanjiMatchDurationLabel,
+        disabled: isSettingsLocked
       }
     ],
     refreshPool: refreshKanjiMatchPool,
@@ -1050,6 +1056,8 @@ function attachKanjiMatchEventListeners() {
   const optionsToggle = document.getElementById("kanji-match-options-toggle");
   const gradeSelect = document.getElementById("kanji-match-grade-select");
   const filterSelect = document.getElementById("kanji-match-filter-select");
+  const countSpinner = document.querySelector('[data-spinner-id="kanji-match-count"]');
+  const timeSpinner = document.querySelector('[data-spinner-id="kanji-match-time"]');
   const resultFilterSelect = document.getElementById("kanji-match-result-filter");
   const resultBulkAction = document.getElementById("kanji-match-result-bulk-action");
   const resultList = document.getElementById("kanji-match-result-list");
@@ -1066,8 +1074,18 @@ function attachKanjiMatchEventListeners() {
 
   sharedMatchGame.attachSelectChangeListener(gradeSelect, setKanjiMatchGrade);
   sharedMatchGame.attachSelectChangeListener(filterSelect, setKanjiMatchFilterPreference);
-  sharedMatchGame.attachDatasetButtonListeners("[data-kanji-match-count]", "kanjiMatchCount", setKanjiMatchTotalCount);
-  sharedMatchGame.attachDatasetButtonListeners("[data-kanji-match-time]", "kanjiMatchTime", setKanjiMatchDuration);
+  sharedMatchGame.attachSpinnerListeners({
+    spinner: countSpinner,
+    options: kanjiMatchTotalCountOptions,
+    getCurrentValue: () => getKanjiMatchTotalCount(kanjiMatchPreferences.totalCount),
+    handler: setKanjiMatchTotalCount
+  });
+  sharedMatchGame.attachSpinnerListeners({
+    spinner: timeSpinner,
+    options: kanjiMatchDurationOptions,
+    getCurrentValue: () => getKanjiMatchDuration(kanjiMatchPreferences.duration),
+    handler: setKanjiMatchDuration
+  });
   sharedMatchGame.attachSelectChangeListener(resultFilterSelect, setKanjiMatchResultFilter);
   sharedMatchGame.attachBulkActionListener({
     button: resultBulkAction,

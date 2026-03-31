@@ -83,12 +83,26 @@
     });
   }
 
-  function syncToggleButtonGroup(selector, activeValue, getValue) {
-    document.querySelectorAll(selector).forEach((button) => {
-      const value = typeof getValue === "function" ? getValue(button) : button.value;
-      const active = value === activeValue;
-      button.classList.toggle("is-active", active);
-      button.setAttribute("aria-pressed", String(active));
+  function renderSpinnerControl({ spinner, options = [], activeValue, formatValue, disabled = false }) {
+    if (!spinner) {
+      return;
+    }
+
+    const valueElement = spinner.querySelector("[data-spinner-value]");
+    const directionButtons = spinner.querySelectorAll("[data-spinner-direction]");
+    const currentIndex = options.indexOf(activeValue);
+    const safeValue = currentIndex >= 0 ? activeValue : options[0];
+
+    if (valueElement) {
+      valueElement.textContent = typeof formatValue === "function" ? formatValue(safeValue) : String(safeValue ?? "");
+    }
+
+    spinner.classList.toggle("is-disabled", Boolean(disabled));
+
+    directionButtons.forEach((button) => {
+      const direction = Number(button.dataset.spinnerDirection);
+      const nextIndex = currentIndex + direction;
+      button.disabled = Boolean(disabled) || currentIndex < 0 || nextIndex < 0 || nextIndex >= options.length;
     });
   }
 
@@ -161,7 +175,7 @@
     isSettingsLocked,
     shouldShowOptionsPanel,
     selectConfigs = [],
-    buttonGroups = [],
+    spinnerConfigs = [],
     refreshPool,
     updateActionAvailability
   }) {
@@ -206,8 +220,8 @@
       optionsPanel.setAttribute("aria-hidden", String(!shouldShowOptionsPanel));
     }
 
-    buttonGroups.forEach(({ selector, activeValue, getValue }) => {
-      syncToggleButtonGroup(selector, activeValue, getValue);
+    spinnerConfigs.forEach((config) => {
+      renderSpinnerControl(config);
     });
   }
 
@@ -382,10 +396,27 @@
     });
   }
 
-  function attachDatasetButtonListeners(selector, datasetKey, handler) {
-    document.querySelectorAll(selector).forEach((button) => {
+  function attachSpinnerListeners({ spinner, options = [], getCurrentValue, handler }) {
+    if (!spinner) {
+      return;
+    }
+
+    spinner.querySelectorAll("[data-spinner-direction]").forEach((button) => {
       button.addEventListener("click", () => {
-        handler(button.dataset[datasetKey]);
+        const currentValue = getCurrentValue();
+        const currentIndex = options.indexOf(currentValue);
+
+        if (currentIndex < 0) {
+          return;
+        }
+
+        const nextIndex = currentIndex + Number(button.dataset.spinnerDirection);
+
+        if (nextIndex < 0 || nextIndex >= options.length) {
+          return;
+        }
+
+        handler(options[nextIndex]);
       });
     });
   }
@@ -462,13 +493,14 @@
     renderActionCopy,
     renderTimer,
     renderStats,
+    renderSpinnerControl,
     renderSettingsPanel,
     renderBoard,
     renderResultFilterOptions,
     renderResultsView,
     renderScreen,
     attachSelectChangeListener,
-    attachDatasetButtonListeners,
+    attachSpinnerListeners,
     attachOptionsToggleListener,
     attachBulkActionListener,
     attachResultSaveListener

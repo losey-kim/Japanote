@@ -48,16 +48,55 @@
     `;
   }
 
-  function createToggleButtonGroup({ ariaLabel, className = "match-toggle-group", buttons = [] }) {
-    const buttonMarkup = buttons
-      .map((button) => {
-        const attributes = renderAttributes(button.attributes || {});
-        const spacing = attributes ? ` ${attributes}` : "";
-        return `<button class="${escapeHtml(button.className || "level-button")}" type="button"${spacing}>${escapeHtml(button.label)}</button>`;
-      })
-      .join("");
+  function createValueSpinner({ spinnerId, ariaLabel, valueLabel, decrementAriaLabel, incrementAriaLabel }) {
+    return `
+      <div class="study-spinner" data-spinner-id="${escapeHtml(spinnerId)}" role="group" aria-label="${escapeHtml(ariaLabel)}">
+        <button class="study-spinner-button" type="button" data-spinner-direction="-1" aria-label="${escapeHtml(decrementAriaLabel)}">
+          <span class="material-symbols-rounded" aria-hidden="true">remove</span>
+        </button>
+        <output class="study-spinner-value" data-spinner-value aria-live="polite">${escapeHtml(valueLabel)}</output>
+        <button class="study-spinner-button" type="button" data-spinner-direction="1" aria-label="${escapeHtml(incrementAriaLabel)}">
+          <span class="material-symbols-rounded" aria-hidden="true">add</span>
+        </button>
+      </div>
+    `;
+  }
 
-    return `<div class="${escapeHtml(className)}" role="group" aria-label="${escapeHtml(ariaLabel)}">${buttonMarkup}</div>`;
+  function createQuestionCountSpinner({ spinnerId, ariaLabel, activeValue }) {
+    return createValueSpinner({
+      spinnerId,
+      ariaLabel,
+      valueLabel: `${activeValue}문제`,
+      decrementAriaLabel: `${ariaLabel} 줄이기`,
+      incrementAriaLabel: `${ariaLabel} 늘리기`
+    });
+  }
+
+  function createDurationSpinner({ spinnerId, ariaLabel, activeValue }) {
+    return createValueSpinner({
+      spinnerId,
+      ariaLabel,
+      valueLabel: activeValue === 0 ? "천천히" : `${activeValue}초`,
+      decrementAriaLabel: `${ariaLabel} 줄이기`,
+      incrementAriaLabel: `${ariaLabel} 늘리기`
+    });
+  }
+
+  function createStudySelectGroup({ groupLabel, id, label = groupLabel, ariaLabel, options = [] }) {
+    return {
+      label: groupLabel,
+      content: createSelectField({
+        id,
+        label,
+        ariaLabel,
+        includeLabel: false,
+        options
+      })
+    };
+  }
+
+  function createQuizFieldGroups({ questionField, optionField }) {
+    return [createStudySelectGroup(questionField), createStudySelectGroup(optionField)];
   }
 
   function createStudyOptionsShell({
@@ -573,6 +612,12 @@
   }
 
   function createVocabQuizLayout() {
+    const vocabQuizFieldSelectOptions = [
+      { value: "reading", label: "히라가나·가타카나" },
+      { value: "word", label: "한자" },
+      { value: "meaning", label: "뜻" }
+    ];
+
     return `
       <div class="match-shell vocab-quiz-shell">
         <aside class="match-sidebar vocab-quiz-sidebar">
@@ -588,56 +633,34 @@
             panelClassName: "study-options-panel-wide",
             isOpen: false,
             groups: [
-              {
-                label: "문제 영역",
-                content: createSelectField({
+              ...createQuizFieldGroups({
+                questionField: {
+                  groupLabel: "문제 영역",
                   id: "vocab-quiz-question-field",
-                  label: "문제 영역",
                   ariaLabel: "단어 퀴즈 문제 영역 고르기",
-                  includeLabel: false,
-                  options: [
-                    { value: "reading", label: "히라가나·가타카나" },
-                    { value: "word", label: "한자" },
-                    { value: "meaning", label: "뜻" }
-                  ]
-                })
-              },
-              {
-                label: "보기 영역",
-                content: createSelectField({
+                  options: vocabQuizFieldSelectOptions
+                },
+                optionField: {
+                  groupLabel: "보기 영역",
                   id: "vocab-quiz-option-field",
-                  label: "보기 영역",
                   ariaLabel: "단어 퀴즈 보기 영역 고르기",
-                  includeLabel: false,
-                  options: [
-                    { value: "reading", label: "히라가나·가타카나" },
-                    { value: "word", label: "한자" },
-                    { value: "meaning", label: "뜻" }
-                  ]
-                })
-              },
+                  options: vocabQuizFieldSelectOptions
+                }
+              }),
               {
                 label: "몇 문제 풀까요?",
-                content: createToggleButtonGroup({
-                  ariaLabel: "단어 퀴즈 문제 수 고르기",
-                  buttons: [
-                    { label: "5문제", attributes: { "data-vocab-quiz-count": "5", "aria-pressed": "false" } },
-                    { label: "10문제", className: "level-button is-active", attributes: { "data-vocab-quiz-count": "10", "aria-pressed": "true" } },
-                    { label: "15문제", attributes: { "data-vocab-quiz-count": "15", "aria-pressed": "false" } },
-                    { label: "20문제", attributes: { "data-vocab-quiz-count": "20", "aria-pressed": "false" } }
-                  ]
+                content: createQuestionCountSpinner({
+                  spinnerId: "vocab-quiz-count",
+                  ariaLabel: "단어 퀴즈 문제 수",
+                  activeValue: 10
                 })
               },
               {
                 label: "시간은 어떻게 할까요?",
-                content: createToggleButtonGroup({
-                  ariaLabel: "단어 퀴즈 시간 고르기",
-                  buttons: [
-                    { label: "천천히", attributes: { "data-vocab-quiz-time": "0", "aria-pressed": "false" } },
-                    { label: "10초", attributes: { "data-vocab-quiz-time": "10", "aria-pressed": "false" } },
-                    { label: "15초", className: "level-button is-active", attributes: { "data-vocab-quiz-time": "15", "aria-pressed": "true" } },
-                    { label: "20초", attributes: { "data-vocab-quiz-time": "20", "aria-pressed": "false" } }
-                  ]
+                content: createDurationSpinner({
+                  spinnerId: "vocab-quiz-time",
+                  ariaLabel: "단어 퀴즈 시간",
+                  activeValue: 15
                 })
               }
             ]
@@ -742,68 +765,62 @@
   }
 
   function createStarterKanjiLayout() {
+    const starterKanjiQuestionFieldOptions = [
+      { value: "display", label: "한자" },
+      { value: "reading", label: "발음" }
+    ];
+    const starterKanjiOptionFieldOptions = [
+      { value: "reading", label: "발음" },
+      { value: "display", label: "한자" }
+    ];
+
     return `
       <div class="match-shell">
         <aside class="match-sidebar">
           <div class="match-sidebar-head"><span class="eyebrow">QUIZ HUD</span><h3>한자 퀴즈</h3></div>
-          <div class="study-options-shell match-options-shell kanji-options-shell" id="starter-kanji-options-shell">
-            <button class="study-options-toggle" id="starter-kanji-options-toggle" type="button" aria-expanded="false" aria-controls="starter-kanji-options-panel">
-              <div class="study-options-toggle-copy"><strong>퀴즈 설정, 어떻게 할까요?</strong><p class="study-options-toggle-summary" id="starter-kanji-options-summary">전체 · 전체 · 10문제 · 15초</p></div>
-              <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-            </button>
-            <div class="study-options-panel study-options-panel-wide" id="starter-kanji-options-panel" hidden>
-              <div class="study-options-group">
-                <span>문제 영역</span>
-                ${createSelectField({
+          ${createStudyOptionsShell({
+            shellId: "starter-kanji-options-shell",
+            shellClassName: "match-options-shell kanji-options-shell",
+            toggleId: "starter-kanji-options-toggle",
+            toggleTitle: "퀴즈 설정, 어떻게 할까요?",
+            summaryId: "starter-kanji-options-summary",
+            summaryText: "전체 · 전체 · 10문제 · 15초",
+            panelId: "starter-kanji-options-panel",
+            panelClassName: "study-options-panel-wide",
+            isOpen: false,
+            groups: [
+              ...createQuizFieldGroups({
+                questionField: {
+                  groupLabel: "문제 영역",
                   id: "starter-kanji-question-field",
-                  label: "문제 영역",
                   ariaLabel: "한자 퀴즈 문제 영역 고르기",
-                  includeLabel: false,
-                  options: [
-                    { value: "display", label: "한자" },
-                    { value: "reading", label: "발음" }
-                  ]
-                })}
-              </div>
-              <div class="study-options-group">
-                <span>보기 영역</span>
-                ${createSelectField({
+                  options: starterKanjiQuestionFieldOptions
+                },
+                optionField: {
+                  groupLabel: "보기 영역",
                   id: "starter-kanji-option-field",
-                  label: "보기 영역",
                   ariaLabel: "한자 퀴즈 보기 영역 고르기",
-                  includeLabel: false,
-                  options: [
-                    { value: "reading", label: "발음" },
-                    { value: "display", label: "한자" }
-                  ]
-                })}
-              </div>
-              <div class="study-options-group">
-                <span>몇 문제 풀까요?</span>
-                ${createToggleButtonGroup({
-                  ariaLabel: "한자 퀴즈 문제 수 고르기",
-                  buttons: [
-                    { label: "5문제", attributes: { "data-starter-kanji-count": "5", "aria-pressed": "false" } },
-                    { label: "10문제", className: "level-button is-active", attributes: { "data-starter-kanji-count": "10", "aria-pressed": "true" } },
-                    { label: "15문제", attributes: { "data-starter-kanji-count": "15", "aria-pressed": "false" } },
-                    { label: "20문제", attributes: { "data-starter-kanji-count": "20", "aria-pressed": "false" } }
-                  ]
-                })}
-              </div>
-              <div class="study-options-group">
-                <span>시간은 어떻게 할까요?</span>
-                ${createToggleButtonGroup({
-                  ariaLabel: "한자 퀴즈 시간 고르기",
-                  buttons: [
-                    { label: "천천히", attributes: { "data-starter-kanji-time": "0", "aria-pressed": "false" } },
-                    { label: "10초", attributes: { "data-starter-kanji-time": "10", "aria-pressed": "false" } },
-                    { label: "15초", className: "level-button is-active", attributes: { "data-starter-kanji-time": "15", "aria-pressed": "true" } },
-                    { label: "20초", attributes: { "data-starter-kanji-time": "20", "aria-pressed": "false" } }
-                  ]
-                })}
-              </div>
-            </div>
-          </div>
+                  options: starterKanjiOptionFieldOptions
+                }
+              }),
+              {
+                label: "몇 문제 풀까요?",
+                content: createQuestionCountSpinner({
+                  spinnerId: "starter-kanji-count",
+                  ariaLabel: "한자 퀴즈 문제 수",
+                  activeValue: 10
+                })
+              },
+              {
+                label: "시간은 어떻게 할까요?",
+                content: createDurationSpinner({
+                  spinnerId: "starter-kanji-time",
+                  ariaLabel: "한자 퀴즈 시간",
+                  activeValue: 15
+                })
+              }
+            ]
+          })}
           <div class="vocab-select-toolbar vocab-select-toolbar-sidebar" aria-label="한자 퀴즈 학년 필터">
             ${createSelectField({
               id: "starter-kanji-collection-select",
@@ -905,26 +922,18 @@
             groups: [
               {
                 label: "몇 문제 풀까요?",
-                content: createToggleButtonGroup({
-                  ariaLabel: "짝 맞추기 문제 수 고르기",
-                  buttons: [
-                    { label: "5문제", className: "level-button is-active", attributes: { "data-match-count": "5", "aria-pressed": "true" } },
-                    { label: "10문제", attributes: { "data-match-count": "10", "aria-pressed": "false" } },
-                    { label: "15문제", attributes: { "data-match-count": "15", "aria-pressed": "false" } },
-                    { label: "20문제", attributes: { "data-match-count": "20", "aria-pressed": "false" } }
-                  ]
+                content: createQuestionCountSpinner({
+                  spinnerId: "match-count",
+                  ariaLabel: "짝 맞추기 문제 수",
+                  activeValue: 5
                 })
               },
               {
                 label: "시간은 어떻게 할까요?",
-                content: createToggleButtonGroup({
-                  ariaLabel: "짝 맞추기 시간 고르기",
-                  buttons: [
-                    { label: "천천히", attributes: { "data-match-time": "0", "aria-pressed": "false" } },
-                    { label: "10초", attributes: { "data-match-time": "10", "aria-pressed": "false" } },
-                    { label: "15초", className: "level-button is-active", attributes: { "data-match-time": "15", "aria-pressed": "true" } },
-                    { label: "20초", attributes: { "data-match-time": "20", "aria-pressed": "false" } }
-                  ]
+                content: createDurationSpinner({
+                  spinnerId: "match-time",
+                  ariaLabel: "짝 맞추기 시간",
+                  activeValue: 15
                 })
               }
             ]
@@ -1016,26 +1025,18 @@
             groups: [
               {
                 label: "몇 문제 풀까요?",
-                content: createToggleButtonGroup({
-                  ariaLabel: "한자 짝 맞추기 문제 수 고르기",
-                  buttons: [
-                    { label: "5문제", className: "level-button is-active", attributes: { "data-kanji-match-count": "5", "aria-pressed": "true" } },
-                    { label: "10문제", attributes: { "data-kanji-match-count": "10", "aria-pressed": "false" } },
-                    { label: "15문제", attributes: { "data-kanji-match-count": "15", "aria-pressed": "false" } },
-                    { label: "20문제", attributes: { "data-kanji-match-count": "20", "aria-pressed": "false" } }
-                  ]
+                content: createQuestionCountSpinner({
+                  spinnerId: "kanji-match-count",
+                  ariaLabel: "한자 짝 맞추기 문제 수",
+                  activeValue: 5
                 })
               },
               {
                 label: "시간은 어떻게 할까요?",
-                content: createToggleButtonGroup({
-                  ariaLabel: "한자 짝 맞추기 시간 고르기",
-                  buttons: [
-                    { label: "천천히", attributes: { "data-kanji-match-time": "0", "aria-pressed": "false" } },
-                    { label: "10초", attributes: { "data-kanji-match-time": "10", "aria-pressed": "false" } },
-                    { label: "15초", className: "level-button is-active", attributes: { "data-kanji-match-time": "15", "aria-pressed": "true" } },
-                    { label: "20초", attributes: { "data-kanji-match-time": "20", "aria-pressed": "false" } }
-                  ]
+                content: createDurationSpinner({
+                  spinnerId: "kanji-match-time",
+                  ariaLabel: "한자 짝 맞추기 시간",
+                  activeValue: 15
                 })
               }
             ]
@@ -1107,6 +1108,12 @@
   }
 
   function createGrammarPracticeLayout() {
+    const grammarLevelOptions = [
+      { value: "N5", label: "N5" },
+      { value: "N4", label: "N4" },
+      { value: "N3", label: "N3" }
+    ];
+
     return `
       <div class="match-shell">
         <aside class="match-sidebar">
@@ -1117,14 +1124,23 @@
             toggleId: "grammar-practice-options-toggle",
             toggleTitle: "문법 설정",
             summaryId: "grammar-practice-options-summary",
-            summaryText: "N5",
+            summaryText: "N5 · 25초",
             panelId: "grammar-practice-options-panel",
             panelClassName: "study-options-panel-compact",
             groups: [
+              createStudySelectGroup({
+                groupLabel: "어느 레벨로 풀까요?",
+                id: "grammar-practice-level-select",
+                ariaLabel: "문법 레벨 고르기",
+                options: grammarLevelOptions
+              }),
               {
-                label: "어느 레벨로 풀까요?",
-                content:
-                  '<div class="grammar-practice-level-switcher" id="grammar-practice-level-switcher" role="tablist" aria-label="문법 레벨 고르기"></div>'
+                label: "시간은 어떻게 할까요?",
+                content: createDurationSpinner({
+                  spinnerId: "grammar-practice-time",
+                  ariaLabel: "문법 퀴즈 시간",
+                  activeValue: 25
+                })
               }
             ]
           })}
@@ -1154,6 +1170,12 @@
   }
 
   function createReadingPracticeLayout() {
+    const readingLevelOptions = [
+      { value: "N5", label: "N5" },
+      { value: "N4", label: "N4" },
+      { value: "N3", label: "N3" }
+    ];
+
     return `
       <div class="match-shell">
         <aside class="match-sidebar">
@@ -1168,15 +1190,19 @@
             panelId: "reading-options-panel",
             panelClassName: "study-options-panel-compact",
             groups: [
-              {
-                label: "어느 레벨로 읽을까요?",
-                content:
-                  '<div class="reading-level-switcher" id="reading-level-switcher" role="tablist" aria-label="독해 레벨 고르기"></div>'
-              },
+              createStudySelectGroup({
+                groupLabel: "어느 레벨로 읽을까요?",
+                id: "reading-level-select",
+                ariaLabel: "독해 레벨 고르기",
+                options: readingLevelOptions
+              }),
               {
                 label: "시간은 어떻게 할까요?",
-                content:
-                  '<div class="reading-time-switcher" id="reading-time-switcher" role="group" aria-label="독해 시간 고르기"></div>'
+                content: createDurationSpinner({
+                  spinnerId: "reading-time",
+                  ariaLabel: "독해 시간",
+                  activeValue: 45
+                })
               }
             ]
           })}

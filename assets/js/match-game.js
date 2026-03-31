@@ -4,7 +4,7 @@ const sharedMatchGame = globalThis.japanoteSharedMatchGame;
 
 const matchSourceLevels = ["N5", "N4", "N3"];
 const matchLevelOptions = [...matchSourceLevels, "all"];
-const matchDurationOptions = [0, 10, 15, 20];
+const matchDurationOptions = [10, 15, 20, 0];
 const matchTotalCountOptions = [5, 10, 15, 20];
 const matchFilterOptions = ["all", "review", "mastered", "unmarked"];
 const matchResultFilterOptions = ["all", "correct", "wrong"];
@@ -537,6 +537,8 @@ function renderMatchSettings() {
   const levelSelect = document.getElementById("match-level-select");
   const filterSelect = document.getElementById("match-filter-select");
   const partSelect = document.getElementById("match-part-select");
+  const countSpinner = document.querySelector('[data-spinner-id="match-count"]');
+  const timeSpinner = document.querySelector('[data-spinner-id="match-time"]');
   const basePool = getBaseMatchPool(matchPreferences.level);
   const filterCounts = getMatchFilterCounts(basePool);
   const activePart = getMatchPartFilter(matchPreferences.part, basePool);
@@ -573,16 +575,20 @@ function renderMatchSettings() {
         disabled: isSettingsLocked
       }
     ],
-    buttonGroups: [
+    spinnerConfigs: [
       {
-        selector: "[data-match-count]",
+        spinner: countSpinner,
+        options: matchTotalCountOptions,
         activeValue: getMatchTotalCount(matchPreferences.totalCount),
-        getValue: (button) => Number(button.dataset.matchCount)
+        formatValue: (value) => `${value}문제`,
+        disabled: isSettingsLocked
       },
       {
-        selector: "[data-match-time]",
+        spinner: timeSpinner,
+        options: matchDurationOptions,
         activeValue: getMatchDuration(matchPreferences.duration),
-        getValue: (button) => Number(button.dataset.matchTime)
+        formatValue: getMatchDurationLabel,
+        disabled: isSettingsLocked
       }
     ],
     refreshPool: refreshMatchPool,
@@ -1165,6 +1171,8 @@ function attachMatchEventListeners() {
   const levelSelect = document.getElementById("match-level-select");
   const filterSelect = document.getElementById("match-filter-select");
   const partSelect = document.getElementById("match-part-select");
+  const countSpinner = document.querySelector('[data-spinner-id="match-count"]');
+  const timeSpinner = document.querySelector('[data-spinner-id="match-time"]');
   const resultFilterSelect = document.getElementById("match-result-filter");
   const resultBulkAction = document.getElementById("match-result-bulk-action");
   const resultList = document.getElementById("match-result-list");
@@ -1182,8 +1190,18 @@ function attachMatchEventListeners() {
   sharedMatchGame.attachSelectChangeListener(levelSelect, setMatchLevel);
   sharedMatchGame.attachSelectChangeListener(filterSelect, setMatchFilterPreference);
   sharedMatchGame.attachSelectChangeListener(partSelect, setMatchPartPreference);
-  sharedMatchGame.attachDatasetButtonListeners("[data-match-count]", "matchCount", setMatchTotalCount);
-  sharedMatchGame.attachDatasetButtonListeners("[data-match-time]", "matchTime", setMatchDuration);
+  sharedMatchGame.attachSpinnerListeners({
+    spinner: countSpinner,
+    options: matchTotalCountOptions,
+    getCurrentValue: () => getMatchTotalCount(matchPreferences.totalCount),
+    handler: setMatchTotalCount
+  });
+  sharedMatchGame.attachSpinnerListeners({
+    spinner: timeSpinner,
+    options: matchDurationOptions,
+    getCurrentValue: () => getMatchDuration(matchPreferences.duration),
+    handler: setMatchDuration
+  });
   sharedMatchGame.attachSelectChangeListener(resultFilterSelect, setMatchResultFilter);
   sharedMatchGame.attachBulkActionListener({
     button: resultBulkAction,

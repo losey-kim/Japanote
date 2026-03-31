@@ -872,8 +872,9 @@ const quizSessionSizeOptions = [10, 20];
 const starterKanjiQuizCountOptions = [5, 10, 15, 20];
 const kanjiMatchCountOptions = [5, 10, 15, 20];
 const vocabQuizCountOptions = [5, 10, 15, 20];
-const quizDurationOptions = [0, 10, 15, 20];
-const readingDurationOptions = [0, 45, 60, 90];
+const quizDurationOptions = [10, 15, 20, 0];
+const grammarPracticeDurationOptions = [15, 25, 35, 0];
+const readingDurationOptions = [45, 60, 90, 0];
 const kanjiQuizFieldOptions = ["display", "reading"];
 const kanjiQuizFieldLabels = {
   display: "한자",
@@ -1238,6 +1239,15 @@ function getVocabQuizDuration(value = state?.vocabQuizDuration) {
 function getStarterKanjiQuizDuration(value = state?.starterKanjiQuizDuration) {
   const numericValue = Number(value);
   return quizDurationOptions.includes(numericValue) ? numericValue : 15;
+}
+
+function getGrammarPracticeLevel(level = state?.grammarPracticeLevel) {
+  return contentLevels.includes(level) ? level : "N5";
+}
+
+function getGrammarPracticeDuration(value = state?.grammarPracticeDuration) {
+  const numericValue = Number(value);
+  return grammarPracticeDurationOptions.includes(numericValue) ? numericValue : 25;
 }
 
 function getReadingLevel(level = state?.readingLevel) {
@@ -4187,6 +4197,7 @@ const defaultState = {
   grammarPracticeOptionsOpen: true,
   grammarPracticeStarted: false,
   grammarPracticeLevel: "N5",
+  grammarPracticeDuration: 25,
   grammarPracticeIndexes: { N5: 0, N4: 0, N3: 0 },
   quizIndex: 0,
   quizLevel: "N5",
@@ -4362,6 +4373,8 @@ function normalizeLoadedState(inputState) {
   nextState.kanjiFlashcardRevealed = nextState.kanjiFlashcardRevealed === true;
   nextState.grammarPracticeOptionsOpen = nextState.grammarPracticeOptionsOpen !== false;
   nextState.grammarPracticeStarted = false;
+  nextState.grammarPracticeLevel = getGrammarPracticeLevel(nextState.grammarPracticeLevel);
+  nextState.grammarPracticeDuration = getGrammarPracticeDuration(nextState.grammarPracticeDuration);
   nextState.readingLevel = getReadingLevel(nextState.readingLevel);
   nextState.readingDuration = getReadingDuration(nextState.readingDuration);
   nextState.readingStarted = false;
@@ -4406,8 +4419,8 @@ const quizSessions = {
     streakElement: "vocab-quiz-streak"
   },
   grammar: {
-    duration: 25,
-    timeLeft: 25,
+    duration: state.grammarPracticeDuration,
+    timeLeft: state.grammarPracticeDuration,
     correct: 0,
     streak: 0,
     timerId: null,
@@ -4614,11 +4627,14 @@ function saveState() {
 
 function resetStateDrivenQuizSessions() {
   stopQuizSessionTimer("vocab");
+  stopQuizSessionTimer("grammar");
   stopQuizSessionTimer("reading");
   stopQuizSessionTimer("quiz");
   stopQuizSessionTimer("starterKanji");
   quizSessions.vocab.correct = 0;
   quizSessions.vocab.streak = 0;
+  quizSessions.grammar.correct = 0;
+  quizSessions.grammar.streak = 0;
   quizSessions.reading.correct = 0;
   quizSessions.reading.streak = 0;
   quizSessions.quiz.correct = 0;
@@ -4626,6 +4642,7 @@ function resetStateDrivenQuizSessions() {
   quizSessions.starterKanji.correct = 0;
   quizSessions.starterKanji.streak = 0;
   setQuizSessionDuration("vocab", state.vocabQuizDuration);
+  setQuizSessionDuration("grammar", state.grammarPracticeDuration);
   setQuizSessionDuration("reading", state.readingDuration);
   setQuizSessionDuration("quiz", state.quizDuration);
   setQuizSessionDuration("starterKanji", state.starterKanjiQuizDuration);
@@ -5694,14 +5711,6 @@ function renderCollapsibleSettingsSection({
   }
 }
 
-function syncSelectionButtons(buttons, getValue, activeValue) {
-  buttons.forEach((button) => {
-    const active = getValue(button) === activeValue;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
-}
-
 function renderRestartableActionButton(button, label, isStarted, canStart) {
   if (button) {
     button.classList.toggle("primary-btn", !isStarted);
@@ -5716,19 +5725,121 @@ function renderRestartableActionButton(button, label, isStarted, canStart) {
   setActionButtonIcon(button, isStarted ? "autorenew" : "play_arrow");
 }
 
-function attachStateChoiceButtons({
-  buttons,
-  getNextValue,
+function formatQuestionCountLabel(count) {
+  return `${Number(count)}문제`;
+}
+
+function renderSpinnerControl({ spinner, options = [], activeValue, formatValue, disabled = false }) {
+  if (!spinner) {
+    return;
+  }
+
+  const valueElement = spinner.querySelector("[data-spinner-value]");
+  const directionButtons = spinner.querySelectorAll("[data-spinner-direction]");
+  const currentIndex = options.indexOf(activeValue);
+  const safeValue = currentIndex >= 0 ? activeValue : options[0];
+
+  if (valueElement) {
+    valueElement.textContent = typeof formatValue === "function" ? formatValue(safeValue) : String(safeValue ?? "");
+  }
+
+  spinner.classList.toggle("is-disabled", Boolean(disabled));
+
+  directionButtons.forEach((button) => {
+    const direction = Number(button.dataset.spinnerDirection);
+    const nextIndex = currentIndex + direction;
+    button.disabled = Boolean(disabled) || currentIndex < 0 || nextIndex < 0 || nextIndex >= options.length;
+  });
+}
+
+function renderSpinnerControls(configs = []) {
+  configs.forEach((config) => {
+    renderSpinnerControl(config);
+  });
+}
+
+function applySelectFieldState({ element, value, populate, disabled }) {
+  if (!element) {
+    return;
+  }
+
+  if (typeof populate === "function") {
+    populate(element, value);
+  } else if (value !== undefined) {
+    element.value = value;
+  }
+
+  element.disabled = Boolean(disabled);
+}
+
+function renderStudyOptionsControls({
+  shell,
+  toggle,
+  panel,
+  summary,
+  summaryText,
+  isLocked,
+  isOpen,
+  spinnerConfigs = [],
+  selectConfigs = [],
+  actionButton
+}) {
+  renderCollapsibleSettingsSection({
+    shell,
+    toggle,
+    panel,
+    summary,
+    summaryText,
+    isLocked,
+    shouldShowPanel: !isLocked && isOpen
+  });
+
+  if (actionButton) {
+    renderRestartableActionButton(actionButton.button, actionButton.label, actionButton.isStarted, actionButton.canStart);
+  }
+
+  renderSpinnerControls(spinnerConfigs);
+
+  selectConfigs.forEach(({ element, value, populate, disabled = isLocked }) => {
+    applySelectFieldState({
+      element,
+      value,
+      populate,
+      disabled
+    });
+  });
+}
+
+function attachStateSpinner({
+  spinner,
+  options = [],
   getCurrentValue,
   setValue,
   invalidate,
   render
 }) {
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextValue = getNextValue(button);
+  if (!spinner) {
+    return;
+  }
 
-      if (getCurrentValue() === nextValue) {
+  spinner.querySelectorAll("[data-spinner-direction]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const currentValue = getCurrentValue();
+      const currentIndex = options.indexOf(currentValue);
+
+      if (currentIndex < 0) {
+        return;
+      }
+
+      const nextIndex = currentIndex + Number(button.dataset.spinnerDirection);
+
+      if (nextIndex < 0 || nextIndex >= options.length) {
+        return;
+      }
+
+      const nextValue = options[nextIndex];
+
+      if (currentValue === nextValue) {
         return;
       }
 
@@ -5737,6 +5848,18 @@ function attachStateChoiceButtons({
       saveState();
       render();
     });
+  });
+}
+
+function attachStateOptionsToggle(button, stateKey, render) {
+  if (!button) {
+    return;
+  }
+
+  button.addEventListener("click", () => {
+    state[stateKey] = !state[stateKey];
+    saveState();
+    render();
   });
 }
 
@@ -6149,8 +6272,8 @@ function renderStarterKanjiControls() {
   const gradeSelect = document.getElementById("starter-kanji-grade-select");
   const startButton = document.getElementById("starter-kanji-start");
   const startLabel = document.getElementById("starter-kanji-start-label");
-  const countButtons = document.querySelectorAll("[data-starter-kanji-count]");
-  const timeButtons = document.querySelectorAll("[data-starter-kanji-time]");
+  const countSpinner = document.querySelector('[data-spinner-id="starter-kanji-count"]');
+  const timeSpinner = document.querySelector('[data-spinner-id="starter-kanji-time"]');
   const isOptionsOpen = state.starterKanjiQuizOptionsOpen !== false;
   const activeCount = getStarterKanjiQuizCount();
   const activeDuration = getStarterKanjiQuizDuration();
@@ -6160,40 +6283,56 @@ function renderStarterKanjiControls() {
   const gradeCounts = getKanjiGradeCounts(getKanjiCollectionItems());
   const canStart = getStarterKanjiQuestionCount() > 0;
   const isSettingsLocked = state.starterKanjiQuizStarted && !state.starterKanjiQuizFinished;
-  const shouldShowOptionsPanel = !isSettingsLocked && isOptionsOpen;
 
-  renderCollapsibleSettingsSection({
+  renderStudyOptionsControls({
     shell: optionsShell,
     toggle: optionsToggle,
     panel: optionsPanel,
     summary: optionsSummary,
     summaryText: getStarterKanjiOptionsSummaryText(),
     isLocked: isSettingsLocked,
-    shouldShowPanel: shouldShowOptionsPanel
+    isOpen: isOptionsOpen,
+    spinnerConfigs: [
+      {
+        spinner: countSpinner,
+        options: starterKanjiQuizCountOptions,
+        activeValue: activeCount,
+        formatValue: formatQuestionCountLabel,
+        disabled: isSettingsLocked
+      },
+      {
+        spinner: timeSpinner,
+        options: quizDurationOptions,
+        activeValue: activeDuration,
+        formatValue: getDurationLabel,
+        disabled: isSettingsLocked
+      }
+    ],
+    selectConfigs: [
+      {
+        element: questionFieldSelect,
+        value: activeQuestionField
+      },
+      {
+        element: optionFieldSelect,
+        value: activeOptionField
+      },
+      {
+        element: collectionSelect,
+        populate: (element) => populateKanjiCollectionSelect(element, collectionCounts, getKanjiCollectionFilter())
+      },
+      {
+        element: gradeSelect,
+        populate: (element) => populateKanjiGradeSelect(element, gradeCounts, getKanjiGrade())
+      }
+    ],
+    actionButton: {
+      button: startButton,
+      label: startLabel,
+      isStarted: state.starterKanjiQuizStarted,
+      canStart
+    }
   });
-  renderRestartableActionButton(startButton, startLabel, state.starterKanjiQuizStarted, canStart);
-  syncSelectionButtons(countButtons, (button) => Number(button.dataset.starterKanjiCount), activeCount);
-  syncSelectionButtons(timeButtons, (button) => Number(button.dataset.starterKanjiTime), activeDuration);
-
-  if (questionFieldSelect) {
-    questionFieldSelect.value = activeQuestionField;
-    questionFieldSelect.disabled = isSettingsLocked;
-  }
-
-  if (optionFieldSelect) {
-    optionFieldSelect.value = activeOptionField;
-    optionFieldSelect.disabled = isSettingsLocked;
-  }
-
-  populateKanjiCollectionSelect(collectionSelect, collectionCounts, getKanjiCollectionFilter());
-  if (collectionSelect) {
-    collectionSelect.disabled = isSettingsLocked;
-  }
-
-  populateKanjiGradeSelect(gradeSelect, gradeCounts, getKanjiGrade());
-  if (gradeSelect) {
-    gradeSelect.disabled = isSettingsLocked;
-  }
 }
 
 function renderStarterKanjiPractice() {
@@ -6437,9 +6576,11 @@ function renderKanjiList() {
     renderItem: (item, displayIndex) => {
       const review = isKanjiSavedToReviewList(item.id);
       const mastered = isKanjiSavedToMasteredList(item.id);
+      const gradeLabel = item.gradeLabel || getKanjiGradeLabel(item.grade);
 
       return createStudyListCardMarkup({
         index: displayIndex,
+        headMetaMarkup: gradeLabel ? `<span class="vocab-list-index">${gradeLabel}</span>` : "",
         badgesMarkup: createStudyStatusBadgesMarkup(review, mastered),
         mainClassName: "vocab-list-main kanji-list-main",
         titleClassName: "vocab-list-word kanji-list-char",
@@ -7602,9 +7743,11 @@ function renderVocabList() {
     renderItem: (item, displayIndex) => {
       const review = isWordSavedToReviewList(item.id);
       const mastered = isWordSavedToMasteredList(item.id);
+      const vocabLevel = item.level || "";
 
       return createStudyListCardMarkup({
         index: displayIndex,
+        headMetaMarkup: vocabLevel ? `<span class="vocab-list-index">${vocabLevel}</span>` : "",
         badgesMarkup: createStudyStatusBadgesMarkup(review, mastered),
         titleText: formatQuizLineBreaks(item.word),
         subtitleText: formatQuizLineBreaks(item.reading),
@@ -7642,12 +7785,12 @@ function populateVocabFilterSelect(select, counts) {
   select.value = getVocabFilter();
 }
 
-function populateVocabLevelSelect(select) {
+function populateContentLevelSelect(select, activeLevel, { includeAll = false } = {}) {
   if (!select) {
     return;
   }
 
-  const levelOptions = [allLevelValue, ...contentLevels];
+  const levelOptions = includeAll ? [allLevelValue, ...contentLevels] : [...contentLevels];
   select.innerHTML = "";
 
   levelOptions.forEach((level) => {
@@ -7657,7 +7800,11 @@ function populateVocabLevelSelect(select) {
     select.appendChild(option);
   });
 
-  select.value = getVocabLevel();
+  select.value = levelOptions.includes(activeLevel) ? activeLevel : levelOptions[0];
+}
+
+function populateVocabLevelSelect(select) {
+  populateContentLevelSelect(select, getVocabLevel(), { includeAll: true });
 }
 
 function populateVocabPartSelect(select, availableParts, activePart) {
@@ -7719,8 +7866,8 @@ function renderVocabQuizControls(counts, availableParts, activePart) {
   const levelSelect = document.getElementById("vocab-quiz-level-select");
   const filterSelect = document.getElementById("vocab-quiz-filter-select");
   const partSelect = document.getElementById("vocab-quiz-part-select");
-  const countButtons = document.querySelectorAll("[data-vocab-quiz-count]");
-  const timeButtons = document.querySelectorAll("[data-vocab-quiz-time]");
+  const countSpinner = document.querySelector('[data-spinner-id="vocab-quiz-count"]');
+  const timeSpinner = document.querySelector('[data-spinner-id="vocab-quiz-time"]');
   const isOptionsOpen = state.vocabQuizOptionsOpen !== false;
   const activeQuestionField = getVocabQuizQuestionField();
   const activeOptionField = getVocabQuizOptionField();
@@ -7728,45 +7875,59 @@ function renderVocabQuizControls(counts, availableParts, activePart) {
   const activeDuration = getVocabQuizDuration();
   const isSettingsLocked = state.vocabQuizStarted && !state.vocabQuizFinished;
   const isFilterLocked = state.vocabQuizStarted && !state.vocabQuizFinished;
-  const shouldShowOptionsPanel = !isSettingsLocked && isOptionsOpen;
 
-  renderCollapsibleSettingsSection({
+  renderStudyOptionsControls({
     shell: optionsShell,
     toggle: optionsToggle,
     panel: optionsPanel,
     summary: optionsSummary,
     summaryText: getVocabQuizOptionsSummaryText(),
     isLocked: isSettingsLocked,
-    shouldShowPanel: shouldShowOptionsPanel
+    isOpen: isOptionsOpen,
+    spinnerConfigs: [
+      {
+        spinner: countSpinner,
+        options: vocabQuizCountOptions,
+        activeValue: activeCount,
+        formatValue: formatQuestionCountLabel,
+        disabled: isSettingsLocked
+      },
+      {
+        spinner: timeSpinner,
+        options: quizDurationOptions,
+        activeValue: activeDuration,
+        formatValue: getDurationLabel,
+        disabled: isSettingsLocked
+      }
+    ],
+    selectConfigs: [
+      {
+        element: questionFieldSelect,
+        value: activeQuestionField,
+        populate: populateVocabQuizFieldSelect
+      },
+      {
+        element: optionFieldSelect,
+        value: activeOptionField,
+        populate: populateVocabQuizFieldSelect
+      },
+      {
+        element: levelSelect,
+        populate: (element) => populateVocabLevelSelect(element),
+        disabled: isFilterLocked
+      },
+      {
+        element: filterSelect,
+        populate: (element) => populateVocabFilterSelect(element, counts),
+        disabled: isFilterLocked
+      },
+      {
+        element: partSelect,
+        populate: (element) => populateVocabPartSelect(element, availableParts, activePart),
+        disabled: isFilterLocked
+      }
+    ]
   });
-  syncSelectionButtons(countButtons, (button) => Number(button.dataset.vocabQuizCount), activeCount);
-  syncSelectionButtons(timeButtons, (button) => Number(button.dataset.vocabQuizTime), activeDuration);
-
-  populateVocabQuizFieldSelect(questionFieldSelect, activeQuestionField);
-  populateVocabQuizFieldSelect(optionFieldSelect, activeOptionField);
-  populateVocabLevelSelect(levelSelect);
-  populateVocabFilterSelect(filterSelect, counts);
-  populateVocabPartSelect(partSelect, availableParts, activePart);
-
-  if (questionFieldSelect) {
-    questionFieldSelect.disabled = isSettingsLocked;
-  }
-
-  if (optionFieldSelect) {
-    optionFieldSelect.disabled = isSettingsLocked;
-  }
-
-  if (levelSelect) {
-    levelSelect.disabled = isFilterLocked;
-  }
-
-  if (filterSelect) {
-    filterSelect.disabled = isFilterLocked;
-  }
-
-  if (partSelect) {
-    partSelect.disabled = isFilterLocked;
-  }
 }
 
 function renderVocabQuiz() {
@@ -8063,7 +8224,31 @@ function renderGrammarPageLayout() {
 }
 
 function getGrammarPracticeOptionsSummaryText() {
-  return state.grammarPracticeLevel;
+  return [getGrammarPracticeLevel(), getDurationLabel(getGrammarPracticeDuration())].join(" · ");
+}
+
+function setGrammarPracticeLevel(level) {
+  const nextLevel = getGrammarPracticeLevel(level);
+
+  if (state.grammarPracticeLevel === nextLevel) {
+    return;
+  }
+
+  state.grammarPracticeLevel = nextLevel;
+  saveState();
+  renderGrammarPractice();
+}
+
+function setGrammarPracticeDuration(duration) {
+  const nextDuration = getGrammarPracticeDuration(duration);
+
+  if (state.grammarPracticeDuration === nextDuration) {
+    return;
+  }
+
+  state.grammarPracticeDuration = nextDuration;
+  saveState();
+  renderGrammarPractice();
 }
 
 function renderGrammarPracticeControls() {
@@ -8071,59 +8256,54 @@ function renderGrammarPracticeControls() {
   const optionsToggle = document.getElementById("grammar-practice-options-toggle");
   const optionsPanel = document.getElementById("grammar-practice-options-panel");
   const optionsSummary = document.getElementById("grammar-practice-options-summary");
-  const switcher = document.getElementById("grammar-practice-level-switcher");
+  const levelSelect = document.getElementById("grammar-practice-level-select");
+  const timeSpinner = document.querySelector('[data-spinner-id="grammar-practice-time"]');
   const startButton = document.getElementById("grammar-practice-start");
   const startLabel = document.getElementById("grammar-practice-start-label");
-  const activeLevel = state.grammarPracticeLevel;
+  const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
+  const activeDuration = getGrammarPracticeDuration(state.grammarPracticeDuration);
   const isOptionsOpen = state.grammarPracticeOptionsOpen !== false;
 
-  if (optionsSummary) {
-    optionsSummary.textContent = getGrammarPracticeOptionsSummaryText();
-  }
-
-  if (optionsShell) {
-    optionsShell.classList.toggle("is-open", isOptionsOpen);
-  }
-
-  if (optionsToggle) {
-    optionsToggle.setAttribute("aria-expanded", String(isOptionsOpen));
-  }
-
-  if (optionsPanel) {
-    optionsPanel.hidden = !isOptionsOpen;
-    optionsPanel.setAttribute("aria-hidden", String(!isOptionsOpen));
-  }
-
-  if (switcher) {
-    switcher.innerHTML = "";
-
-    Object.keys(grammarPracticeSets).forEach((level) => {
-      const button = document.createElement("button");
-      const isActive = level === activeLevel;
-
-      button.type = "button";
-      button.className = `level-button${isActive ? " is-active" : ""}`;
-      button.textContent = level;
-      button.setAttribute("aria-pressed", String(isActive));
-      button.addEventListener("click", () => {
-        state.grammarPracticeLevel = level;
-        saveState();
-        renderGrammarPractice();
-      });
-      switcher.appendChild(button);
-    });
-  }
-
-  if (startLabel) {
-    startLabel.textContent = state.grammarPracticeStarted ? "다시 해볼까요?" : "시작해볼까요?";
-  }
-
-  setActionButtonIcon(startButton, state.grammarPracticeStarted ? "autorenew" : "play_arrow");
+  renderStudyOptionsControls({
+    shell: optionsShell,
+    toggle: optionsToggle,
+    panel: optionsPanel,
+    summary: optionsSummary,
+    summaryText: getGrammarPracticeOptionsSummaryText(),
+    isLocked: false,
+    isOpen: isOptionsOpen,
+    spinnerConfigs: [
+      {
+        spinner: timeSpinner,
+        options: grammarPracticeDurationOptions,
+        activeValue: activeDuration,
+        formatValue: getDurationLabel
+      }
+    ],
+    selectConfigs: [
+      {
+        element: levelSelect,
+        populate: (element) => populateContentLevelSelect(element, activeLevel)
+      }
+    ],
+    actionButton: {
+      button: startButton,
+      label: startLabel,
+      isStarted: state.grammarPracticeStarted,
+      canStart: true
+    }
+  });
 }
 
 function getCurrentGrammarPracticeSet() {
-  const sets = grammarPracticeSets[state.grammarPracticeLevel];
-  const currentIndex = state.grammarPracticeIndexes[state.grammarPracticeLevel] % sets.length;
+  const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
+  const sets = grammarPracticeSets[activeLevel] || [];
+
+  if (!sets.length) {
+    return null;
+  }
+
+  const currentIndex = state.grammarPracticeIndexes[activeLevel] % sets.length;
   return sets[currentIndex];
 }
 
@@ -8140,7 +8320,9 @@ function renderGrammarPractice() {
   const sentence = document.getElementById("grammar-practice-sentence");
   const feedback = document.getElementById("grammar-practice-feedback");
   const explanation = document.getElementById("grammar-practice-explanation");
-  const sets = grammarPracticeSets[state.grammarPracticeLevel];
+  const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
+  const activeDuration = getGrammarPracticeDuration(state.grammarPracticeDuration);
+  const sets = grammarPracticeSets[activeLevel] || [];
   const current = getCurrentGrammarPracticeSet();
 
   renderGrammarPracticeControls();
@@ -8166,7 +8348,7 @@ function renderGrammarPractice() {
     stopQuizSessionTimer("grammar");
     quizSessions.grammar.correct = 0;
     quizSessions.grammar.streak = 0;
-    setQuizSessionDuration("grammar", 25);
+    setQuizSessionDuration("grammar", activeDuration);
     empty.hidden = false;
     empty.textContent = sets?.length
       ? "준비됐다면 시작해볼까요?"
@@ -8178,7 +8360,7 @@ function renderGrammarPractice() {
 
   if (!current || !sets?.length) {
     stopQuizSessionTimer("grammar");
-    setQuizSessionDuration("grammar", 25);
+    setQuizSessionDuration("grammar", activeDuration);
     empty.hidden = false;
     empty.textContent = "문법 문제를 준비하고 있어요.";
     practiceView.hidden = true;
@@ -8189,10 +8371,10 @@ function renderGrammarPractice() {
   empty.hidden = true;
   practiceView.hidden = false;
 
-  level.textContent = state.grammarPracticeLevel;
+  level.textContent = activeLevel;
   source.textContent = current.source;
   progress.textContent =
-    `${(state.grammarPracticeIndexes[state.grammarPracticeLevel] % sets.length) + 1} / ${sets.length}`;
+    `${(state.grammarPracticeIndexes[activeLevel] % sets.length) + 1} / ${sets.length}`;
   title.textContent = softenVisibleKoreanCopy(current.title);
   note.textContent = softenVisibleKoreanCopy(current.note);
   sentence.textContent = current.sentence;
@@ -8211,6 +8393,7 @@ function renderGrammarPractice() {
     optionsContainer.appendChild(button);
   });
 
+  setQuizSessionDuration("grammar", activeDuration);
   resetQuizSessionTimer("grammar", handleGrammarPracticeTimeout);
 }
 
@@ -8273,9 +8456,16 @@ function handleGrammarPracticeTimeout() {
 }
 
 function nextGrammarPracticeSet() {
-  const sets = grammarPracticeSets[state.grammarPracticeLevel];
-  state.grammarPracticeIndexes[state.grammarPracticeLevel] =
-    (state.grammarPracticeIndexes[state.grammarPracticeLevel] + 1) % sets.length;
+  const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
+  const sets = grammarPracticeSets[activeLevel] || [];
+
+  if (!sets.length) {
+    return;
+  }
+
+  state.grammarPracticeLevel = activeLevel;
+  state.grammarPracticeIndexes[activeLevel] =
+    (state.grammarPracticeIndexes[activeLevel] + 1) % sets.length;
   saveState();
   renderGrammarPractice();
 }
@@ -8284,7 +8474,7 @@ function restartGrammarPractice() {
   stopQuizSessionTimer("grammar");
   quizSessions.grammar.correct = 0;
   quizSessions.grammar.streak = 0;
-  setQuizSessionDuration("grammar", 25);
+  setQuizSessionDuration("grammar", state.grammarPracticeDuration);
   state.grammarPracticeStarted = true;
   saveState();
   renderGrammarPractice();
@@ -8755,72 +8945,43 @@ function renderReadingControls() {
   const optionsToggle = document.getElementById("reading-options-toggle");
   const optionsPanel = document.getElementById("reading-options-panel");
   const optionsSummary = document.getElementById("reading-options-summary");
-  const switcher = document.getElementById("reading-level-switcher");
-  const timeSwitcher = document.getElementById("reading-time-switcher");
+  const levelSelect = document.getElementById("reading-level-select");
+  const timeSpinner = document.querySelector('[data-spinner-id="reading-time"]');
   const startButton = document.getElementById("reading-start");
   const startLabel = document.getElementById("reading-start-label");
   const activeLevel = getReadingLevel(state.readingLevel);
   const activeDuration = getReadingDuration(state.readingDuration);
   const isOptionsOpen = state.readingOptionsOpen !== false;
 
-  if (optionsSummary) {
-    optionsSummary.textContent = getReadingOptionsSummaryText();
-  }
-
-  if (optionsShell) {
-    optionsShell.classList.toggle("is-open", isOptionsOpen);
-  }
-
-  if (optionsToggle) {
-    optionsToggle.setAttribute("aria-expanded", String(isOptionsOpen));
-  }
-
-  if (optionsPanel) {
-    optionsPanel.hidden = !isOptionsOpen;
-    optionsPanel.setAttribute("aria-hidden", String(!isOptionsOpen));
-  }
-
-  if (switcher) {
-    switcher.innerHTML = "";
-
-    Object.keys(readingSets).forEach((level) => {
-      const button = document.createElement("button");
-      const isActive = level === activeLevel;
-
-      button.type = "button";
-      button.className = `level-button${isActive ? " is-active" : ""}`;
-      button.textContent = level;
-      button.setAttribute("aria-pressed", String(isActive));
-      button.addEventListener("click", () => {
-        setReadingLevel(level);
-      });
-      switcher.appendChild(button);
-    });
-  }
-
-  if (timeSwitcher) {
-    timeSwitcher.innerHTML = "";
-
-    readingDurationOptions.forEach((duration) => {
-      const button = document.createElement("button");
-      const isActive = duration === activeDuration;
-
-      button.type = "button";
-      button.className = `level-button${isActive ? " is-active" : ""}`;
-      button.textContent = getDurationLabel(duration);
-      button.setAttribute("aria-pressed", String(isActive));
-      button.addEventListener("click", () => {
-        setReadingDuration(duration);
-      });
-      timeSwitcher.appendChild(button);
-    });
-  }
-
-  if (startLabel) {
-    startLabel.textContent = state.readingStarted ? "다시 해볼까요?" : "시작해볼까요?";
-  }
-
-  setActionButtonIcon(startButton, state.readingStarted ? "autorenew" : "play_arrow");
+  renderStudyOptionsControls({
+    shell: optionsShell,
+    toggle: optionsToggle,
+    panel: optionsPanel,
+    summary: optionsSummary,
+    summaryText: getReadingOptionsSummaryText(),
+    isLocked: false,
+    isOpen: isOptionsOpen,
+    spinnerConfigs: [
+      {
+        spinner: timeSpinner,
+        options: readingDurationOptions,
+        activeValue: activeDuration,
+        formatValue: getDurationLabel
+      }
+    ],
+    selectConfigs: [
+      {
+        element: levelSelect,
+        populate: (element) => populateContentLevelSelect(element, activeLevel)
+      }
+    ],
+    actionButton: {
+      button: startButton,
+      label: startLabel,
+      isStarted: state.readingStarted,
+      canStart: true
+    }
+  });
 }
 
 function getCurrentReadingSet() {
@@ -9330,8 +9491,8 @@ function attachEventListeners() {
   const vocabQuizOptionsToggle = document.getElementById("vocab-quiz-options-toggle");
   const vocabQuizQuestionField = document.getElementById("vocab-quiz-question-field");
   const vocabQuizOptionField = document.getElementById("vocab-quiz-option-field");
-  const vocabQuizCountButtons = document.querySelectorAll("[data-vocab-quiz-count]");
-  const vocabQuizTimeButtons = document.querySelectorAll("[data-vocab-quiz-time]");
+  const vocabQuizCountSpinner = document.querySelector('[data-spinner-id="vocab-quiz-count"]');
+  const vocabQuizTimeSpinner = document.querySelector('[data-spinner-id="vocab-quiz-time"]');
   const vocabQuizLevelSelect = document.getElementById("vocab-quiz-level-select");
   const vocabQuizFilterSelect = document.getElementById("vocab-quiz-filter-select");
   const vocabQuizPartSelect = document.getElementById("vocab-quiz-part-select");
@@ -9349,8 +9510,12 @@ function attachEventListeners() {
   const quizModeButtons = document.querySelectorAll("[data-quiz-mode]");
   const quizTimeButtons = document.querySelectorAll("[data-quiz-time]");
   const grammarPracticeOptionsToggle = document.getElementById("grammar-practice-options-toggle");
+  const grammarPracticeLevelSelect = document.getElementById("grammar-practice-level-select");
+  const grammarPracticeTimeSpinner = document.querySelector('[data-spinner-id="grammar-practice-time"]');
   const grammarPracticeStart = document.getElementById("grammar-practice-start");
   const readingOptionsToggle = document.getElementById("reading-options-toggle");
+  const readingLevelSelect = document.getElementById("reading-level-select");
+  const readingTimeSpinner = document.querySelector('[data-spinner-id="reading-time"]');
   const readingStart = document.getElementById("reading-start");
   const readingNext = document.getElementById("reading-next");
   const basicPracticeNext = document.getElementById("basic-practice-next");
@@ -9373,8 +9538,8 @@ function attachEventListeners() {
   const starterKanjiCollectionSelect = document.getElementById("starter-kanji-collection-select");
   const starterKanjiGradeSelect = document.getElementById("starter-kanji-grade-select");
   const starterKanjiStart = document.getElementById("starter-kanji-start");
-  const starterKanjiCountButtons = document.querySelectorAll("[data-starter-kanji-count]");
-  const starterKanjiTimeButtons = document.querySelectorAll("[data-starter-kanji-time]");
+  const starterKanjiCountSpinner = document.querySelector('[data-spinner-id="starter-kanji-count"]');
+  const starterKanjiTimeSpinner = document.querySelector('[data-spinner-id="starter-kanji-time"]');
   const starterKanjiNext = document.getElementById("starter-kanji-next");
   const starterKanjiRestart = document.getElementById("starter-kanji-restart");
   const starterKanjiResultBulkAction = document.getElementById("starter-kanji-result-bulk-action");
@@ -9420,13 +9585,7 @@ function attachEventListeners() {
     vocabPagePrev,
     vocabPageNext
   });
-  if (vocabQuizOptionsToggle) {
-    vocabQuizOptionsToggle.addEventListener("click", () => {
-      state.vocabQuizOptionsOpen = !state.vocabQuizOptionsOpen;
-      saveState();
-      renderVocabPage();
-    });
-  }
+  attachStateOptionsToggle(vocabQuizOptionsToggle, "vocabQuizOptionsOpen", renderVocabPage);
   attachLinkedFieldSelectors({
     questionSelect: vocabQuizQuestionField,
     optionSelect: vocabQuizOptionField,
@@ -9443,9 +9602,9 @@ function attachEventListeners() {
     invalidate: invalidateVocabQuizSession,
     render: renderVocabPage
   });
-  attachStateChoiceButtons({
-    buttons: vocabQuizCountButtons,
-    getNextValue: (button) => getVocabQuizCount(button.dataset.vocabQuizCount),
+  attachStateSpinner({
+    spinner: vocabQuizCountSpinner,
+    options: vocabQuizCountOptions,
     getCurrentValue: () => state.vocabQuizCount,
     setValue: (value) => {
       state.vocabQuizCount = value;
@@ -9453,9 +9612,9 @@ function attachEventListeners() {
     invalidate: invalidateVocabQuizSession,
     render: renderVocabPage
   });
-  attachStateChoiceButtons({
-    buttons: vocabQuizTimeButtons,
-    getNextValue: (button) => getVocabQuizDuration(button.dataset.vocabQuizTime),
+  attachStateSpinner({
+    spinner: vocabQuizTimeSpinner,
+    options: quizDurationOptions,
     getCurrentValue: () => state.vocabQuizDuration,
     setValue: (value) => {
       state.vocabQuizDuration = value;
@@ -9520,13 +9679,7 @@ function attachEventListeners() {
   if (quizClearMistakes) {
     quizClearMistakes.addEventListener("click", clearQuizMistakes);
   }
-  if (quizOptionsToggle) {
-    quizOptionsToggle.addEventListener("click", () => {
-      state.quizOptionsOpen = !state.quizOptionsOpen;
-      saveState();
-      renderQuizControls();
-    });
-  }
+  attachStateOptionsToggle(quizOptionsToggle, "quizOptionsOpen", renderQuizControls);
   quizLevelButtons.forEach((button) => {
     button.addEventListener("click", () => {
       setQuizLevel(button.dataset.quizLevel);
@@ -9561,23 +9714,45 @@ function attachEventListeners() {
       setQuizDuration(button.dataset.quizTime);
     });
   });
-  if (grammarPracticeOptionsToggle) {
-    grammarPracticeOptionsToggle.addEventListener("click", () => {
-      state.grammarPracticeOptionsOpen = !state.grammarPracticeOptionsOpen;
-      saveState();
-      renderGrammarPracticeControls();
+  attachStateOptionsToggle(grammarPracticeOptionsToggle, "grammarPracticeOptionsOpen", renderGrammarPracticeControls);
+  if (grammarPracticeLevelSelect) {
+    grammarPracticeLevelSelect.addEventListener("change", () => {
+      setGrammarPracticeLevel(grammarPracticeLevelSelect.value);
     });
   }
+  attachStateSpinner({
+    spinner: grammarPracticeTimeSpinner,
+    options: grammarPracticeDurationOptions,
+    getCurrentValue: () => state.grammarPracticeDuration,
+    setValue: (value) => {
+      state.grammarPracticeDuration = value;
+    },
+    invalidate: () => {
+      setQuizSessionDuration("grammar", state.grammarPracticeDuration);
+    },
+    render: renderGrammarPractice
+  });
   if (grammarPracticeStart) {
     grammarPracticeStart.addEventListener("click", restartGrammarPractice);
   }
-  if (readingOptionsToggle) {
-    readingOptionsToggle.addEventListener("click", () => {
-      state.readingOptionsOpen = !state.readingOptionsOpen;
-      saveState();
-      renderReadingControls();
+  attachStateOptionsToggle(readingOptionsToggle, "readingOptionsOpen", renderReadingControls);
+  if (readingLevelSelect) {
+    readingLevelSelect.addEventListener("change", () => {
+      setReadingLevel(readingLevelSelect.value);
     });
   }
+  attachStateSpinner({
+    spinner: readingTimeSpinner,
+    options: readingDurationOptions,
+    getCurrentValue: () => state.readingDuration,
+    setValue: (value) => {
+      state.readingDuration = value;
+    },
+    invalidate: () => {
+      setQuizSessionDuration("reading", state.readingDuration);
+    },
+    render: renderReadingPractice
+  });
   if (readingStart) {
     readingStart.addEventListener("click", restartReadingPractice);
   }
@@ -9602,13 +9777,7 @@ function attachEventListeners() {
     kanjiFlashcardMastered,
     kanjiList
   });
-  if (starterKanjiOptionsToggle) {
-    starterKanjiOptionsToggle.addEventListener("click", () => {
-      state.starterKanjiQuizOptionsOpen = !state.starterKanjiQuizOptionsOpen;
-      saveState();
-      renderStarterKanjiControls();
-    });
-  }
+  attachStateOptionsToggle(starterKanjiOptionsToggle, "starterKanjiQuizOptionsOpen", renderStarterKanjiControls);
   attachLinkedFieldSelectors({
     questionSelect: starterKanjiQuestionField,
     optionSelect: starterKanjiOptionField,
@@ -9654,9 +9823,9 @@ function attachEventListeners() {
       scrollToElementById("starter-kanji-card");
     });
   }
-  attachStateChoiceButtons({
-    buttons: starterKanjiCountButtons,
-    getNextValue: (button) => getStarterKanjiQuizCount(button.dataset.starterKanjiCount),
+  attachStateSpinner({
+    spinner: starterKanjiCountSpinner,
+    options: starterKanjiQuizCountOptions,
     getCurrentValue: () => state.starterKanjiQuizCount,
     setValue: (value) => {
       state.starterKanjiQuizCount = value;
@@ -9664,9 +9833,9 @@ function attachEventListeners() {
     invalidate: invalidateStarterKanjiSession,
     render: renderKanjiPageLayout
   });
-  attachStateChoiceButtons({
-    buttons: starterKanjiTimeButtons,
-    getNextValue: (button) => getStarterKanjiQuizDuration(button.dataset.starterKanjiTime),
+  attachStateSpinner({
+    spinner: starterKanjiTimeSpinner,
+    options: quizDurationOptions,
     getCurrentValue: () => state.starterKanjiQuizDuration,
     setValue: (value) => {
       state.starterKanjiQuizDuration = value;
