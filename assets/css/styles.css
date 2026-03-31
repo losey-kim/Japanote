@@ -2057,12 +2057,6 @@ button {
   margin: 0;
 }
 
-.kanji-result-view .match-result-item-main strong {
-  font-family: "Noto Sans JP", sans-serif;
-  font-size: clamp(2rem, 5vw, 2.8rem);
-  line-height: 1.15;
-}
-
 .basic-practice-meta {
   display: flex;
   flex-wrap: wrap;
@@ -2564,7 +2558,7 @@ button {
 }
 
 .vocab-quiz-card .basic-practice-display-box {
-  margin-top: 0;
+  margin-top: 18px;
 }
 
 .basic-practice-option:disabled {

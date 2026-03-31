@@ -16,7 +16,7 @@ const defaultKanjiMatchPreferences = {
   filter: "all",
   totalCount: 5,
   duration: 15,
-  optionsOpen: true
+  optionsOpen: false
 };
 
 const kanjiMatchResultFilterLabels = {
@@ -318,7 +318,7 @@ kanjiMatchPreferences.grade = getKanjiMatchGrade(kanjiMatchPreferences.grade);
 kanjiMatchPreferences.filter = getKanjiMatchFilter(kanjiMatchPreferences.filter);
 kanjiMatchPreferences.totalCount = getKanjiMatchTotalCount(kanjiMatchPreferences.totalCount);
 kanjiMatchPreferences.duration = getKanjiMatchDuration(kanjiMatchPreferences.duration);
-kanjiMatchPreferences.optionsOpen = kanjiMatchPreferences.optionsOpen !== false;
+kanjiMatchPreferences.optionsOpen = false;
 
 function clearKanjiMatchTransitionTimer() {
   if (!kanjiMatchTransitionTimer) {
@@ -512,6 +512,18 @@ function setKanjiMatchActionAvailability(startEnabled) {
   if (newRound) {
     newRound.disabled = !startEnabled;
   }
+}
+
+function scrollKanjiMatchBoardIntoView() {
+  const board = document.getElementById("kanji-match-board");
+
+  if (!board?.scrollIntoView) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    board.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
 }
 
 function createKanjiMatchCard(card, selectedId) {
@@ -805,6 +817,7 @@ function startKanjiMatchSession(items = buildKanjiMatchSessionItems()) {
   kanjiMatchState.resultFilter = "all";
   kanjiMatchState.hasStarted = true;
   openKanjiMatchPage(getCurrentKanjiMatchPageItems(0));
+  scrollKanjiMatchBoardIntoView();
 }
 
 function replayCurrentKanjiMatchPage() {
@@ -1083,6 +1096,7 @@ if (document.getElementById("kanji-match-new-round")) {
   sharedMatchGame.attachStorageUpdateListener({
     [kanjiMatchStorageKey]: () => {
       const nextPreferences = loadKanjiMatchPreferences();
+      nextPreferences.optionsOpen = false;
       sharedMatchGame.replaceObjectContents(kanjiMatchPreferences, nextPreferences);
       renderKanjiMatchSettings();
       enterKanjiMatchReadyState();

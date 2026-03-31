@@ -69,6 +69,7 @@
     summaryText,
     panelId,
     panelClassName = "",
+    isOpen = true,
     groups = []
   }) {
     const shellClass = ["study-options-shell", shellClassName].filter(Boolean).join(" ").trim();
@@ -86,14 +87,14 @@
 
     return `
       <div class="${escapeHtml(shellClass)}" id="${escapeHtml(shellId)}">
-        <button class="study-options-toggle" id="${escapeHtml(toggleId)}" type="button" aria-expanded="true" aria-controls="${escapeHtml(panelId)}">
+        <button class="study-options-toggle" id="${escapeHtml(toggleId)}" type="button" aria-expanded="${isOpen ? "true" : "false"}" aria-controls="${escapeHtml(panelId)}">
           <div class="study-options-toggle-copy">
             <strong>${escapeHtml(toggleTitle)}</strong>
             <p class="study-options-toggle-summary" id="${escapeHtml(summaryId)}">${escapeHtml(summaryText)}</p>
           </div>
           <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
         </button>
-        <div class="${escapeHtml(panelClass)}" id="${escapeHtml(panelId)}">
+        <div class="${escapeHtml(panelClass)}" id="${escapeHtml(panelId)}"${isOpen ? "" : " hidden"}>
           ${groupMarkup}
         </div>
       </div>
@@ -585,6 +586,7 @@
             summaryText: "히라가나·가타카나 → 뜻 · 10문제 · 15초",
             panelId: "vocab-quiz-options-panel",
             panelClassName: "study-options-panel-wide",
+            isOpen: false,
             groups: [
               {
                 label: "문제 영역",
@@ -745,11 +747,11 @@
         <aside class="match-sidebar">
           <div class="match-sidebar-head"><span class="eyebrow">QUIZ HUD</span><h3>한자 퀴즈</h3></div>
           <div class="study-options-shell match-options-shell kanji-options-shell" id="starter-kanji-options-shell">
-            <button class="study-options-toggle" id="starter-kanji-options-toggle" type="button" aria-expanded="true" aria-controls="starter-kanji-options-panel">
+            <button class="study-options-toggle" id="starter-kanji-options-toggle" type="button" aria-expanded="false" aria-controls="starter-kanji-options-panel">
               <div class="study-options-toggle-copy"><strong>퀴즈 설정, 어떻게 할까요?</strong><p class="study-options-toggle-summary" id="starter-kanji-options-summary">전체 · 전체 · 10문제 · 15초</p></div>
               <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
             </button>
-            <div class="study-options-panel study-options-panel-wide" id="starter-kanji-options-panel">
+            <div class="study-options-panel study-options-panel-wide" id="starter-kanji-options-panel" hidden>
               <div class="study-options-group">
                 <span>문제 영역</span>
                 ${createSelectField({
@@ -868,7 +870,7 @@
             correctId: "starter-kanji-result-correct",
             wrongId: "starter-kanji-result-wrong",
             filterId: "starter-kanji-result-filter",
-            filterAriaLabel: "한자 결과 필터",
+            filterAriaLabel: "한자 퀴즈 결과 필터",
             emptyId: "starter-kanji-result-empty",
             emptyText: "아직 보여줄 결과가 없어요.",
             listId: "starter-kanji-result-list",
@@ -899,6 +901,7 @@
             summaryText: "5문제 · 15초",
             panelId: "match-options-panel",
             panelClassName: "study-options-panel-wide",
+            isOpen: false,
             groups: [
               {
                 label: "몇 문제 풀까요?",
@@ -1009,6 +1012,7 @@
             summaryText: "전체 · 전체 · 5문제 · 15초",
             panelId: "kanji-match-options-panel",
             panelClassName: "study-options-panel-wide",
+            isOpen: false,
             groups: [
               {
                 label: "몇 문제 풀까요?",

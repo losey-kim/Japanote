@@ -4146,7 +4146,7 @@ const defaultState = {
   vocabQuizOptionField: "meaning",
   vocabQuizCount: 10,
   vocabQuizDuration: 15,
-  vocabQuizOptionsOpen: true,
+  vocabQuizOptionsOpen: false,
   vocabQuizStarted: false,
   vocabQuizResultFilter: "all",
   vocabQuizIndex: 0,
@@ -4155,12 +4155,12 @@ const defaultState = {
   starterKanjiOptionField: "reading",
   starterKanjiQuizCount: 10,
   starterKanjiQuizDuration: 15,
-  starterKanjiQuizOptionsOpen: true,
+  starterKanjiQuizOptionsOpen: false,
   starterKanjiQuizStarted: false,
   starterKanjiQuizFinished: false,
   kanjiMatchCount: 5,
   kanjiMatchDuration: 15,
-  kanjiMatchOptionsOpen: true,
+  kanjiMatchOptionsOpen: false,
   kanjiOptionsOpen: true,
   kanjiTab: "list",
   kanjiView: "card",
@@ -4328,7 +4328,7 @@ function normalizeLoadedState(inputState) {
   );
   nextState.vocabQuizCount = getVocabQuizCount(nextState.vocabQuizCount);
   nextState.vocabQuizDuration = getVocabQuizDuration(nextState.vocabQuizDuration);
-  nextState.vocabQuizOptionsOpen = nextState.vocabQuizOptionsOpen !== false;
+  nextState.vocabQuizOptionsOpen = false;
   nextState.vocabQuizStarted = false;
   nextState.vocabQuizResultFilter = ["all", "correct", "wrong"].includes(nextState.vocabQuizResultFilter)
     ? nextState.vocabQuizResultFilter
@@ -4342,14 +4342,14 @@ function normalizeLoadedState(inputState) {
   );
   nextState.starterKanjiQuizCount = getStarterKanjiQuizCount(nextState.starterKanjiQuizCount);
   nextState.starterKanjiQuizDuration = getStarterKanjiQuizDuration(nextState.starterKanjiQuizDuration);
-  nextState.starterKanjiQuizOptionsOpen = nextState.starterKanjiQuizOptionsOpen !== false;
+  nextState.starterKanjiQuizOptionsOpen = false;
   nextState.starterKanjiQuizStarted = false;
   nextState.starterKanjiQuizFinished = false;
   nextState.kanjiMatchCount = kanjiMatchCountOptions.includes(Number(nextState.kanjiMatchCount))
     ? Number(nextState.kanjiMatchCount)
     : 5;
   nextState.kanjiMatchDuration = getQuizDuration(nextState.kanjiMatchDuration);
-  nextState.kanjiMatchOptionsOpen = nextState.kanjiMatchOptionsOpen !== false;
+  nextState.kanjiMatchOptionsOpen = false;
   nextState.kanjiOptionsOpen = nextState.kanjiOptionsOpen !== false;
   nextState.kanjiTab = getKanjiTab(nextState.kanjiTab);
   nextState.kanjiView = ["card", "list"].includes(nextState.kanjiView) ? nextState.kanjiView : "card";
@@ -5131,7 +5131,7 @@ function invalidateStarterKanjiSession() {
   resetStarterKanjiSessionState(true);
   state.starterKanjiQuizStarted = false;
   state.starterKanjiQuizFinished = false;
-  state.starterKanjiQuizOptionsOpen = true;
+  state.starterKanjiQuizOptionsOpen = false;
 }
 
 function startNewStarterKanjiSession() {
@@ -5252,22 +5252,32 @@ function getKanjiEmptyMessage(collectionFilter = state?.kanjiCollectionFilter, g
   return activeGrade === allLevelValue ? "한자를 준비하고 있어요." : `${getKanjiGradeSummaryLabel(activeGrade)} 한자를 준비하고 있어요.`;
 }
 
-function getStarterKanjiResultCounts() {
+function getStudyResultCounts(results) {
+  const safeResults = Array.isArray(results) ? results : [];
+
   return {
-    all: starterKanjiState.results.length,
-    correct: starterKanjiState.results.filter((item) => item.status === "correct").length,
-    wrong: starterKanjiState.results.filter((item) => item.status === "wrong").length
+    all: safeResults.length,
+    correct: safeResults.filter((item) => item.status === "correct").length,
+    wrong: safeResults.filter((item) => item.status === "wrong").length
   };
 }
 
-function getFilteredStarterKanjiResults(filter = getStarterKanjiResultFilter(starterKanjiState.resultFilter)) {
-  const activeFilter = getStarterKanjiResultFilter(filter);
+function getFilteredStudyResults(results, filter = "all") {
+  const safeResults = Array.isArray(results) ? results : [];
 
-  if (activeFilter === "all") {
-    return [...starterKanjiState.results];
+  if (filter === "all") {
+    return [...safeResults];
   }
 
-  return starterKanjiState.results.filter((item) => item.status === activeFilter);
+  return safeResults.filter((item) => item.status === filter);
+}
+
+function getStarterKanjiResultCounts() {
+  return getStudyResultCounts(starterKanjiState.results);
+}
+
+function getFilteredStarterKanjiResults(filter = getStarterKanjiResultFilter(starterKanjiState.resultFilter)) {
+  return getFilteredStudyResults(starterKanjiState.results, getStarterKanjiResultFilter(filter));
 }
 
 function setStarterKanjiResult(current, selectedIndex, correct, timedOut = false) {
@@ -5299,14 +5309,12 @@ function setStarterKanjiResult(current, selectedIndex, correct, timedOut = false
 function renderStarterKanjiResultFilterOptions(counts) {
   const filterSelect = document.getElementById("starter-kanji-result-filter");
 
-  if (!filterSelect) {
-    return;
-  }
-
-  filterSelect.innerHTML = Object.keys(starterKanjiResultFilterLabels)
-    .map((filter) => `<option value="${filter}">${starterKanjiResultFilterLabels[filter]} (${counts[filter] ?? 0})</option>`)
-    .join("");
-  filterSelect.value = getStarterKanjiResultFilter(starterKanjiState.resultFilter);
+  renderResultFilterOptions({
+    select: filterSelect,
+    labels: starterKanjiResultFilterLabels,
+    counts,
+    activeValue: getStarterKanjiResultFilter(starterKanjiState.resultFilter)
+  });
 }
 
 function renderStarterKanjiBulkActionButton(results) {
@@ -5314,41 +5322,29 @@ function renderStarterKanjiBulkActionButton(results) {
   const bulkActionLabel = document.getElementById("starter-kanji-result-bulk-label");
   const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
 
-  if (!bulkActionButton || !bulkActionLabel || !bulkActionIcon) {
-    return;
-  }
-
-  const uniqueIds = Array.from(new Set((Array.isArray(results) ? results : []).map((item) => item.id).filter(Boolean)));
-  const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isKanjiSavedToReviewList(id));
-  const actionLabel = allSaved ? "전체 빼기" : "전체 다시 볼래요";
-  const actionTitle =
-    uniqueIds.length === 0
-      ? "지금은 담을 한자가 없어요."
-      : allSaved
-        ? "지금 보이는 한자를 다시 볼래요에서 모두 뺄게요."
-        : "지금 보이는 한자를 다시 볼래요에 모두 담을게요.";
-
-  bulkActionButton.disabled = uniqueIds.length === 0;
-  bulkActionButton.dataset.starterKanjiBulkAction = allSaved ? "remove-review" : "save-review";
-  bulkActionButton.setAttribute("aria-label", actionTitle);
-  bulkActionButton.title = actionTitle;
-  bulkActionLabel.textContent = actionLabel;
-  bulkActionIcon.textContent = allSaved ? "delete_sweep" : "bookmark_add";
+  renderResultBulkActionButton({
+    button: bulkActionButton,
+    label: bulkActionLabel,
+    icon: bulkActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isKanjiSavedToReviewList,
+    datasetKey: "starterKanjiBulkAction",
+    saveActionValue: "save-review",
+    removeActionValue: "remove-review",
+    saveLabel: "전체 다시 볼래요",
+    removeLabel: "전체 빼기",
+    emptyTitle: "지금은 담을 한자가 없어요.",
+    saveTitle: "지금 보이는 한자를 다시 볼래요에 모두 담을게요.",
+    removeTitle: "지금 보이는 한자를 다시 볼래요에서 모두 뺄게요."
+  });
 }
 
 function getStarterKanjiResultDetail(item) {
   const parts = [];
 
-  if (item.status === "wrong") {
-    if (item.timedOut) {
-      parts.push("시간 초과");
-    } else if (item.selected) {
-      parts.push(`선택 ${item.selected}`);
-    }
-  }
-
-  if (item.answerText) {
-    parts.push(`정답 ${item.answerText}`);
+  if (item.status === "wrong" && item.timedOut) {
+    parts.push("시간 초과");
   }
 
   if (item.optionField !== "reading" && item.reading) {
@@ -5605,6 +5601,22 @@ function setElementHidden(element, hidden) {
   }
 }
 
+function scrollElementIntoView(element) {
+  if (!element?.scrollIntoView) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      element.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  });
+}
+
+function scrollToElementById(id) {
+  scrollElementIntoView(document.getElementById(id));
+}
+
 function applyPageHeading(titleElement, copyElement, heading) {
   if (titleElement) {
     titleElement.textContent = heading?.title || "";
@@ -5654,6 +5666,418 @@ function renderStudyCatalogSection({ cardView, listView, activeView, renderFlash
   }
 }
 
+function renderCollapsibleSettingsSection({
+  shell,
+  toggle,
+  panel,
+  summary,
+  summaryText,
+  isLocked,
+  shouldShowPanel
+}) {
+  if (summary) {
+    summary.textContent = summaryText;
+  }
+
+  if (shell) {
+    shell.classList.toggle("is-open", shouldShowPanel);
+  }
+
+  if (toggle) {
+    toggle.disabled = isLocked;
+    toggle.setAttribute("aria-expanded", String(shouldShowPanel));
+  }
+
+  if (panel) {
+    panel.hidden = !shouldShowPanel;
+    panel.setAttribute("aria-hidden", String(!shouldShowPanel));
+  }
+}
+
+function syncSelectionButtons(buttons, getValue, activeValue) {
+  buttons.forEach((button) => {
+    const active = getValue(button) === activeValue;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function renderRestartableActionButton(button, label, isStarted, canStart) {
+  if (button) {
+    button.classList.toggle("primary-btn", !isStarted);
+    button.classList.toggle("secondary-btn", isStarted);
+    button.disabled = !canStart;
+  }
+
+  if (label) {
+    label.textContent = isStarted ? "다시 해볼까요?" : "시작해볼까요?";
+  }
+
+  setActionButtonIcon(button, isStarted ? "autorenew" : "play_arrow");
+}
+
+function attachStateChoiceButtons({
+  buttons,
+  getNextValue,
+  getCurrentValue,
+  setValue,
+  invalidate,
+  render
+}) {
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextValue = getNextValue(button);
+
+      if (getCurrentValue() === nextValue) {
+        return;
+      }
+
+      setValue(nextValue);
+      invalidate();
+      saveState();
+      render();
+    });
+  });
+}
+
+function attachLinkedFieldSelectors({
+  questionSelect,
+  optionSelect,
+  getQuestionField,
+  getOptionField,
+  normalizeQuestionField,
+  normalizeOptionField,
+  normalizeStoredQuestionField,
+  normalizeStoredOptionField,
+  getDefaultOptionField,
+  getDefaultQuestionField,
+  questionStateKey,
+  optionStateKey,
+  invalidate,
+  render
+}) {
+  if (questionSelect) {
+    questionSelect.addEventListener("change", () => {
+      const previousQuestionField = getQuestionField();
+      const previousOptionField = getOptionField();
+      const nextQuestionField = normalizeQuestionField(questionSelect.value);
+
+      if (previousQuestionField === nextQuestionField) {
+        return;
+      }
+
+      state[questionStateKey] = nextQuestionField;
+
+      if (previousOptionField === nextQuestionField) {
+        state[optionStateKey] =
+          previousQuestionField !== nextQuestionField
+            ? previousQuestionField
+            : getDefaultOptionField(nextQuestionField);
+      }
+
+      state[optionStateKey] = normalizeStoredOptionField(state[optionStateKey], state[questionStateKey]);
+      invalidate();
+      saveState();
+      render();
+    });
+  }
+
+  if (optionSelect) {
+    optionSelect.addEventListener("change", () => {
+      const previousQuestionField = getQuestionField();
+      const previousOptionField = getOptionField();
+      const nextOptionField = normalizeOptionField(optionSelect.value, previousOptionField);
+
+      if (previousOptionField === nextOptionField) {
+        return;
+      }
+
+      state[optionStateKey] = nextOptionField;
+
+      if (previousQuestionField === nextOptionField) {
+        state[questionStateKey] =
+          previousOptionField !== nextOptionField
+            ? previousOptionField
+            : getDefaultQuestionField(nextOptionField);
+      }
+
+      state[questionStateKey] = normalizeStoredQuestionField(state[questionStateKey]);
+      state[optionStateKey] = normalizeStoredOptionField(state[optionStateKey], state[questionStateKey]);
+      invalidate();
+      saveState();
+      render();
+    });
+  }
+}
+
+function renderResultFilterOptions({ select, labels, counts, activeValue }) {
+  if (!select) {
+    return;
+  }
+
+  select.innerHTML = Object.keys(labels)
+    .map((filter) => `<option value="${filter}">${labels[filter]} (${counts[filter] ?? 0})</option>`)
+    .join("");
+  select.value = activeValue;
+}
+
+function getUniqueStudyResultIds(results, getId = (item) => item?.id) {
+  return Array.from(
+    new Set((Array.isArray(results) ? results : []).map((item) => getId(item)).filter(Boolean))
+  );
+}
+
+function renderResultBulkActionButton({
+  button,
+  label,
+  icon,
+  results,
+  getId,
+  isSaved,
+  datasetKey,
+  saveActionValue = "save",
+  removeActionValue = "remove",
+  saveLabel,
+  removeLabel,
+  emptyTitle,
+  saveTitle,
+  removeTitle
+}) {
+  if (!button || !label || !icon) {
+    return;
+  }
+
+  const uniqueIds = getUniqueStudyResultIds(results, getId);
+  const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isSaved(id));
+  const actionTitle =
+    uniqueIds.length === 0
+      ? emptyTitle
+      : allSaved
+        ? removeTitle
+        : saveTitle;
+
+  button.disabled = uniqueIds.length === 0;
+  button.dataset[datasetKey] = allSaved ? removeActionValue : saveActionValue;
+  button.setAttribute("aria-label", actionTitle);
+  button.title = actionTitle;
+  label.textContent = allSaved ? removeLabel : saveLabel;
+  icon.textContent = allSaved ? "delete_sweep" : "bookmark_add";
+}
+
+function renderStudyResultSection({
+  total,
+  correct,
+  wrong,
+  empty,
+  list,
+  counts,
+  filteredResults,
+  emptyMessage,
+  renderItems
+}) {
+  total.textContent = String(counts.all);
+  correct.textContent = String(counts.correct);
+  wrong.textContent = String(counts.wrong);
+
+  if (!filteredResults.length) {
+    empty.hidden = false;
+    empty.textContent = emptyMessage;
+    list.innerHTML = "";
+    return false;
+  }
+
+  empty.hidden = true;
+  list.innerHTML = "";
+  renderItems(filteredResults, list);
+  return true;
+}
+
+function createQuizResultSaveButton({
+  id,
+  saved,
+  actionLabel,
+  datasetKey
+}) {
+  const actionButton = document.createElement("button");
+  const actionIcon = document.createElement("span");
+
+  actionButton.className = `secondary-btn match-save-btn icon-only-btn${saved ? " is-saved" : ""}`;
+  actionButton.type = "button";
+  actionButton.dataset[datasetKey] = id;
+  actionButton.setAttribute("aria-label", actionLabel);
+  actionButton.setAttribute("aria-pressed", saved ? "true" : "false");
+  actionButton.title = actionLabel;
+
+  actionIcon.className = "material-symbols-rounded";
+  actionIcon.setAttribute("aria-hidden", "true");
+  actionIcon.textContent = saved ? "delete" : "bookmark_add";
+
+  actionButton.appendChild(actionIcon);
+  return actionButton;
+}
+
+function appendQuizResultItem({
+  container,
+  status,
+  levelText,
+  titleText,
+  descriptionText,
+  saved,
+  saveActionLabel,
+  saveDatasetKey,
+  saveId
+}) {
+  const article = document.createElement("article");
+  const head = document.createElement("div");
+  const badges = document.createElement("div");
+  const statusBadge = document.createElement("span");
+  const levelBadge = document.createElement("span");
+  const main = document.createElement("div");
+  const title = document.createElement("strong");
+  const description = document.createElement("p");
+  const statusLabel = status === "correct" ? "정답" : "오답";
+
+  article.className = `match-result-item is-${status}`;
+  head.className = "match-result-item-head";
+  badges.className = "match-result-item-badges";
+  statusBadge.className = `match-result-badge is-${status}`;
+  statusBadge.textContent = statusLabel;
+  levelBadge.className = "match-result-level";
+  levelBadge.textContent = levelText;
+  main.className = "match-result-item-main";
+  title.textContent = titleText;
+  description.textContent = descriptionText;
+
+  badges.append(statusBadge, levelBadge);
+  head.append(
+    badges,
+    createQuizResultSaveButton({
+      id: saveId,
+      saved,
+      actionLabel: saveActionLabel,
+      datasetKey: saveDatasetKey
+    })
+  );
+  main.append(title, description);
+  article.append(head, main);
+  container.appendChild(article);
+}
+
+function attachResultFilterSelectListener({
+  select,
+  getNextValue,
+  getCurrentValue,
+  setValue,
+  shouldSaveState = false,
+  render
+}) {
+  if (!select) {
+    return;
+  }
+
+  select.addEventListener("change", () => {
+    const nextValue = getNextValue(select.value);
+
+    if (getCurrentValue() === nextValue) {
+      return;
+    }
+
+    setValue(nextValue);
+
+    if (shouldSaveState) {
+      saveState();
+    }
+
+    render();
+  });
+}
+
+function attachBulkResultActionListener({
+  button,
+  getResults,
+  getId = (item) => item?.id,
+  datasetKey,
+  removeActionValue = "remove",
+  removeItem,
+  saveItem,
+  shouldSaveState = true,
+  render
+}) {
+  if (!button) {
+    return;
+  }
+
+  button.addEventListener("click", () => {
+    const uniqueIds = getUniqueStudyResultIds(getResults(), getId);
+
+    if (!uniqueIds.length) {
+      return;
+    }
+
+    const shouldRemove = button.dataset[datasetKey] === removeActionValue;
+
+    uniqueIds.forEach((id) => {
+      if (shouldRemove) {
+        removeItem(id);
+      } else {
+        saveItem(id);
+      }
+    });
+
+    if (shouldSaveState) {
+      saveState();
+    }
+
+    render();
+  });
+}
+
+function attachToggleResultActionListener({
+  list,
+  selector,
+  getId,
+  isSelected,
+  selectItem,
+  unselectItem,
+  shouldSaveState = true,
+  shouldUpdateStudyStreak = false,
+  render
+}) {
+  if (!list) {
+    return;
+  }
+
+  list.addEventListener("click", (event) => {
+    const button = event.target.closest(selector);
+
+    if (!button) {
+      return;
+    }
+
+    const id = getId(button);
+
+    if (!id) {
+      return;
+    }
+
+    if (isSelected(id)) {
+      unselectItem(id);
+    } else {
+      selectItem(id);
+    }
+
+    if (shouldUpdateStudyStreak) {
+      updateStudyStreak();
+    }
+
+    if (shouldSaveState) {
+      saveState();
+    }
+
+    render();
+  });
+}
+
 function renderStarterKanjiResults() {
   const total = document.getElementById("starter-kanji-result-total");
   const correct = document.getElementById("starter-kanji-result-correct");
@@ -5669,53 +6093,41 @@ function renderStarterKanjiResults() {
     return;
   }
 
-  total.textContent = String(counts.all);
-  correct.textContent = String(counts.correct);
-  wrong.textContent = String(counts.wrong);
   renderStarterKanjiResultFilterOptions(counts);
   renderStarterKanjiBulkActionButton(filteredResults);
 
-  if (!filteredResults.length) {
-    empty.hidden = false;
-    empty.textContent = `${starterKanjiResultFilterLabels[getStarterKanjiResultFilter(starterKanjiState.resultFilter)]} 결과가 없어요.`;
-    list.innerHTML = "";
+  const hasResults = renderStudyResultSection({
+    total,
+    correct,
+    wrong,
+    empty,
+    list,
+    counts,
+    filteredResults,
+    emptyMessage: `${starterKanjiResultFilterLabels[getStarterKanjiResultFilter(starterKanjiState.resultFilter)]} 결과가 없어요.`,
+    renderItems: (results, container) => {
+      results.forEach((item) => {
+        const saved = isKanjiSavedToReviewList(item.id);
+        const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+
+        appendQuizResultItem({
+          container,
+          status: item.status,
+          levelText: item.source || "한자",
+          titleText: item.reading ? `${item.char || "-"} · ${item.reading}` : item.char || "-",
+          descriptionText: getStarterKanjiResultDetail(item),
+          saved,
+          saveActionLabel: actionLabel,
+          saveDatasetKey: "kanjiResultSave",
+          saveId: item.id
+        });
+      });
+    }
+  });
+
+  if (!hasResults) {
     return;
   }
-
-  empty.hidden = true;
-  list.innerHTML = "";
-
-  filteredResults.forEach((item) => {
-    const article = document.createElement("article");
-    const head = document.createElement("div");
-    const badges = document.createElement("div");
-    const statusBadge = document.createElement("span");
-    const levelBadge = document.createElement("span");
-    const main = document.createElement("div");
-    const title = document.createElement("strong");
-    const detail = document.createElement("p");
-    const actions = document.createElement("div");
-    const statusLabel = item.status === "correct" ? "정답" : "오답";
-
-    article.className = `match-result-item kanji-result-item is-${item.status}`;
-    head.className = "match-result-item-head";
-    badges.className = "match-result-item-badges";
-    statusBadge.className = `match-result-badge is-${item.status}`;
-    statusBadge.textContent = statusLabel;
-    levelBadge.className = "match-result-level";
-    levelBadge.textContent = item.source || "한자";
-    main.className = "match-result-item-main";
-    title.textContent = item.char || "-";
-    detail.textContent = getStarterKanjiResultDetail(item);
-    actions.className = "kanji-result-actions";
-    actions.innerHTML = createKanjiStatusButtonsMarkup(item.id);
-
-    badges.append(statusBadge, levelBadge);
-    head.appendChild(badges);
-    main.append(title, detail);
-    article.append(head, main, actions);
-    list.appendChild(article);
-  });
 }
 
 function setActionButtonIcon(button, iconName) {
@@ -5750,48 +6162,18 @@ function renderStarterKanjiControls() {
   const isSettingsLocked = state.starterKanjiQuizStarted && !state.starterKanjiQuizFinished;
   const shouldShowOptionsPanel = !isSettingsLocked && isOptionsOpen;
 
-  if (optionsSummary) {
-    optionsSummary.textContent = getStarterKanjiOptionsSummaryText();
-  }
-
-  if (optionsShell) {
-    optionsShell.classList.toggle("is-open", shouldShowOptionsPanel);
-  }
-
-  if (optionsToggle) {
-    optionsToggle.disabled = isSettingsLocked;
-    optionsToggle.setAttribute("aria-expanded", String(shouldShowOptionsPanel));
-  }
-
-  if (optionsPanel) {
-    optionsPanel.hidden = !shouldShowOptionsPanel;
-    optionsPanel.setAttribute("aria-hidden", String(!shouldShowOptionsPanel));
-  }
-
-  if (startButton) {
-    const isNotStarted = !state.starterKanjiQuizStarted;
-    startButton.classList.toggle("primary-btn", isNotStarted);
-    startButton.classList.toggle("secondary-btn", !isNotStarted);
-    startButton.disabled = !canStart;
-  }
-
-  if (startLabel) {
-    startLabel.textContent = !state.starterKanjiQuizStarted ? "시작해볼까요?" : "다시 해볼까요?";
-  }
-
-  setActionButtonIcon(startButton, !state.starterKanjiQuizStarted ? "play_arrow" : "autorenew");
-
-  countButtons.forEach((button) => {
-    const active = Number(button.dataset.starterKanjiCount) === activeCount;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
+  renderCollapsibleSettingsSection({
+    shell: optionsShell,
+    toggle: optionsToggle,
+    panel: optionsPanel,
+    summary: optionsSummary,
+    summaryText: getStarterKanjiOptionsSummaryText(),
+    isLocked: isSettingsLocked,
+    shouldShowPanel: shouldShowOptionsPanel
   });
-
-  timeButtons.forEach((button) => {
-    const active = Number(button.dataset.starterKanjiTime) === activeDuration;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
+  renderRestartableActionButton(startButton, startLabel, state.starterKanjiQuizStarted, canStart);
+  syncSelectionButtons(countButtons, (button) => Number(button.dataset.starterKanjiCount), activeCount);
+  syncSelectionButtons(timeButtons, (button) => Number(button.dataset.starterKanjiTime), activeDuration);
 
   if (questionFieldSelect) {
     questionFieldSelect.value = activeQuestionField;
@@ -6357,18 +6739,6 @@ function markKanjiFlashcardMastered() {
   });
 }
 
-function setStarterKanjiResultFilter(filter) {
-  const nextFilter = getStarterKanjiResultFilter(filter);
-
-  if (starterKanjiState.resultFilter === nextFilter) {
-    return;
-  }
-
-  starterKanjiState.resultFilter = nextFilter;
-  renderStarterKanjiResults();
-}
-
-
 function getVocabFilter(filter = state.vocabFilter) {
   return Object.prototype.hasOwnProperty.call(vocabFilterLabels, filter) ? filter : "all";
 }
@@ -6846,37 +7216,22 @@ function createVocabStatusButtonsMarkup(id) {
 }
 
 function getVocabQuizResultCounts() {
-  return {
-    all: activeVocabQuizResults.length,
-    correct: activeVocabQuizResults.filter((item) => item.status === "correct").length,
-    wrong: activeVocabQuizResults.filter((item) => item.status === "wrong").length
-  };
+  return getStudyResultCounts(activeVocabQuizResults);
 }
 
 function getFilteredVocabQuizResults() {
-  const activeFilter = getVocabQuizResultFilter();
-
-  if (activeFilter === "all") {
-    return activeVocabQuizResults;
-  }
-
-  return activeVocabQuizResults.filter((item) => item.status === activeFilter);
+  return getFilteredStudyResults(activeVocabQuizResults, getVocabQuizResultFilter());
 }
 
 function renderVocabQuizResultFilterOptions(counts) {
   const filterSelect = document.getElementById("vocab-quiz-result-filter");
 
-  if (!filterSelect) {
-    return;
-  }
-
-  filterSelect.innerHTML = Object.keys(vocabQuizResultFilterLabels)
-    .map(
-      (filter) =>
-        `<option value="${filter}">${vocabQuizResultFilterLabels[filter]} (${counts[filter] ?? 0})</option>`
-    )
-    .join("");
-  filterSelect.value = getVocabQuizResultFilter();
+  renderResultFilterOptions({
+    select: filterSelect,
+    labels: vocabQuizResultFilterLabels,
+    counts,
+    activeValue: getVocabQuizResultFilter()
+  });
 }
 
 function renderVocabQuizBulkActionButton(results) {
@@ -6884,26 +7239,20 @@ function renderVocabQuizBulkActionButton(results) {
   const bulkActionLabel = document.getElementById("vocab-quiz-result-bulk-label");
   const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
 
-  if (!bulkActionButton || !bulkActionLabel || !bulkActionIcon) {
-    return;
-  }
-
-  const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
-  const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToReviewList(id));
-  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
-  const actionTitle =
-    uniqueIds.length === 0
-      ? "지금 담아둘 단어가 없어요."
-      : allSaved
-        ? "지금 보이는 단어를 다시 볼래요에서 모두 뺄게요."
-        : "지금 보이는 단어를 다시 볼래요에 모두 담아둘게요.";
-
-  bulkActionButton.disabled = uniqueIds.length === 0;
-  bulkActionButton.dataset.vocabQuizBulkAction = allSaved ? "remove" : "save";
-  bulkActionButton.setAttribute("aria-label", actionTitle);
-  bulkActionButton.title = actionTitle;
-  bulkActionLabel.textContent = actionLabel;
-  bulkActionIcon.textContent = allSaved ? "delete_sweep" : "bookmark_add";
+  renderResultBulkActionButton({
+    button: bulkActionButton,
+    label: bulkActionLabel,
+    icon: bulkActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isWordSavedToReviewList,
+    datasetKey: "vocabQuizBulkAction",
+    saveLabel: "전체 담기",
+    removeLabel: "전체 빼기",
+    emptyTitle: "지금 담아둘 단어가 없어요.",
+    saveTitle: "지금 보이는 단어를 다시 볼래요에 모두 담아둘게요.",
+    removeTitle: "지금 보이는 단어를 다시 볼래요에서 모두 뺄게요."
+  });
 }
 
 function recordVocabQuizResult(question, selectedIndex, correct, timedOut = false) {
@@ -6941,64 +7290,41 @@ function renderVocabQuizResults() {
     return;
   }
 
-  total.textContent = String(counts.all);
-  correct.textContent = String(counts.correct);
-  wrong.textContent = String(counts.wrong);
   renderVocabQuizResultFilterOptions(counts);
   renderVocabQuizBulkActionButton(filteredResults);
 
-  if (!filteredResults.length) {
-    empty.hidden = false;
-    empty.textContent = `${vocabQuizResultFilterLabels[getVocabQuizResultFilter()]} 결과는 아직 없어요.`;
-    list.innerHTML = "";
+  const hasResults = renderStudyResultSection({
+    total,
+    correct,
+    wrong,
+    empty,
+    list,
+    counts,
+    filteredResults,
+    emptyMessage: `${vocabQuizResultFilterLabels[getVocabQuizResultFilter()]} 결과는 아직 없어요.`,
+    renderItems: (results, container) => {
+      results.forEach((item) => {
+        const saved = isWordSavedToReviewList(item.id);
+        const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+
+        appendQuizResultItem({
+          container,
+          status: item.status,
+          levelText: item.level || getVocabLevelLabel(),
+          titleText: item.reading ? `${item.word} · ${item.reading}` : item.word,
+          descriptionText: item.meaning,
+          saved,
+          saveActionLabel: actionLabel,
+          saveDatasetKey: "vocabQuizSave",
+          saveId: item.id
+        });
+      });
+    }
+  });
+
+  if (!hasResults) {
     return;
   }
-
-  empty.hidden = true;
-  list.innerHTML = "";
-
-  filteredResults.forEach((item) => {
-    const article = document.createElement("article");
-    const head = document.createElement("div");
-    const badges = document.createElement("div");
-    const statusBadge = document.createElement("span");
-    const levelBadge = document.createElement("span");
-    const actionButton = document.createElement("button");
-    const actionIcon = document.createElement("span");
-    const main = document.createElement("div");
-    const title = document.createElement("strong");
-    const meaning = document.createElement("p");
-    const statusLabel = item.status === "correct" ? "정답" : "오답";
-    const saved = isWordSavedToReviewList(item.id);
-    const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
-
-    article.className = `match-result-item is-${item.status}`;
-    head.className = "match-result-item-head";
-    badges.className = "match-result-item-badges";
-    statusBadge.className = `match-result-badge is-${item.status}`;
-    statusBadge.textContent = statusLabel;
-    levelBadge.className = "match-result-level";
-    levelBadge.textContent = item.level || getVocabLevelLabel();
-    actionButton.className = `secondary-btn match-save-btn icon-only-btn${saved ? " is-saved" : ""}`;
-    actionButton.type = "button";
-    actionButton.dataset.vocabQuizSave = item.id;
-    actionButton.setAttribute("aria-label", actionLabel);
-    actionButton.setAttribute("aria-pressed", saved ? "true" : "false");
-    actionButton.title = actionLabel;
-    actionIcon.className = "material-symbols-rounded";
-    actionIcon.setAttribute("aria-hidden", "true");
-    actionIcon.textContent = saved ? "delete" : "bookmark_add";
-    main.className = "match-result-item-main";
-    title.textContent = item.reading ? `${item.word} · ${item.reading}` : item.word;
-    meaning.textContent = item.meaning;
-
-    actionButton.appendChild(actionIcon);
-    badges.append(statusBadge, levelBadge);
-    head.append(badges, actionButton);
-    main.append(title, meaning);
-    article.append(head, main);
-    list.appendChild(article);
-  });
 }
 
 function revealVocabQuizAnswer(question, selectedIndex, correct) {
@@ -7117,8 +7443,12 @@ function restartVocabQuiz() {
     return;
   }
 
-  startNewVocabQuizSession(true);
+  const started = startNewVocabQuizSession(true);
   renderVocabPage();
+
+  if (started) {
+    scrollToElementById("vocab-quiz-card");
+  }
 }
 
 function renderFlashcard() {
@@ -7400,35 +7730,17 @@ function renderVocabQuizControls(counts, availableParts, activePart) {
   const isFilterLocked = state.vocabQuizStarted && !state.vocabQuizFinished;
   const shouldShowOptionsPanel = !isSettingsLocked && isOptionsOpen;
 
-  if (optionsSummary) {
-    optionsSummary.textContent = getVocabQuizOptionsSummaryText();
-  }
-
-  if (optionsShell) {
-    optionsShell.classList.toggle("is-open", shouldShowOptionsPanel);
-  }
-
-  if (optionsToggle) {
-    optionsToggle.disabled = isSettingsLocked;
-    optionsToggle.setAttribute("aria-expanded", String(shouldShowOptionsPanel));
-  }
-
-  if (optionsPanel) {
-    optionsPanel.hidden = !shouldShowOptionsPanel;
-    optionsPanel.setAttribute("aria-hidden", String(!shouldShowOptionsPanel));
-  }
-
-  countButtons.forEach((button) => {
-    const active = Number(button.dataset.vocabQuizCount) === activeCount;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
+  renderCollapsibleSettingsSection({
+    shell: optionsShell,
+    toggle: optionsToggle,
+    panel: optionsPanel,
+    summary: optionsSummary,
+    summaryText: getVocabQuizOptionsSummaryText(),
+    isLocked: isSettingsLocked,
+    shouldShowPanel: shouldShowOptionsPanel
   });
-
-  timeButtons.forEach((button) => {
-    const active = Number(button.dataset.vocabQuizTime) === activeDuration;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
+  syncSelectionButtons(countButtons, (button) => Number(button.dataset.vocabQuizCount), activeCount);
+  syncSelectionButtons(timeButtons, (button) => Number(button.dataset.vocabQuizTime), activeDuration);
 
   populateVocabQuizFieldSelect(questionFieldSelect, activeQuestionField);
   populateVocabQuizFieldSelect(optionFieldSelect, activeOptionField);
@@ -8795,6 +9107,7 @@ function attachStudyStatusListListeners({
   getMasteredId,
   toggleReview,
   toggleMastered,
+  shouldUpdateStudyStreak = true,
   render
 }) {
   if (!list) {
@@ -8815,7 +9128,10 @@ function attachStudyStatusListListeners({
       toggleMastered(getMasteredId(masteredButton));
     }
 
-    updateStudyStreak();
+    if (shouldUpdateStudyStreak) {
+      updateStudyStreak();
+    }
+
     saveState();
     render();
   });
@@ -9111,84 +9427,41 @@ function attachEventListeners() {
       renderVocabPage();
     });
   }
-  if (vocabQuizQuestionField) {
-    vocabQuizQuestionField.addEventListener("change", () => {
-      const previousQuestionField = getVocabQuizQuestionField();
-      const previousOptionField = getVocabQuizOptionField();
-      const nextQuestionField = getVocabQuizQuestionField(vocabQuizQuestionField.value);
-
-      if (previousQuestionField === nextQuestionField) {
-        return;
-      }
-
-      state.vocabQuizQuestionField = nextQuestionField;
-
-      if (previousOptionField === nextQuestionField) {
-        state.vocabQuizOptionField =
-          previousQuestionField !== nextQuestionField
-            ? previousQuestionField
-            : getDefaultVocabQuizOptionField(nextQuestionField);
-      }
-
-      state.vocabQuizOptionField = getVocabQuizOptionField(state.vocabQuizOptionField, state.vocabQuizQuestionField);
-      invalidateVocabQuizSession();
-      saveState();
-      renderVocabPage();
-    });
-  }
-  if (vocabQuizOptionField) {
-    vocabQuizOptionField.addEventListener("change", () => {
-      const previousQuestionField = getVocabQuizQuestionField();
-      const previousOptionField = getVocabQuizOptionField();
-      const nextOptionField = getVocabQuizField(vocabQuizOptionField.value, previousOptionField);
-
-      if (previousOptionField === nextOptionField) {
-        return;
-      }
-
-      state.vocabQuizOptionField = nextOptionField;
-
-      if (previousQuestionField === nextOptionField) {
-        state.vocabQuizQuestionField =
-          previousOptionField !== nextOptionField
-            ? previousOptionField
-            : getDefaultVocabQuizQuestionField(nextOptionField);
-      }
-
-      state.vocabQuizQuestionField = getVocabQuizQuestionField(state.vocabQuizQuestionField);
-      state.vocabQuizOptionField = getVocabQuizOptionField(state.vocabQuizOptionField, state.vocabQuizQuestionField);
-      invalidateVocabQuizSession();
-      saveState();
-      renderVocabPage();
-    });
-  }
-  vocabQuizCountButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextCount = getVocabQuizCount(button.dataset.vocabQuizCount);
-
-      if (state.vocabQuizCount === nextCount) {
-        return;
-      }
-
-      state.vocabQuizCount = nextCount;
-      invalidateVocabQuizSession();
-      saveState();
-      renderVocabPage();
-    });
+  attachLinkedFieldSelectors({
+    questionSelect: vocabQuizQuestionField,
+    optionSelect: vocabQuizOptionField,
+    getQuestionField: getVocabQuizQuestionField,
+    getOptionField: getVocabQuizOptionField,
+    normalizeQuestionField: getVocabQuizQuestionField,
+    normalizeOptionField: (value, previousOptionField) => getVocabQuizField(value, previousOptionField),
+    normalizeStoredQuestionField: getVocabQuizQuestionField,
+    normalizeStoredOptionField: getVocabQuizOptionField,
+    getDefaultOptionField: getDefaultVocabQuizOptionField,
+    getDefaultQuestionField: getDefaultVocabQuizQuestionField,
+    questionStateKey: "vocabQuizQuestionField",
+    optionStateKey: "vocabQuizOptionField",
+    invalidate: invalidateVocabQuizSession,
+    render: renderVocabPage
   });
-  vocabQuizTimeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextDuration = getVocabQuizDuration(button.dataset.vocabQuizTime);
-
-      if (state.vocabQuizDuration === nextDuration) {
-        return;
-      }
-
-      state.vocabQuizDuration = nextDuration;
-      invalidateVocabQuizSession();
-      saveState();
-      renderVocabPage();
-    });
+  attachStateChoiceButtons({
+    buttons: vocabQuizCountButtons,
+    getNextValue: (button) => getVocabQuizCount(button.dataset.vocabQuizCount),
+    getCurrentValue: () => state.vocabQuizCount,
+    setValue: (value) => {
+      state.vocabQuizCount = value;
+    },
+    invalidate: invalidateVocabQuizSession,
+    render: renderVocabPage
+  });
+  attachStateChoiceButtons({
+    buttons: vocabQuizTimeButtons,
+    getNextValue: (button) => getVocabQuizDuration(button.dataset.vocabQuizTime),
+    getCurrentValue: () => state.vocabQuizDuration,
+    setValue: (value) => {
+      state.vocabQuizDuration = value;
+    },
+    invalidate: invalidateVocabQuizSession,
+    render: renderVocabPage
   });
   if (vocabQuizLevelSelect) {
     vocabQuizLevelSelect.addEventListener("change", () => {
@@ -9205,54 +9478,33 @@ function attachEventListeners() {
       setVocabPartFilter(vocabQuizPartSelect.value);
     });
   }
-  if (vocabQuizResultFilter) {
-    vocabQuizResultFilter.addEventListener("change", () => {
-      state.vocabQuizResultFilter = getVocabQuizResultFilter(vocabQuizResultFilter.value);
-      saveState();
-      renderVocabQuizResults();
-    });
-  }
-  if (vocabQuizResultBulkAction) {
-    vocabQuizResultBulkAction.addEventListener("click", () => {
-      const filteredResults = getFilteredVocabQuizResults();
-      const uniqueIds = Array.from(new Set(filteredResults.map((item) => item.id).filter(Boolean)));
-
-      if (!uniqueIds.length) {
-        return;
-      }
-
-      if (vocabQuizResultBulkAction.dataset.vocabQuizBulkAction === "remove") {
-        uniqueIds.forEach((id) => {
-          removeWordFromReviewList(id);
-        });
-      } else {
-        uniqueIds.forEach((id) => {
-          saveWordToReviewList(id);
-        });
-      }
-
-      saveState();
-      renderVocabPage();
-    });
-  }
-  if (vocabQuizResultList) {
-    vocabQuizResultList.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-vocab-quiz-save]");
-
-      if (!button) {
-        return;
-      }
-
-      if (isWordSavedToReviewList(button.dataset.vocabQuizSave)) {
-        removeWordFromReviewList(button.dataset.vocabQuizSave);
-      } else {
-        saveWordToReviewList(button.dataset.vocabQuizSave);
-      }
-
-      saveState();
-      renderVocabPage();
-    });
-  }
+  attachResultFilterSelectListener({
+    select: vocabQuizResultFilter,
+    getNextValue: getVocabQuizResultFilter,
+    getCurrentValue: getVocabQuizResultFilter,
+    setValue: (value) => {
+      state.vocabQuizResultFilter = value;
+    },
+    shouldSaveState: true,
+    render: renderVocabQuizResults
+  });
+  attachBulkResultActionListener({
+    button: vocabQuizResultBulkAction,
+    getResults: getFilteredVocabQuizResults,
+    datasetKey: "vocabQuizBulkAction",
+    removeItem: removeWordFromReviewList,
+    saveItem: saveWordToReviewList,
+    render: renderVocabPage
+  });
+  attachToggleResultActionListener({
+    list: vocabQuizResultList,
+    selector: "[data-vocab-quiz-save]",
+    getId: (button) => button.dataset.vocabQuizSave,
+    isSelected: isWordSavedToReviewList,
+    selectItem: saveWordToReviewList,
+    unselectItem: removeWordFromReviewList,
+    render: renderVocabPage
+  });
   if (vocabQuizNext) {
     vocabQuizNext.addEventListener("click", nextVocabQuizQuestion);
   }
@@ -9357,63 +9609,22 @@ function attachEventListeners() {
       renderStarterKanjiControls();
     });
   }
-  if (starterKanjiQuestionField) {
-    starterKanjiQuestionField.addEventListener("change", () => {
-      const previousQuestionField = getStarterKanjiQuestionField();
-      const previousOptionField = getStarterKanjiOptionField();
-      const nextQuestionField = getStarterKanjiQuestionField(starterKanjiQuestionField.value);
-
-      if (previousQuestionField === nextQuestionField) {
-        return;
-      }
-
-      state.starterKanjiQuestionField = nextQuestionField;
-
-      if (previousOptionField === nextQuestionField) {
-        state.starterKanjiOptionField =
-          previousQuestionField !== nextQuestionField
-            ? previousQuestionField
-            : getDefaultStarterKanjiOptionField(nextQuestionField);
-      }
-
-      state.starterKanjiOptionField = getStarterKanjiOptionField(
-        state.starterKanjiOptionField,
-        state.starterKanjiQuestionField
-      );
-      invalidateStarterKanjiSession();
-      saveState();
-      renderKanjiPageLayout();
-    });
-  }
-  if (starterKanjiOptionField) {
-    starterKanjiOptionField.addEventListener("change", () => {
-      const previousQuestionField = getStarterKanjiQuestionField();
-      const previousOptionField = getStarterKanjiOptionField();
-      const nextOptionField = getStarterKanjiQuizField(starterKanjiOptionField.value, previousOptionField);
-
-      if (previousOptionField === nextOptionField) {
-        return;
-      }
-
-      state.starterKanjiOptionField = nextOptionField;
-
-      if (previousQuestionField === nextOptionField) {
-        state.starterKanjiQuestionField =
-          previousOptionField !== nextOptionField
-            ? previousOptionField
-            : getDefaultStarterKanjiQuestionField(nextOptionField);
-      }
-
-      state.starterKanjiQuestionField = getStarterKanjiQuestionField(state.starterKanjiQuestionField);
-      state.starterKanjiOptionField = getStarterKanjiOptionField(
-        state.starterKanjiOptionField,
-        state.starterKanjiQuestionField
-      );
-      invalidateStarterKanjiSession();
-      saveState();
-      renderKanjiPageLayout();
-    });
-  }
+  attachLinkedFieldSelectors({
+    questionSelect: starterKanjiQuestionField,
+    optionSelect: starterKanjiOptionField,
+    getQuestionField: getStarterKanjiQuestionField,
+    getOptionField: getStarterKanjiOptionField,
+    normalizeQuestionField: getStarterKanjiQuestionField,
+    normalizeOptionField: (value, previousOptionField) => getStarterKanjiQuizField(value, previousOptionField),
+    normalizeStoredQuestionField: getStarterKanjiQuestionField,
+    normalizeStoredOptionField: getStarterKanjiOptionField,
+    getDefaultOptionField: getDefaultStarterKanjiOptionField,
+    getDefaultQuestionField: getDefaultStarterKanjiQuestionField,
+    questionStateKey: "starterKanjiQuestionField",
+    optionStateKey: "starterKanjiOptionField",
+    invalidate: invalidateStarterKanjiSession,
+    render: renderKanjiPageLayout
+  });
   if (starterKanjiCollectionSelect) {
     starterKanjiCollectionSelect.addEventListener("change", () => {
       setKanjiCollectionFilter(starterKanjiCollectionSelect.value);
@@ -9440,35 +9651,28 @@ function attachEventListeners() {
 
       saveState();
       renderKanjiPageLayout();
+      scrollToElementById("starter-kanji-card");
     });
   }
-  starterKanjiCountButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextCount = getStarterKanjiQuizCount(button.dataset.starterKanjiCount);
-
-      if (state.starterKanjiQuizCount === nextCount) {
-        return;
-      }
-
-      state.starterKanjiQuizCount = nextCount;
-      invalidateStarterKanjiSession();
-      saveState();
-      renderKanjiPageLayout();
-    });
+  attachStateChoiceButtons({
+    buttons: starterKanjiCountButtons,
+    getNextValue: (button) => getStarterKanjiQuizCount(button.dataset.starterKanjiCount),
+    getCurrentValue: () => state.starterKanjiQuizCount,
+    setValue: (value) => {
+      state.starterKanjiQuizCount = value;
+    },
+    invalidate: invalidateStarterKanjiSession,
+    render: renderKanjiPageLayout
   });
-  starterKanjiTimeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextDuration = getStarterKanjiQuizDuration(button.dataset.starterKanjiTime);
-
-      if (state.starterKanjiQuizDuration === nextDuration) {
-        return;
-      }
-
-      state.starterKanjiQuizDuration = nextDuration;
-      invalidateStarterKanjiSession();
-      saveState();
-      renderKanjiPageLayout();
-    });
+  attachStateChoiceButtons({
+    buttons: starterKanjiTimeButtons,
+    getNextValue: (button) => getStarterKanjiQuizDuration(button.dataset.starterKanjiTime),
+    getCurrentValue: () => state.starterKanjiQuizDuration,
+    setValue: (value) => {
+      state.starterKanjiQuizDuration = value;
+    },
+    invalidate: invalidateStarterKanjiSession,
+    render: renderKanjiPageLayout
   });
   if (starterKanjiNext) {
     starterKanjiNext.addEventListener("click", nextStarterKanjiPracticeSet);
@@ -9476,61 +9680,33 @@ function attachEventListeners() {
   if (starterKanjiRestart) {
     starterKanjiRestart.addEventListener("click", restartStarterKanjiPractice);
   }
-  if (starterKanjiResultBulkAction) {
-    starterKanjiResultBulkAction.addEventListener("click", () => {
-      const filteredResults = getFilteredStarterKanjiResults();
-      const uniqueIds = Array.from(new Set(filteredResults.map((item) => item.id).filter(Boolean)));
-
-      if (!uniqueIds.length) {
-        return;
-      }
-
-      if (starterKanjiResultBulkAction.dataset.starterKanjiBulkAction === "remove-review") {
-        uniqueIds.forEach((id) => {
-          removeKanjiFromReviewList(id);
-        });
-      } else {
-        uniqueIds.forEach((id) => {
-          saveKanjiToReviewList(id);
-        });
-      }
-
-      saveState();
-      renderKanjiPageLayout();
-    });
-  }
-  if (starterKanjiResultFilter) {
-    starterKanjiResultFilter.addEventListener("change", (event) => {
-      setStarterKanjiResultFilter(event.target.value);
-    });
-  }
-  if (starterKanjiResultList) {
-    starterKanjiResultList.addEventListener("click", (event) => {
-      const reviewButton = event.target.closest("[data-kanji-review]");
-      const masteredButton = event.target.closest("[data-kanji-mastered]");
-
-      if (!reviewButton && !masteredButton) {
-        return;
-      }
-
-      if (reviewButton) {
-        if (isKanjiSavedToReviewList(reviewButton.dataset.kanjiReview)) {
-          removeKanjiFromReviewList(reviewButton.dataset.kanjiReview);
-        } else {
-          saveKanjiToReviewList(reviewButton.dataset.kanjiReview);
-        }
-      } else {
-        if (isKanjiSavedToMasteredList(masteredButton.dataset.kanjiMastered)) {
-          removeKanjiFromMasteredList(masteredButton.dataset.kanjiMastered);
-        } else {
-          saveKanjiToMasteredList(masteredButton.dataset.kanjiMastered);
-        }
-      }
-
-      saveState();
-      renderKanjiPageLayout();
-    });
-  }
+  attachBulkResultActionListener({
+    button: starterKanjiResultBulkAction,
+    getResults: getFilteredStarterKanjiResults,
+    datasetKey: "starterKanjiBulkAction",
+    removeActionValue: "remove-review",
+    removeItem: removeKanjiFromReviewList,
+    saveItem: saveKanjiToReviewList,
+    render: renderKanjiPageLayout
+  });
+  attachResultFilterSelectListener({
+    select: starterKanjiResultFilter,
+    getNextValue: getStarterKanjiResultFilter,
+    getCurrentValue: () => getStarterKanjiResultFilter(starterKanjiState.resultFilter),
+    setValue: (value) => {
+      starterKanjiState.resultFilter = value;
+    },
+    render: renderStarterKanjiResults
+  });
+  attachToggleResultActionListener({
+    list: starterKanjiResultList,
+    selector: "[data-kanji-result-save]",
+    getId: (button) => button.dataset.kanjiResultSave,
+    isSelected: isKanjiSavedToReviewList,
+    selectItem: saveKanjiToReviewList,
+    unselectItem: removeKanjiFromReviewList,
+    render: renderKanjiPageLayout
+  });
   kanjiTabButtons.forEach((button) => {
     button.addEventListener("click", () => {
       setKanjiTab(button.dataset.kanjiTab);

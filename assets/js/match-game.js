@@ -18,7 +18,7 @@ const defaultMatchPreferences = {
   part: "all",
   totalCount: 5,
   duration: 15,
-  optionsOpen: true
+  optionsOpen: false
 };
 
 const fallbackMatchPool = [
@@ -357,7 +357,7 @@ matchPreferences.filter = getMatchFilter(matchPreferences.filter);
 matchPreferences.part = getMatchPartFilter(matchPreferences.part, getBaseMatchPool(matchPreferences.level));
 matchPreferences.totalCount = getMatchTotalCount(matchPreferences.totalCount);
 matchPreferences.duration = getMatchDuration(matchPreferences.duration);
-matchPreferences.optionsOpen = matchPreferences.optionsOpen !== false;
+matchPreferences.optionsOpen = false;
 
 function clearMatchTransitionTimer() {
   if (!matchTransitionTimer) {
@@ -585,7 +585,7 @@ function renderMatchSettings() {
         getValue: (button) => Number(button.dataset.matchTime)
       }
     ],
-    refreshPool,
+    refreshPool: refreshMatchPool,
     updateActionAvailability: () => {
       setMatchActionAvailability(matchPool.length > 0);
     }
@@ -598,6 +598,18 @@ function setMatchActionAvailability(startEnabled) {
   if (newRound) {
     newRound.disabled = !startEnabled;
   }
+}
+
+function scrollMatchBoardIntoView() {
+  const board = document.getElementById("match-board");
+
+  if (!board?.scrollIntoView) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    board.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
 }
 
 function createMatchCard(card, selectedId) {
@@ -891,6 +903,7 @@ function startMatchSession(items = buildMatchSessionItems()) {
   matchState.resultFilter = "all";
   matchState.hasStarted = true;
   openMatchPage(getCurrentPageItems(0));
+  scrollMatchBoardIntoView();
 }
 
 function replayCurrentMatchPage() {
@@ -1197,6 +1210,7 @@ attachMatchEventListeners();
 sharedMatchGame.attachStorageUpdateListener({
   [matchStorageKey]: () => {
     const nextPreferences = loadMatchPreferences();
+    nextPreferences.optionsOpen = false;
     sharedMatchGame.replaceObjectContents(matchPreferences, nextPreferences);
     renderMatchSettings();
     enterMatchReadyState();
