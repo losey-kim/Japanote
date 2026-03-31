@@ -5599,6 +5599,61 @@ function markStudyFlashcardStatus({
   render();
 }
 
+function setElementHidden(element, hidden) {
+  if (element) {
+    element.hidden = hidden;
+  }
+}
+
+function applyPageHeading(titleElement, copyElement, heading) {
+  if (titleElement) {
+    titleElement.textContent = heading?.title || "";
+  }
+
+  if (copyElement) {
+    copyElement.textContent = heading?.description || "";
+    copyElement.hidden = !heading?.description;
+  }
+}
+
+function syncTabButtonsAndPanels({
+  buttonSelector,
+  panelSelector,
+  buttonAttribute,
+  panelAttribute,
+  activeValue
+}) {
+  document.querySelectorAll(buttonSelector).forEach((button) => {
+    const isActive = button.dataset[buttonAttribute] === activeValue;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+    button.tabIndex = isActive ? 0 : -1;
+  });
+
+  document.querySelectorAll(panelSelector).forEach((panel) => {
+    const isActive = panel.dataset[panelAttribute] === activeValue;
+    panel.hidden = !isActive;
+    panel.setAttribute("aria-hidden", String(!isActive));
+  });
+}
+
+function syncStudyViewPanels(cardView, listView, activeView) {
+  setElementHidden(cardView, activeView !== "card");
+  setElementHidden(listView, activeView !== "list");
+}
+
+function renderStudyCatalogSection({ cardView, listView, activeView, renderFlashcard, renderList }) {
+  syncStudyViewPanels(cardView, listView, activeView);
+
+  if (typeof renderFlashcard === "function") {
+    renderFlashcard();
+  }
+
+  if (typeof renderList === "function") {
+    renderList();
+  }
+}
+
 function renderStarterKanjiResults() {
   const total = document.getElementById("starter-kanji-result-total");
   const correct = document.getElementById("starter-kanji-result-correct");
@@ -6025,30 +6080,24 @@ function renderKanjiPageLayout() {
   renderStarterKanjiControls();
   renderKanjiStudyControls();
 
-  document.querySelectorAll("[data-kanji-tab]").forEach((button) => {
-    const isActive = button.dataset.kanjiTab === activeTab;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-selected", String(isActive));
-    button.setAttribute("tabindex", isActive ? "0" : "-1");
-  });
-
-  document.querySelectorAll("[data-kanji-tab-panel]").forEach((panel) => {
-    const isActive = panel.dataset.kanjiTabPanel === activeTab;
-    panel.hidden = !isActive;
-    panel.setAttribute("aria-hidden", String(!isActive));
+  syncTabButtonsAndPanels({
+    buttonSelector: "[data-kanji-tab]",
+    panelSelector: "[data-kanji-tab-panel]",
+    buttonAttribute: "kanjiTab",
+    panelAttribute: "kanjiTabPanel",
+    activeValue: activeTab
   });
 
   if (activeTab === "list") {
     stopQuizSessionTimer("starterKanji");
     renderQuizSessionHud("starterKanji");
-    if (cardView) {
-      cardView.hidden = getKanjiView() !== "card";
-    }
-    if (listView) {
-      listView.hidden = getKanjiView() !== "list";
-    }
-    renderKanjiFlashcard();
-    renderKanjiList();
+    renderStudyCatalogSection({
+      cardView,
+      listView,
+      activeView: getKanjiView(),
+      renderFlashcard: renderKanjiFlashcard,
+      renderList: renderKanjiList
+    });
     return;
   }
 
@@ -6064,32 +6113,20 @@ function renderKanjiPageLayout() {
     quizSessions.starterKanji.streak = 0;
     setQuizSessionDuration("starterKanji", getStarterKanjiQuizDuration());
     if (empty) {
-      empty.hidden = false;
       empty.textContent = getStarterKanjiQuestionCount() > 0
         ? "준비됐다면 시작해볼까요?"
         : getKanjiEmptyMessage();
     }
-    if (practiceView) {
-      practiceView.hidden = true;
-    }
-    if (resultView) {
-      resultView.hidden = true;
-    }
+    setElementHidden(empty, false);
+    setElementHidden(practiceView, true);
+    setElementHidden(resultView, true);
     renderQuizSessionHud("starterKanji");
     return;
   }
 
-  if (empty) {
-    empty.hidden = true;
-  }
-
-  if (practiceView) {
-    practiceView.hidden = starterKanjiState.showResults;
-  }
-
-  if (resultView) {
-    resultView.hidden = !starterKanjiState.showResults;
-  }
+  setElementHidden(empty, true);
+  setElementHidden(practiceView, starterKanjiState.showResults);
+  setElementHidden(resultView, !starterKanjiState.showResults);
 
   if (starterKanjiState.showResults) {
     stopQuizSessionTimer("starterKanji");
@@ -7249,19 +7286,12 @@ function renderVocabList() {
 }
 
 function renderVocabTabLayout() {
-  const activeTab = getVocabTab();
-
-  document.querySelectorAll("[data-vocab-tab]").forEach((button) => {
-    const active = button.dataset.vocabTab === activeTab;
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-selected", String(active));
-    button.tabIndex = active ? 0 : -1;
-  });
-
-  document.querySelectorAll("[data-vocab-tab-panel]").forEach((panel) => {
-    const active = panel.dataset.vocabTabPanel === activeTab;
-    panel.hidden = !active;
-    panel.setAttribute("aria-hidden", String(!active));
+  syncTabButtonsAndPanels({
+    buttonSelector: "[data-vocab-tab]",
+    panelSelector: "[data-vocab-tab-panel]",
+    buttonAttribute: "vocabTab",
+    panelAttribute: "vocabTabPanel",
+    activeValue: getVocabTab()
   });
 }
 
@@ -7589,14 +7619,7 @@ function renderVocabPage() {
   const heading = activeTab === "match" ? matchHeadingCopy : activeHeadingMap[activeLevel] || activeHeadingMap.N5;
   const availableParts = getAvailableVocabParts();
 
-  if (headingTitle) {
-    headingTitle.textContent = heading.title;
-  }
-
-  if (headingCopy) {
-    headingCopy.textContent = heading.description;
-    headingCopy.hidden = !heading.description;
-  }
+  applyPageHeading(headingTitle, headingCopy, heading);
 
   if (summary) {
     summary.textContent = getVocabSummaryText(items.length);
@@ -7605,17 +7628,13 @@ function renderVocabPage() {
   renderVocabTabLayout();
   renderVocabStudyControls(counts, availableParts, activePart);
   renderVocabQuizControls(counts, availableParts, activePart);
-
-  if (cardView) {
-    cardView.hidden = getVocabView() !== "card";
-  }
-
-  if (listView) {
-    listView.hidden = getVocabView() !== "list";
-  }
-
-  renderFlashcard();
-  renderVocabList();
+  renderStudyCatalogSection({
+    cardView,
+    listView,
+    activeView: getVocabView(),
+    renderFlashcard: renderFlashcard,
+    renderList: renderVocabList
+  });
 
   if (activeTab === "quiz") {
     syncVocabLocationHash("quiz");
@@ -8802,6 +8821,182 @@ function attachStudyStatusListListeners({
   });
 }
 
+function attachVocabStudyListeners({
+  flashcardToggle,
+  flashcardPrev,
+  flashcardNext,
+  flashcardAgain,
+  flashcardMastered,
+  vocabList,
+  vocabTabButtons,
+  vocabViewButtons,
+  vocabLevelSelect,
+  vocabFilterSelect,
+  vocabPartSelect,
+  vocabPagePrev,
+  vocabPageNext
+}) {
+  attachStudyFlashcardListeners({
+    toggle: flashcardToggle,
+    prev: flashcardPrev,
+    next: flashcardNext,
+    review: flashcardAgain,
+    mastered: flashcardMastered,
+    onToggle: toggleFlashcardReveal,
+    onMove: moveFlashcard,
+    onReview: markFlashcardForReview,
+    onMastered: markFlashcardMastered
+  });
+  attachStudyStatusListListeners({
+    list: vocabList,
+    reviewSelector: "[data-word-review]",
+    masteredSelector: "[data-word-mastered]",
+    getReviewId: (button) => button.dataset.wordReview,
+    getMasteredId: (button) => button.dataset.wordMastered,
+    toggleReview: (id) => {
+      if (isWordSavedToReviewList(id)) {
+        removeWordFromReviewList(id);
+      } else {
+        saveWordToReviewList(id);
+      }
+    },
+    toggleMastered: (id) => {
+      if (isWordSavedToMasteredList(id)) {
+        removeWordFromMasteredList(id);
+      } else {
+        saveWordToMasteredList(id);
+      }
+    },
+    render: renderAll
+  });
+  vocabTabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setVocabTab(button.dataset.vocabTab);
+    });
+  });
+
+  if (vocabLevelSelect) {
+    vocabLevelSelect.addEventListener("change", () => {
+      setVocabLevel(vocabLevelSelect.value);
+    });
+  }
+
+  attachStudyViewButtonListeners(vocabViewButtons, (button) => button.dataset.vocabView, setVocabView);
+
+  if (vocabFilterSelect) {
+    vocabFilterSelect.addEventListener("change", () => {
+      setVocabFilter(vocabFilterSelect.value);
+    });
+  }
+
+  if (vocabPartSelect) {
+    vocabPartSelect.addEventListener("change", () => {
+      setVocabPartFilter(vocabPartSelect.value);
+    });
+  }
+
+  attachStudyPaginationListeners({
+    prev: vocabPagePrev,
+    next: vocabPageNext,
+    getPage: () => state.vocabPage,
+    setPage: (page) => {
+      state.vocabPage = page;
+    },
+    getPageCount: () => getVocabPageCount(getVisibleVocabList()),
+    render: renderVocabPage
+  });
+}
+
+function attachKanjiStudyListeners({
+  kanjiOptionsToggle,
+  kanjiGradeButtons,
+  kanjiViewButtons,
+  kanjiCollectionSelect,
+  kanjiGradeSelect,
+  kanjiPagePrev,
+  kanjiPageNext,
+  kanjiFlashcardToggle,
+  kanjiFlashcardPrev,
+  kanjiFlashcardNext,
+  kanjiFlashcardReview,
+  kanjiFlashcardMastered,
+  kanjiList
+}) {
+  if (kanjiOptionsToggle) {
+    kanjiOptionsToggle.addEventListener("click", () => {
+      state.kanjiOptionsOpen = !state.kanjiOptionsOpen;
+      saveState();
+      renderKanjiStudyControls();
+    });
+  }
+
+  kanjiGradeButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      setKanjiGrade(button.dataset.kanjiGradeOption);
+    });
+  });
+
+  attachStudyViewButtonListeners(kanjiViewButtons, (button) => button.dataset.kanjiView, setKanjiView);
+  attachStudyFlashcardListeners({
+    toggle: kanjiFlashcardToggle,
+    prev: kanjiFlashcardPrev,
+    next: kanjiFlashcardNext,
+    review: kanjiFlashcardReview,
+    mastered: kanjiFlashcardMastered,
+    onToggle: toggleKanjiFlashcardReveal,
+    onMove: moveKanjiFlashcard,
+    onReview: markKanjiFlashcardForReview,
+    onMastered: markKanjiFlashcardMastered
+  });
+  attachStudyPaginationListeners({
+    prev: kanjiPagePrev,
+    next: kanjiPageNext,
+    getPage: () => state.kanjiPage,
+    setPage: (page) => {
+      state.kanjiPage = page;
+    },
+    getPageCount: () => getKanjiPageCount(getVisibleKanjiItems()),
+    render: renderKanjiPageLayout
+  });
+  attachStudyStatusListListeners({
+    list: kanjiList,
+    reviewSelector: "[data-kanji-review]",
+    masteredSelector: "[data-kanji-mastered]",
+    getReviewId: (button) => button.dataset.kanjiReview,
+    getMasteredId: (button) => button.dataset.kanjiMastered,
+    toggleReview: (id) => {
+      if (isKanjiSavedToReviewList(id)) {
+        removeKanjiFromReviewList(id);
+      } else {
+        saveKanjiToReviewList(id);
+      }
+    },
+    toggleMastered: (id) => {
+      if (isKanjiSavedToMasteredList(id)) {
+        removeKanjiFromMasteredList(id);
+      } else {
+        saveKanjiToMasteredList(id);
+      }
+    },
+    render: () => {
+      renderStats();
+      renderKanjiPageLayout();
+    }
+  });
+
+  if (kanjiCollectionSelect) {
+    kanjiCollectionSelect.addEventListener("change", () => {
+      setKanjiCollectionFilter(kanjiCollectionSelect.value);
+    });
+  }
+
+  if (kanjiGradeSelect) {
+    kanjiGradeSelect.addEventListener("change", () => {
+      setKanjiGrade(kanjiGradeSelect.value);
+    });
+  }
+}
+
 function attachEventListeners() {
   const flashcardToggle = document.getElementById("flashcard-toggle");
   const flashcardPrev = document.getElementById("flashcard-prev");
@@ -8894,69 +9089,20 @@ function attachEventListeners() {
   const writingNext = document.getElementById("writing-practice-next");
   const writingCanvas = document.getElementById("writing-overlay-canvas");
 
-  attachStudyFlashcardListeners({
-    toggle: flashcardToggle,
-    prev: flashcardPrev,
-    next: flashcardNext,
-    review: flashcardAgain,
-    mastered: flashcardMastered,
-    onToggle: toggleFlashcardReveal,
-    onMove: moveFlashcard,
-    onReview: markFlashcardForReview,
-    onMastered: markFlashcardMastered
-  });
-  attachStudyStatusListListeners({
-    list: vocabList,
-    reviewSelector: "[data-word-review]",
-    masteredSelector: "[data-word-mastered]",
-    getReviewId: (button) => button.dataset.wordReview,
-    getMasteredId: (button) => button.dataset.wordMastered,
-    toggleReview: (id) => {
-      if (isWordSavedToReviewList(id)) {
-        removeWordFromReviewList(id);
-      } else {
-        saveWordToReviewList(id);
-      }
-    },
-    toggleMastered: (id) => {
-      if (isWordSavedToMasteredList(id)) {
-        removeWordFromMasteredList(id);
-      } else {
-        saveWordToMasteredList(id);
-      }
-    },
-    render: renderAll
-  });
-  vocabTabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      setVocabTab(button.dataset.vocabTab);
-    });
-  });
-  if (vocabLevelSelect) {
-    vocabLevelSelect.addEventListener("change", () => {
-      setVocabLevel(vocabLevelSelect.value);
-    });
-  }
-  attachStudyViewButtonListeners(vocabViewButtons, (button) => button.dataset.vocabView, setVocabView);
-  if (vocabFilterSelect) {
-    vocabFilterSelect.addEventListener("change", () => {
-      setVocabFilter(vocabFilterSelect.value);
-    });
-  }
-  if (vocabPartSelect) {
-    vocabPartSelect.addEventListener("change", () => {
-      setVocabPartFilter(vocabPartSelect.value);
-    });
-  }
-  attachStudyPaginationListeners({
-    prev: vocabPagePrev,
-    next: vocabPageNext,
-    getPage: () => state.vocabPage,
-    setPage: (page) => {
-      state.vocabPage = page;
-    },
-    getPageCount: () => getVocabPageCount(getVisibleVocabList()),
-    render: renderVocabPage
+  attachVocabStudyListeners({
+    flashcardToggle,
+    flashcardPrev,
+    flashcardNext,
+    flashcardAgain,
+    flashcardMastered,
+    vocabList,
+    vocabTabButtons,
+    vocabViewButtons,
+    vocabLevelSelect,
+    vocabFilterSelect,
+    vocabPartSelect,
+    vocabPagePrev,
+    vocabPageNext
   });
   if (vocabQuizOptionsToggle) {
     vocabQuizOptionsToggle.addEventListener("click", () => {
@@ -9189,75 +9335,21 @@ function attachEventListeners() {
   if (basicPracticeNext) {
     basicPracticeNext.addEventListener("click", nextBasicPracticeSet);
   }
-  if (kanjiOptionsToggle) {
-    kanjiOptionsToggle.addEventListener("click", () => {
-      state.kanjiOptionsOpen = !state.kanjiOptionsOpen;
-      saveState();
-      renderKanjiStudyControls();
-    });
-  }
-  kanjiGradeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      setKanjiGrade(button.dataset.kanjiGradeOption);
-    });
+  attachKanjiStudyListeners({
+    kanjiOptionsToggle,
+    kanjiGradeButtons,
+    kanjiViewButtons,
+    kanjiCollectionSelect,
+    kanjiGradeSelect,
+    kanjiPagePrev,
+    kanjiPageNext,
+    kanjiFlashcardToggle,
+    kanjiFlashcardPrev,
+    kanjiFlashcardNext,
+    kanjiFlashcardReview,
+    kanjiFlashcardMastered,
+    kanjiList
   });
-  attachStudyViewButtonListeners(kanjiViewButtons, (button) => button.dataset.kanjiView, setKanjiView);
-  attachStudyFlashcardListeners({
-    toggle: kanjiFlashcardToggle,
-    prev: kanjiFlashcardPrev,
-    next: kanjiFlashcardNext,
-    review: kanjiFlashcardReview,
-    mastered: kanjiFlashcardMastered,
-    onToggle: toggleKanjiFlashcardReveal,
-    onMove: moveKanjiFlashcard,
-    onReview: markKanjiFlashcardForReview,
-    onMastered: markKanjiFlashcardMastered
-  });
-  attachStudyPaginationListeners({
-    prev: kanjiPagePrev,
-    next: kanjiPageNext,
-    getPage: () => state.kanjiPage,
-    setPage: (page) => {
-      state.kanjiPage = page;
-    },
-    getPageCount: () => getKanjiPageCount(getVisibleKanjiItems()),
-    render: renderKanjiPageLayout
-  });
-  attachStudyStatusListListeners({
-    list: kanjiList,
-    reviewSelector: "[data-kanji-review]",
-    masteredSelector: "[data-kanji-mastered]",
-    getReviewId: (button) => button.dataset.kanjiReview,
-    getMasteredId: (button) => button.dataset.kanjiMastered,
-    toggleReview: (id) => {
-      if (isKanjiSavedToReviewList(id)) {
-        removeKanjiFromReviewList(id);
-      } else {
-        saveKanjiToReviewList(id);
-      }
-    },
-    toggleMastered: (id) => {
-      if (isKanjiSavedToMasteredList(id)) {
-        removeKanjiFromMasteredList(id);
-      } else {
-        saveKanjiToMasteredList(id);
-      }
-    },
-    render: () => {
-      renderStats();
-      renderKanjiPageLayout();
-    }
-  });
-  if (kanjiCollectionSelect) {
-    kanjiCollectionSelect.addEventListener("change", () => {
-      setKanjiCollectionFilter(kanjiCollectionSelect.value);
-    });
-  }
-  if (kanjiGradeSelect) {
-    kanjiGradeSelect.addEventListener("change", () => {
-      setKanjiGrade(kanjiGradeSelect.value);
-    });
-  }
   if (starterKanjiOptionsToggle) {
     starterKanjiOptionsToggle.addEventListener("click", () => {
       state.starterKanjiQuizOptionsOpen = !state.starterKanjiQuizOptionsOpen;
