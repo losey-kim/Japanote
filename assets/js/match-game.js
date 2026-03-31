@@ -1,5 +1,6 @@
 const matchStorageKey = "japanote-match-state";
 const studyStateStorageKey = "jlpt-compass-state";
+const sharedMatchGame = globalThis.japanoteSharedMatchGame;
 
 function getMatchSyncStore() {
   if (globalThis.japanoteSync && typeof globalThis.japanoteSync.readValue === "function") {
@@ -524,64 +525,32 @@ function setMatchFeedback(message, tone = "") {
 }
 
 function renderMatchActionCopy() {
-  const newRound = document.getElementById("match-new-round");
-  const newRoundLabel = document.getElementById("match-new-round-label");
-  const newRoundIcon = newRound?.querySelector(".material-symbols-rounded");
-  const isResetState = matchState.hasStarted || matchState.showResults;
-
-  if (newRound) {
-    newRound.classList.toggle("primary-btn", !isResetState);
-    newRound.classList.toggle("secondary-btn", isResetState);
-  }
-
-  if (newRoundLabel) {
-    newRoundLabel.textContent = isResetState ? "다시 해볼까요?" : "시작해볼까요?";
-  }
-
-  if (newRoundIcon) {
-    newRoundIcon.textContent = isResetState ? "autorenew" : "play_arrow";
-  }
+  sharedMatchGame.renderActionCopy({
+    buttonId: "match-new-round",
+    labelId: "match-new-round-label",
+    isResetState: matchState.hasStarted || matchState.showResults
+  });
 }
 
 function renderMatchTimer() {
-  const timer = document.getElementById("match-timer");
   const activeDuration = getMatchDuration(matchPreferences.duration);
 
-  if (!timer) {
-    return;
-  }
-
-  const warning = activeDuration > 0 && matchState.timeLeft <= Math.max(10, Math.floor(activeDuration / 3));
-  const progress = activeDuration > 0 ? Math.max(0, Math.min(1, matchState.timeLeft / activeDuration)) : 0;
-  const timerItem = timer.closest(".quiz-hud-item");
-
-  timer.textContent = activeDuration <= 0 ? "천천히" : `${matchState.timeLeft}초`;
-  timer.classList.toggle("is-warning", warning);
-
-  if (!timerItem) {
-    return;
-  }
-
-  if (typeof updateQuizTimerItem === "function") {
-    updateQuizTimerItem(timerItem, progress, warning, activeDuration <= 0);
-    return;
-  }
-
-  timerItem.classList.add("is-timer");
-  timerItem.classList.toggle("is-warning", warning);
-  timerItem.classList.toggle("is-static", activeDuration <= 0);
-  timerItem.style.setProperty("--timer-progress", progress.toFixed(3));
+  sharedMatchGame.renderTimer({
+    timerId: "match-timer",
+    duration: activeDuration,
+    timeLeft: matchState.timeLeft
+  });
 }
 
 function renderMatchStats() {
-  const progress = document.getElementById("match-progress");
   const totalCount = matchState.sessionItems.length || getMatchTotalCount(matchPreferences.totalCount);
 
-  if (progress) {
-    progress.textContent = `${getMatchResolvedCount()} / ${totalCount}`;
-  }
-
-  renderMatchTimer();
+  sharedMatchGame.renderStats({
+    progressId: "match-progress",
+    resolvedCount: getMatchResolvedCount(),
+    totalCount,
+    renderTimer: renderMatchTimer
+  });
 }
 
 function populateMatchFilterSelect(select, counts) {
@@ -619,10 +588,6 @@ function populateMatchPartSelect(select, parts, activePart) {
 }
 
 function renderMatchSettings() {
-  const optionsShell = document.getElementById("match-options-shell");
-  const optionsToggle = document.getElementById("match-options-toggle");
-  const optionsPanel = document.getElementById("match-options-panel");
-  const optionsSummary = document.getElementById("match-options-summary");
   const levelSelect = document.getElementById("match-level-select");
   const filterSelect = document.getElementById("match-filter-select");
   const partSelect = document.getElementById("match-part-select");
@@ -633,53 +598,51 @@ function renderMatchSettings() {
   const isSettingsLocked = matchState.hasStarted && !matchState.showResults;
   const shouldShowOptionsPanel = !isSettingsLocked && matchPreferences.optionsOpen !== false;
 
-  if (optionsSummary) {
-    optionsSummary.textContent = getMatchOptionsSummaryText();
-  }
-
-  if (levelSelect) {
-    levelSelect.value = getMatchLevel(matchPreferences.level);
-    levelSelect.disabled = isSettingsLocked;
-  }
-
-  populateMatchFilterSelect(filterSelect, filterCounts);
-  populateMatchPartSelect(partSelect, availableParts, activePart);
-
-  if (filterSelect) {
-    filterSelect.disabled = isSettingsLocked;
-  }
-
-  if (partSelect) {
-    partSelect.disabled = isSettingsLocked;
-  }
-
-  refreshMatchPool();
-  setMatchActionAvailability(matchPool.length > 0);
-
-  if (optionsShell) {
-    optionsShell.classList.toggle("is-open", shouldShowOptionsPanel);
-  }
-
-  if (optionsToggle) {
-    optionsToggle.disabled = isSettingsLocked;
-    optionsToggle.setAttribute("aria-expanded", String(shouldShowOptionsPanel));
-  }
-
-  if (optionsPanel) {
-    optionsPanel.hidden = !shouldShowOptionsPanel;
-    optionsPanel.setAttribute("aria-hidden", String(!shouldShowOptionsPanel));
-  }
-
-  document.querySelectorAll("[data-match-count]").forEach((button) => {
-    const active = Number(button.dataset.matchCount) === getMatchTotalCount(matchPreferences.totalCount);
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
-  });
-
-  document.querySelectorAll("[data-match-time]").forEach((button) => {
-    const active = Number(button.dataset.matchTime) === getMatchDuration(matchPreferences.duration);
-    button.classList.toggle("is-active", active);
-    button.setAttribute("aria-pressed", String(active));
+  sharedMatchGame.renderSettingsPanel({
+    optionsShellId: "match-options-shell",
+    optionsToggleId: "match-options-toggle",
+    optionsPanelId: "match-options-panel",
+    optionsSummaryId: "match-options-summary",
+    summaryText: getMatchOptionsSummaryText(),
+    isSettingsLocked,
+    shouldShowOptionsPanel,
+    selectConfigs: [
+      {
+        element: levelSelect,
+        populate: (element) => {
+          if (element) {
+            element.value = getMatchLevel(matchPreferences.level);
+          }
+        },
+        disabled: isSettingsLocked
+      },
+      {
+        element: filterSelect,
+        populate: (element) => populateMatchFilterSelect(element, filterCounts),
+        disabled: isSettingsLocked
+      },
+      {
+        element: partSelect,
+        populate: (element) => populateMatchPartSelect(element, availableParts, activePart),
+        disabled: isSettingsLocked
+      }
+    ],
+    buttonGroups: [
+      {
+        selector: "[data-match-count]",
+        activeValue: getMatchTotalCount(matchPreferences.totalCount),
+        getValue: (button) => Number(button.dataset.matchCount)
+      },
+      {
+        selector: "[data-match-time]",
+        activeValue: getMatchDuration(matchPreferences.duration),
+        getValue: (button) => Number(button.dataset.matchTime)
+      }
+    ],
+    refreshPool,
+    updateActionAvailability: () => {
+      setMatchActionAvailability(matchPool.length > 0);
+    }
   });
 }
 
@@ -723,24 +686,16 @@ function createMatchCard(card, selectedId) {
 }
 
 function renderMatchBoard() {
-  const leftList = document.getElementById("match-left-list");
-  const rightList = document.getElementById("match-right-list");
-
-  if (!leftList || !rightList) {
-    return;
-  }
-
-  leftList.innerHTML = "";
-  rightList.innerHTML = "";
-
-  matchState.leftCards.forEach((card) => {
-    leftList.appendChild(createMatchCard(card, matchState.selectedLeft));
+  sharedMatchGame.renderBoard({
+    leftListId: "match-left-list",
+    rightListId: "match-right-list",
+    leftCards: matchState.leftCards,
+    rightCards: matchState.rightCards,
+    selectedLeft: matchState.selectedLeft,
+    selectedRight: matchState.selectedRight,
+    createCard: createMatchCard,
+    renderStats: renderMatchStats
   });
-  matchState.rightCards.forEach((card) => {
-    rightList.appendChild(createMatchCard(card, matchState.selectedRight));
-  });
-
-  renderMatchStats();
 }
 
 function getFilteredMatchResults(filter = getMatchResultFilter(matchState.resultFilter)) {
@@ -783,53 +738,35 @@ function renderMatchBulkActionButton(results) {
 }
 
 function renderMatchResultFilterOptions(counts) {
-  const filterSelect = document.getElementById("match-result-filter");
-
-  if (!filterSelect) {
-    return;
-  }
-
-  filterSelect.innerHTML = matchResultFilterOptions
-    .map(
-      (filter) =>
-        `<option value="${filter}">${matchResultFilterLabels[filter]} (${counts[filter]})</option>`
-    )
-    .join("");
-  filterSelect.value = getMatchResultFilter(matchState.resultFilter);
+  sharedMatchGame.renderResultFilterOptions({
+    selectId: "match-result-filter",
+    filters: matchResultFilterOptions,
+    labels: matchResultFilterLabels,
+    counts,
+    activeFilter: getMatchResultFilter(matchState.resultFilter)
+  });
 }
 
 function renderMatchResults() {
-  const resultView = document.getElementById("match-result-view");
-  const total = document.getElementById("match-result-total");
-  const correct = document.getElementById("match-result-correct");
-  const wrong = document.getElementById("match-result-wrong");
-  const empty = document.getElementById("match-result-empty");
-  const list = document.getElementById("match-result-list");
-  const filterSelect = document.getElementById("match-result-filter");
-  const bulkActionButton = document.getElementById("match-result-bulk-action");
   const counts = getMatchResultCounts();
   const filteredResults = getFilteredMatchResults();
 
-  if (!resultView || !total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
-    return;
-  }
-
-  total.textContent = String(counts.all);
-  correct.textContent = String(counts.correct);
-  wrong.textContent = String(counts.wrong);
-  renderMatchResultFilterOptions(counts);
-  renderMatchBulkActionButton(filteredResults);
-
-  if (!filteredResults.length) {
-    empty.hidden = false;
-    empty.textContent = `${matchResultFilterLabels[getMatchResultFilter(matchState.resultFilter)]} 결과는 아직 없어요.`;
-    list.innerHTML = "";
-    return;
-  }
-
-  empty.hidden = true;
-  list.innerHTML = filteredResults
-    .map((item) => {
+  sharedMatchGame.renderResultsView({
+    resultViewId: "match-result-view",
+    totalId: "match-result-total",
+    correctId: "match-result-correct",
+    wrongId: "match-result-wrong",
+    emptyId: "match-result-empty",
+    listId: "match-result-list",
+    filterSelectId: "match-result-filter",
+    bulkActionButtonId: "match-result-bulk-action",
+    counts,
+    filteredResults,
+    activeFilter: getMatchResultFilter(matchState.resultFilter),
+    filterLabels: matchResultFilterLabels,
+    renderFilterOptions: renderMatchResultFilterOptions,
+    renderBulkActionButton: renderMatchBulkActionButton,
+    createItemMarkup: (item) => {
       const saved = isWordSavedToMemorizationList(item.id);
       const statusLabel = item.status === "correct" ? "정답" : "오답";
       const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
@@ -859,50 +796,28 @@ function renderMatchResults() {
           </div>
         </article>
       `;
-    })
-    .join("");
+    }
+  });
 }
 
 function renderMatchScreen() {
-  const board = document.getElementById("match-board");
-  const empty = document.getElementById("match-empty");
-  const playView = document.getElementById("match-play-view");
-  const resultView = document.getElementById("match-result-view");
-  const feedback = document.getElementById("match-feedback");
-  const hasVisibleFeedback = Boolean(feedback?.textContent);
-  const shouldShowPlayView = !matchState.showResults && (matchState.hasStarted || hasVisibleFeedback);
-  const shouldShowEmpty = !matchState.hasStarted && !matchState.showResults && !hasVisibleFeedback;
-  const shouldShowBoard = shouldShowPlayView || matchState.showResults || shouldShowEmpty;
-
-  if (board) {
-    board.hidden = !shouldShowBoard;
-  }
-
-  if (empty) {
-    empty.hidden = !shouldShowEmpty;
-
-    if (shouldShowEmpty) {
-      empty.textContent = "준비됐다면 시작해볼까요?";
-    }
-  }
-
-  if (playView) {
-    playView.hidden = !shouldShowPlayView;
-  }
-
-  if (resultView) {
-    resultView.hidden = !matchState.showResults;
-  }
-
-  renderMatchSettings();
-  renderMatchActionCopy();
-  renderMatchStats();
-
-  if (matchState.showResults) {
-    renderMatchResults();
-  } else {
-    renderMatchBoard();
-  }
+  sharedMatchGame.renderScreen({
+    boardId: "match-board",
+    emptyId: "match-empty",
+    playViewId: "match-play-view",
+    resultViewId: "match-result-view",
+    feedbackId: "match-feedback",
+    hasStarted: matchState.hasStarted,
+    showResults: matchState.showResults,
+    isReady: matchPool.length > 0,
+    emptyReadyText: "준비됐다면 시작해볼까요?",
+    emptyUnavailableText: "짝맞추기를 준비하고 있어요.",
+    renderSettings: renderMatchSettings,
+    renderActionCopy: renderMatchActionCopy,
+    renderStats: renderMatchStats,
+    renderResults: renderMatchResults,
+    renderBoard: renderMatchBoard
+  });
 }
 
 function startMatchRoundTimer() {
@@ -1299,90 +1214,36 @@ function attachMatchEventListeners() {
     newRound.addEventListener("click", startNewMatchSession);
   }
 
-  if (optionsToggle) {
-    optionsToggle.addEventListener("click", () => {
-      matchPreferences.optionsOpen = !matchPreferences.optionsOpen;
-      saveMatchPreferences();
-      renderMatchSettings();
-    });
-  }
-
-  if (levelSelect) {
-    levelSelect.addEventListener("change", (event) => {
-      setMatchLevel(event.target.value);
-    });
-  }
-
-  if (filterSelect) {
-    filterSelect.addEventListener("change", (event) => {
-      setMatchFilterPreference(event.target.value);
-    });
-  }
-
-  if (partSelect) {
-    partSelect.addEventListener("change", (event) => {
-      setMatchPartPreference(event.target.value);
-    });
-  }
-
-  document.querySelectorAll("[data-match-count]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setMatchTotalCount(button.dataset.matchCount);
-    });
+  sharedMatchGame.attachOptionsToggleListener(optionsToggle, () => {
+    matchPreferences.optionsOpen = !matchPreferences.optionsOpen;
+    saveMatchPreferences();
+    renderMatchSettings();
   });
 
-  document.querySelectorAll("[data-match-time]").forEach((button) => {
-    button.addEventListener("click", () => {
-      setMatchDuration(button.dataset.matchTime);
-    });
+  sharedMatchGame.attachSelectChangeListener(levelSelect, setMatchLevel);
+  sharedMatchGame.attachSelectChangeListener(filterSelect, setMatchFilterPreference);
+  sharedMatchGame.attachSelectChangeListener(partSelect, setMatchPartPreference);
+  sharedMatchGame.attachDatasetButtonListeners("[data-match-count]", "matchCount", setMatchTotalCount);
+  sharedMatchGame.attachDatasetButtonListeners("[data-match-time]", "matchTime", setMatchDuration);
+  sharedMatchGame.attachSelectChangeListener(resultFilterSelect, setMatchResultFilter);
+  sharedMatchGame.attachBulkActionListener({
+    button: resultBulkAction,
+    datasetKey: "matchBulkAction",
+    getFilteredResults: getFilteredMatchResults,
+    getItemId: (item) => item.id,
+    onRemove: removeWordFromMemorizationList,
+    onSave: saveWordToMemorizationList,
+    afterChange: renderMatchResults
   });
-
-  if (resultFilterSelect) {
-    resultFilterSelect.addEventListener("change", (event) => {
-      setMatchResultFilter(event.target.value);
-    });
-  }
-
-  if (resultBulkAction) {
-    resultBulkAction.addEventListener("click", () => {
-      const filteredResults = getFilteredMatchResults();
-      const uniqueIds = Array.from(new Set(filteredResults.map((item) => item.id).filter(Boolean)));
-
-      if (!uniqueIds.length) {
-        return;
-      }
-
-      if (resultBulkAction.dataset.matchBulkAction === "remove") {
-        uniqueIds.forEach((id) => {
-          removeWordFromMemorizationList(id);
-        });
-      } else {
-        uniqueIds.forEach((id) => {
-          saveWordToMemorizationList(id);
-        });
-      }
-
-      renderMatchResults();
-    });
-  }
-
-  if (resultList) {
-    resultList.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-match-save]");
-
-      if (!button) {
-        return;
-      }
-
-      if (isWordSavedToMemorizationList(button.dataset.matchSave)) {
-        removeWordFromMemorizationList(button.dataset.matchSave);
-      } else {
-        saveWordToMemorizationList(button.dataset.matchSave);
-      }
-
-      renderMatchResults();
-    });
-  }
+  sharedMatchGame.attachResultSaveListener({
+    list: resultList,
+    buttonSelector: "[data-match-save]",
+    getItemId: (button) => button.dataset.matchSave,
+    isSaved: isWordSavedToMemorizationList,
+    onRemove: removeWordFromMemorizationList,
+    onSave: saveWordToMemorizationList,
+    afterChange: renderMatchResults
+  });
 }
 
 renderMatchSettings();
