@@ -25,7 +25,7 @@
   const localValues = {
     [studyStateKey]: readLocalJson(studyStateKey, {}),
     [matchStateKey]: readLocalJson(matchStateKey, {}),
-    [themeStorageKey]: readLocalText(themeStorageKey, "system")
+    [themeStorageKey]: readLocalText(themeStorageKey, "light")
   };
 
   let client = null;
@@ -80,7 +80,7 @@
   function persistLocalValue(key, value) {
     try {
       if (key === themeStorageKey) {
-        localStorage.setItem(key, String(value || "system"));
+        localStorage.setItem(key, String(value || "light"));
         return;
       }
 
@@ -231,7 +231,7 @@
       user_id: currentUser.id,
       study_state: readValue(studyStateKey, {}),
       match_state: readValue(matchStateKey, {}),
-      theme_mode: typeof localValues[themeStorageKey] === "string" ? localValues[themeStorageKey] : "system",
+      theme_mode: typeof localValues[themeStorageKey] === "string" ? localValues[themeStorageKey] : "light",
       updated_at: new Date().toISOString()
     };
   }
@@ -261,7 +261,7 @@
       remote: false,
       source: "remote"
     });
-    writeValue(themeStorageKey, remoteState.theme_mode || "system", {
+    writeValue(themeStorageKey, remoteState.theme_mode || "light", {
       remote: false,
       source: "remote"
     });

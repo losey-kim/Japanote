@@ -11,13 +11,13 @@ function getThemeSyncStore() {
 
 function getSavedThemeMode() {
   const syncStore = getThemeSyncStore();
-  const saved = syncStore ? syncStore.readValue(themeStorageKey, "system") : localStorage.getItem(themeStorageKey);
-  return themeModes.includes(saved) ? saved : "system";
+  const saved = syncStore ? syncStore.readValue(themeStorageKey, "light") : localStorage.getItem(themeStorageKey);
+  return themeModes.includes(saved) ? saved : "light";
 }
 
 function applyThemeMode(mode) {
   const root = document.documentElement;
-  const nextMode = themeModes.includes(mode) ? mode : "system";
+  const nextMode = themeModes.includes(mode) ? mode : "light";
 
   if (nextMode === "system") {
     root.removeAttribute("data-theme");
