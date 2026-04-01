@@ -4357,10 +4357,37 @@ function resetStateDrivenQuizSessions() {
 }
 
 function applyExternalStudyState(nextState) {
+  const panelOpenKeys = [
+    "quizOptionsOpen",
+    "vocabOptionsOpen",
+    "readingOptionsOpen",
+    "vocabQuizOptionsOpen",
+    "starterKanjiQuizOptionsOpen",
+    "kanjiMatchOptionsOpen",
+    "kanjiOptionsOpen",
+    "grammarPracticeOptionsOpen",
+    "kanaSetupOpen",
+    "writingSetupOpen"
+  ];
+  const preservedPanels = {};
+
+  if (state && typeof state === "object") {
+    for (const key of panelOpenKeys) {
+      preservedPanels[key] = state[key];
+    }
+  }
+
   state = normalizeLoadedState({
     ...defaultState,
     ...(nextState || {})
   });
+
+  for (const key of panelOpenKeys) {
+    if (Object.prototype.hasOwnProperty.call(preservedPanels, key)) {
+      state[key] = preservedPanels[key];
+    }
+  }
+
   resetStateDrivenQuizSessions();
   renderAll();
   loadRelevantVocabData();
