@@ -775,6 +775,33 @@
     `;
   }
 
+  function createMatchPlayView({
+    boardId,
+    progressId,
+    timerId,
+    feedbackId,
+    leftColumnTitle,
+    rightColumnTitle,
+    leftListId,
+    rightListId,
+    initialProgress = "0 / 5",
+    initialTimer = "15초"
+  }) {
+    return `
+          <div class="match-play-view" id="${escapeHtml(boardId)}">
+            <div class="quiz-hud match-play-hud">
+              <div class="quiz-hud-item"><span>진행</span><strong id="${escapeHtml(progressId)}">${escapeHtml(initialProgress)}</strong></div>
+              <div class="quiz-hud-item"><span>남은 시간</span><strong id="${escapeHtml(timerId)}">${escapeHtml(initialTimer)}</strong></div>
+            </div>
+            <div class="match-feedback" id="${escapeHtml(feedbackId)}" hidden></div>
+            <div class="match-columns">
+              <section class="match-column"><div class="match-column-head"><h3>${escapeHtml(leftColumnTitle)}</h3></div><div class="match-card-list" id="${escapeHtml(leftListId)}"></div></section>
+              <section class="match-column"><div class="match-column-head"><h3>${escapeHtml(rightColumnTitle)}</h3></div><div class="match-card-list" id="${escapeHtml(rightListId)}"></div></section>
+            </div>
+          </div>
+    `;
+  }
+
   function createVocabQuizLayout() {
     const vocabQuizFieldSelectOptions = [
       { value: "reading", label: "히라가나·가타카나" },
@@ -1042,17 +1069,16 @@
         </aside>
         <div class="match-board" id="match-board" hidden>
           ${createPracticeEmptyMessage({ id: "match-empty" })}
-          <div class="match-play-view" id="match-play-view">
-            <div class="quiz-hud match-play-hud">
-              <div class="quiz-hud-item"><span>진행</span><strong id="match-progress">0 / 5</strong></div>
-              <div class="quiz-hud-item"><span>남은 시간</span><strong id="match-timer">15초</strong></div>
-            </div>
-            <div class="match-feedback" id="match-feedback" hidden></div>
-            <div class="match-columns">
-              <section class="match-column"><div class="match-column-head"><h3>읽기 카드</h3></div><div class="match-card-list" id="match-left-list"></div></section>
-              <section class="match-column"><div class="match-column-head"><h3>뜻 카드</h3></div><div class="match-card-list" id="match-right-list"></div></section>
-            </div>
-          </div>
+          ${createMatchPlayView({
+            boardId: "match-play-view",
+            progressId: "match-progress",
+            timerId: "match-timer",
+            feedbackId: "match-feedback",
+            leftColumnTitle: "문장 보기",
+            rightColumnTitle: "뜻 보기",
+            leftListId: "match-left-list",
+            rightListId: "match-right-list"
+          })}
           ${createResultView({
             viewId: "match-result-view",
             totalId: "match-result-total",
@@ -1113,17 +1139,16 @@
         </aside>
         <div class="match-board" id="kanji-match-board" hidden>
           ${createPracticeEmptyMessage({ id: "kanji-match-empty" })}
-          <div class="match-play-view" id="kanji-match-play-view">
-            <div class="quiz-hud match-play-hud">
-              <div class="quiz-hud-item"><span>진행</span><strong id="kanji-match-progress">0 / 5</strong></div>
-              <div class="quiz-hud-item"><span>남은 시간</span><strong id="kanji-match-timer">15초</strong></div>
-            </div>
-            <div class="match-feedback" id="kanji-match-feedback" hidden></div>
-            <div class="match-columns">
-              <section class="match-column"><div class="match-column-head"><h3>한자 카드</h3></div><div class="match-card-list" id="kanji-match-left-list"></div></section>
-              <section class="match-column"><div class="match-column-head"><h3>발음 카드</h3></div><div class="match-card-list" id="kanji-match-right-list"></div></section>
-            </div>
-          </div>
+          ${createMatchPlayView({
+            boardId: "kanji-match-play-view",
+            progressId: "kanji-match-progress",
+            timerId: "kanji-match-timer",
+            feedbackId: "kanji-match-feedback",
+            leftColumnTitle: "한자 보기",
+            rightColumnTitle: "의미 보기",
+            leftListId: "kanji-match-left-list",
+            rightListId: "kanji-match-right-list"
+          })}
           ${createResultView({
             viewId: "kanji-match-result-view",
             totalId: "kanji-match-result-total",
