@@ -551,6 +551,60 @@
     };
   }
 
+  function createCatalogFlashcardConfig({
+    viewId,
+    viewClassName = "vocab-card-view",
+    articleClassName = "flashcard",
+    articleId,
+    toggleId,
+    meaningId,
+    levelId,
+    levelText,
+    wordId,
+    wordText,
+    readingId,
+    readingText,
+    readingHidden = false,
+    meaningText,
+    hintId,
+    hintText,
+    navAriaLabel,
+    scopeLabel,
+    prevId,
+    nextId,
+    againId,
+    masteredId
+  }) {
+    return {
+      viewId,
+      viewClassName,
+      articleClassName,
+      articleId,
+      toggleId,
+      meaningId,
+      levelId,
+      levelText,
+      wordId,
+      wordText,
+      readingId,
+      readingText,
+      readingHidden,
+      meaningText,
+      hintId,
+      hintText,
+      navAriaLabel,
+      ...createCatalogNavigationLabels({
+        scopeLabel,
+        prevId,
+        nextId
+      }),
+      actionButtons: createCatalogActionButtons({
+        againId,
+        masteredId
+      })
+    };
+  }
+
   function createVocabCatalogLayout() {
     return createStudyCatalogLayout({
       toolbarAriaLabel: "단어 필터",
@@ -567,7 +621,7 @@
       summaryText: "0개 모였어요",
       viewSwitchAriaLabel: "단어 보기 방식 고르기",
       viewButtons: createCatalogViewButtons({ scope: "vocab" }),
-      flashcard: {
+      flashcard: createCatalogFlashcardConfig({
         viewId: "vocab-card-view",
         articleId: "flashcard",
         toggleId: "flashcard-toggle",
@@ -582,16 +636,12 @@
         hintId: "flashcard-hint",
         hintText: "눌러서 뜻을 확인해봐요.",
         navAriaLabel: "단어 넘기기",
-        ...createCatalogNavigationLabels({
-          scopeLabel: "카드",
-          prevId: "flashcard-prev",
-          nextId: "flashcard-next"
-        }),
-        actionButtons: createCatalogActionButtons({
-          againId: "flashcard-again",
-          masteredId: "flashcard-mastered"
-        })
-      },
+        scopeLabel: "카드",
+        prevId: "flashcard-prev",
+        nextId: "flashcard-next",
+        againId: "flashcard-again",
+        masteredId: "flashcard-mastered"
+      }),
       listView: createCatalogListViewConfig({ scope: "vocab" })
     });
   }
@@ -612,7 +662,7 @@
       summaryText: "0개 한자를 준비하고 있어요",
       viewSwitchAriaLabel: "한자 보기 방식 고르기",
       viewButtons: createCatalogViewButtons({ scope: "kanji" }),
-      flashcard: {
+      flashcard: createCatalogFlashcardConfig({
         viewId: "kanji-card-view",
         viewClassName: "vocab-card-view kanji-card-view",
         articleClassName: "flashcard kanji-flashcard",
@@ -630,16 +680,12 @@
         hintId: "kanji-flashcard-hint",
         hintText: "눌러서 읽기를 확인해볼까요?",
         navAriaLabel: "한자 익히기",
-        ...createCatalogNavigationLabels({
-          scopeLabel: "한자",
-          prevId: "kanji-flashcard-prev",
-          nextId: "kanji-flashcard-next"
-        }),
-        actionButtons: createCatalogActionButtons({
-          againId: "kanji-flashcard-review",
-          masteredId: "kanji-flashcard-mastered"
-        })
-      },
+        scopeLabel: "한자",
+        prevId: "kanji-flashcard-prev",
+        nextId: "kanji-flashcard-next",
+        againId: "kanji-flashcard-review",
+        masteredId: "kanji-flashcard-mastered"
+      }),
       listView: createCatalogListViewConfig({
         scope: "kanji",
         viewClassName: "vocab-list-view kanji-list-view",
