@@ -1,5 +1,5 @@
-// Production: replace with your Supabase project URL and anon key, set enabled: true.
-// Do not commit real keys; use supabase-config.example.js as a template.
+// Copy to `supabase-config.js` and fill in values. That file can stay untracked locally.
+// See README: Supabase 동기화 설정
 window.japanoteSupabaseConfig = window.japanoteSupabaseConfig || {
   enabled: false,
   url: "",

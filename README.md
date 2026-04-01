@@ -28,46 +28,15 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
 
 ## Supabase 동기화 설정
 
-기기 간에 같은 학습 상태를 보려면 `Supabase Auth`와 `user_state` 테이블을 설정하면 됩니다.
+기기 간에 같은 학습 상태를 보려면 `Supabase Auth`와 `user_state` 테이블을 설정하면 됩니다. 앱은 `assets/js/supabase-sync.js`에서 학습 상태(`jlpt-compass-state`), 짝 맞추기 상태, 테마를 `user_state` 행에 upsert합니다.
 
-1. `assets/js/supabase-config.js`에서 아래 값을 채우고 `enabled`를 `true`로 바꿉니다.
+1. `assets/js/supabase-config.example.js`를 복사해 `assets/js/supabase-config.js`를 만들고, 아래 값을 채운 뒤 `enabled`를 `true`로 바꿉니다. (저장소에 실 키를 올리지 않으려면 `supabase-config.js`는 로컬만 두고 커밋에서 제외하면 됩니다.)
    - `url`: Supabase 프로젝트 URL
    - `anonKey`: Supabase anon public key
    - `stateTable`: 상태를 저장할 테이블명. 기본값은 `user_state`
    - `emailRedirectTo`: 로그인 링크 클릭 후 돌아올 URL. 비워두면 현재 페이지 URL을 사용
 2. Supabase Authentication에서 Email 로그인을 켭니다.
 3. Authentication의 `Site URL`과 `Redirect URLs`에 실제 서비스 주소를 등록합니다.
-4. SQL Editor에서 아래 SQL을 실행합니다.
+4. SQL Editor에서 `supabase/migrations/001_user_state.sql` 내용을 실행합니다.
 
-```sql
-create table if not exists public.user_state (
-  user_id uuid primary key references auth.users (id) on delete cascade,
-  study_state jsonb not null default '{}'::jsonb,
-  match_state jsonb not null default '{}'::jsonb,
-  theme_mode text not null default 'system',
-  updated_at timestamptz not null default timezone('utc', now())
-);
-
-alter table public.user_state enable row level security;
-
-create policy "user_state_select_own"
-on public.user_state
-for select
-to authenticated
-using (auth.uid() is not null and auth.uid() = user_id);
-
-create policy "user_state_insert_own"
-on public.user_state
-for insert
-to authenticated
-with check (auth.uid() is not null and auth.uid() = user_id);
-
-create policy "user_state_update_own"
-on public.user_state
-for update
-to authenticated
-using (auth.uid() is not null and auth.uid() = user_id)
-with check (auth.uid() is not null and auth.uid() = user_id);
-```
-
-설정이 끝나면 상단 헤더의 클라우드 버튼에서 이메일 로그인 링크를 보내고, 같은 이메일로 다른 기기에서도 로그인하면 동일한 학습 상태를 불러옵니다.
+설정이 끝나면 상단 헤더의 클라우드 버튼에서 이메일 로그인 링크를 보내고, 로그인 후 **클라우드에서 받기** / **클라우드에 올리기**로 수동 동기화할 수 있습니다. 같은 이메일로 다른 기기에서 로그인하면 자동으로 클라우드 데이터를 불러옵니다.
