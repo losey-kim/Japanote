@@ -36,6 +36,8 @@
   let authPanelIdSequence = 0;
   let pendingAuthPullTimer = null;
   let pendingSaveTimer = null;
+  let busyRevealTimer = null;
+  let displaySyncBusy = false;
   let isLoadingRemoteState = false;
   let authUrlErrorVisible = false;
   let status = {
@@ -260,6 +262,29 @@
 
   function setStatus(code, summary, detail, busy = false) {
     status = { code, summary, detail, busy };
+
+    if (busy) {
+      if (busyRevealTimer) {
+        window.clearTimeout(busyRevealTimer);
+      }
+
+      busyRevealTimer = window.setTimeout(() => {
+        busyRevealTimer = null;
+        if (status.busy) {
+          displaySyncBusy = true;
+          renderAuthUi();
+          dispatchStatusEvent();
+        }
+      }, 450);
+    } else {
+      if (busyRevealTimer) {
+        window.clearTimeout(busyRevealTimer);
+        busyRevealTimer = null;
+      }
+
+      displaySyncBusy = false;
+    }
+
     renderAuthUi();
     dispatchStatusEvent();
   }
@@ -593,7 +618,7 @@
     }
 
     if (currentUser) {
-      return status.busy ? "동기화 중" : "연결됨";
+      return displaySyncBusy ? "동기화 중" : "연결됨";
     }
 
     if (status.code === "link-sent") {
@@ -617,7 +642,7 @@
     }
 
     if (currentUser) {
-      return status.busy ? "cloud_upload" : "cloud_done";
+      return displaySyncBusy ? "cloud_upload" : "cloud_done";
     }
 
     if (status.code === "link-sent") {
@@ -722,9 +747,8 @@
 
   function buildAuthMarkup() {
     return [
-      '<button class="secondary-btn button-with-icon auth-toggle" type="button" data-auth-toggle aria-expanded="false">',
+      '<button class="auth-toggle" type="button" data-auth-toggle aria-expanded="false" aria-label="클라우드 연결" title="클라우드 연결">',
       '<span class="material-symbols-rounded" data-auth-icon aria-hidden="true">cloud_sync</span>',
-      '<span data-auth-summary>클라우드 연결</span>',
       "</button>",
       '<div class="auth-panel" data-auth-panel hidden>',
       '<p class="auth-panel-title">로그인</p>',
@@ -809,7 +833,6 @@
     document.querySelectorAll("[data-auth-root]").forEach((root) => {
       const panel = ensurePanelPortal(root);
       const icon = root.querySelector("[data-auth-icon]");
-      const summary = root.querySelector("[data-auth-summary]");
       const toggle = root.querySelector("[data-auth-toggle]");
       const statusNode = panel?.querySelector("[data-auth-status]");
       const detailNode = panel?.querySelector("[data-auth-detail]");
@@ -826,11 +849,24 @@
       if (icon) {
         icon.textContent = getSummaryIcon();
       }
-      if (summary) {
-        summary.textContent = getSummaryLabel();
-      }
       if (toggle) {
+        const summaryLabel = getSummaryLabel();
         toggle.setAttribute("aria-expanded", String(authPanelOpen));
+        toggle.setAttribute("aria-label", summaryLabel);
+        toggle.setAttribute("title", summaryLabel);
+        if (!config.enabled) {
+          toggle.dataset.authSyncState = "offline";
+        } else if (status.code === "error") {
+          toggle.dataset.authSyncState = "error";
+        } else if (displaySyncBusy) {
+          toggle.dataset.authSyncState = "syncing";
+        } else if (status.code === "link-sent") {
+          toggle.dataset.authSyncState = "link-sent";
+        } else if (currentUser) {
+          toggle.dataset.authSyncState = "connected";
+        } else {
+          toggle.dataset.authSyncState = "ready";
+        }
       }
       if (statusNode) {
         statusNode.textContent = status.summary;
@@ -1018,7 +1054,7 @@
       clearAuthResponseParams();
       renderAuthUi();
 
-      if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
         scheduleRemotePull("클라우드에 저장된 학습 상태를 연결하고 있어요.");
       }
     });
