@@ -1135,115 +1135,158 @@
     `;
   }
 
-  function createMatchLayout() {
+  function createMatchRoundLayout({
+    sidebarHead,
+    shellId,
+    shellClassName,
+    toggleId,
+    toggleTitle,
+    summaryId,
+    summaryText,
+    panelId,
+    panelClassName,
+    isOpen,
+    countSpinnerId,
+    countAriaLabel,
+    countValue,
+    durationSpinnerId,
+    durationAriaLabel,
+    durationValue,
+    sidebarExtra = "",
+    startButton,
+    boardId,
+    emptyId,
+    playBoardConfig,
+    resultPrefix,
+    resultFilterAriaLabel,
+    resultClassName = "match-result-view",
+    bulkActionLabel
+  }) {
     return `
       <div class="match-shell">
         <aside class="match-sidebar">
-          <div class="match-sidebar-head"><span class="eyebrow">ROUND HUD</span></div>
+          ${sidebarHead}
           ${createStudyOptionsShell({
-            shellId: "match-options-shell",
-            shellClassName: "match-options-shell",
-            toggleId: "match-options-toggle",
-            toggleTitle: "짝 맞추기 설정",
-            summaryId: "match-options-summary",
-            summaryText: "5문제 · 15초",
-            panelId: "match-options-panel",
-            panelClassName: "study-options-panel-wide",
-            isOpen: false,
+            shellId,
+            shellClassName,
+            toggleId,
+            toggleTitle,
+            summaryId,
+            summaryText,
+            panelId,
+            panelClassName,
+            isOpen,
             groups: [
               ...createQuestionDurationGroups({
-                countSpinnerId: "match-count",
-                countAriaLabel: "짝 맞추기 문제 수",
-                countValue: 5,
-                durationSpinnerId: "match-time",
-                durationAriaLabel: "짝 맞추기 제한시간",
-                durationValue: 15
+                countSpinnerId,
+                countAriaLabel,
+                countValue,
+                durationSpinnerId,
+                durationAriaLabel,
+                durationValue
               })
             ]
           })}
-          ${createMatchSidebarVocabToolbarHtml()}
-          ${createStartQuizButton({ id: "match-new-round", labelId: "match-new-round-label" })}
+          ${sidebarExtra}
+          ${startButton}
         </aside>
         ${createMatchBoardLayout({
-          boardId: "match-board",
-          emptyId: "match-empty",
-          playBoardConfig: {
-            boardId: "match-play-view",
-            progressId: "match-progress",
-            timerId: "match-timer",
-            feedbackId: "match-feedback",
-            leftColumnTitle: "문장 보기",
-            rightColumnTitle: "뜻 보기",
-            leftListId: "match-left-list",
-            rightListId: "match-right-list"
-          },
-          resultPrefix: "match",
-          resultFilterAriaLabel: "짝 맞추기 결과 필터",
-          bulkActionLabel: QUIZ_RESULT_ALL_ACTION_LABEL
+          boardId,
+          emptyId,
+          playBoardConfig,
+          resultPrefix,
+          resultFilterAriaLabel,
+          resultClassName,
+          bulkActionLabel
         })}
       </div>
     `;
+  }
+
+  function createMatchLayout() {
+    return createMatchRoundLayout({
+      sidebarHead: "<div class=\"match-sidebar-head\"><span class=\"eyebrow\">ROUND HUD</span></div>",
+      shellId: "match-options-shell",
+      shellClassName: "match-options-shell",
+      toggleId: "match-options-toggle",
+      toggleTitle: "짝 맞추기 설정",
+      summaryId: "match-options-summary",
+      summaryText: "5문제 · 15초",
+      panelId: "match-options-panel",
+      panelClassName: "study-options-panel-wide",
+      isOpen: false,
+      countSpinnerId: "match-count",
+      countAriaLabel: "짝 맞추기 문제 수",
+      countValue: 5,
+      durationSpinnerId: "match-time",
+      durationAriaLabel: "짝 맞추기 제한시간",
+      durationValue: 15,
+      sidebarExtra: createMatchSidebarVocabToolbarHtml(),
+      startButton: createStartQuizButton({ id: "match-new-round", labelId: "match-new-round-label" }),
+      boardId: "match-board",
+      emptyId: "match-empty",
+      playBoardConfig: {
+        boardId: "match-play-view",
+        progressId: "match-progress",
+        timerId: "match-timer",
+        feedbackId: "match-feedback",
+        leftColumnTitle: "문장 보기",
+        rightColumnTitle: "뜻 보기",
+        leftListId: "match-left-list",
+        rightListId: "match-right-list"
+      },
+      resultPrefix: "match",
+      resultFilterAriaLabel: "짝 맞추기 결과 필터",
+      bulkActionLabel: QUIZ_RESULT_ALL_ACTION_LABEL
+    });
   }
 
   function createKanjiMatchLayout() {
-    return `
-      <div class="match-shell">
-        <aside class="match-sidebar">
-          <div class="match-sidebar-head"><span class="eyebrow">ROUND HUD</span><h3>한자 짝맞추기</h3></div>
-          ${createStudyOptionsShell({
-            shellId: "kanji-match-options-shell",
-            shellClassName: "match-options-shell",
-            toggleId: "kanji-match-options-toggle",
-            toggleTitle: "짝 맞추기 설정",
-            summaryId: "kanji-match-options-summary",
-            summaryText: "전체 · 전체 · 5문제 · 15초",
-            panelId: "kanji-match-options-panel",
-            panelClassName: "study-options-panel-wide",
-            isOpen: false,
-            groups: [
-              ...createQuestionDurationGroups({
-                countSpinnerId: "kanji-match-count",
-                countAriaLabel: "한자 짝 맞추기 문제 수",
-                countValue: 5,
-                durationSpinnerId: "kanji-match-time",
-                durationAriaLabel: "한자 짝 맞추기 제한시간",
-                durationValue: 15
-              })
-            ]
-          })}
-          ${createKanjiGradeCollectionToolbarHtml({
-            toolbarAriaLabel: "한자 짝 맞추기 필터",
-            toolbarClassName: "vocab-select-toolbar vocab-select-toolbar-sidebar kanji-filter-toolbar",
-            gradeSelectId: "kanji-match-grade-select",
-            collectionSelectId: "kanji-match-filter-select",
-            ariaPrefix: "한자 짝 맞추기",
-            collectionOptions: KANJI_COLLECTION_OPTIONS_BASIC,
-            fieldOrder: "grade-first"
-          })}
-          ${createStartQuizButton({ id: "kanji-match-new-round", labelId: "kanji-match-new-round-label" })}
-        </aside>
-        ${createMatchBoardLayout({
-          boardId: "kanji-match-board",
-          emptyId: "kanji-match-empty",
-          playBoardConfig: {
-            boardId: "kanji-match-play-view",
-            progressId: "kanji-match-progress",
-            timerId: "kanji-match-timer",
-            feedbackId: "kanji-match-feedback",
-            leftColumnTitle: "한자 보기",
-            rightColumnTitle: "의미 보기",
-            leftListId: "kanji-match-left-list",
-            rightListId: "kanji-match-right-list"
-          },
-          resultPrefix: "kanji-match",
-          resultFilterAriaLabel: "한자 짝 맞추기 결과 필터",
-          resultClassName: "match-result-view kanji-result-view",
-          bulkActionLabel: QUIZ_RESULT_RETRY_ALL_ACTION_LABEL
-        })}
-      </div>
-    `;
+    return createMatchRoundLayout({
+      sidebarHead: "<div class=\"match-sidebar-head\"><span class=\"eyebrow\">ROUND HUD</span><h3>한자 짝맞추기</h3></div>",
+      shellId: "kanji-match-options-shell",
+      shellClassName: "match-options-shell",
+      toggleId: "kanji-match-options-toggle",
+      toggleTitle: "짝 맞추기 설정",
+      summaryId: "kanji-match-options-summary",
+      summaryText: "전체 · 전체 · 5문제 · 15초",
+      panelId: "kanji-match-options-panel",
+      panelClassName: "study-options-panel-wide",
+      isOpen: false,
+      countSpinnerId: "kanji-match-count",
+      countAriaLabel: "한자 짝 맞추기 문제 수",
+      countValue: 5,
+      durationSpinnerId: "kanji-match-time",
+      durationAriaLabel: "한자 짝 맞추기 제한시간",
+      durationValue: 15,
+      sidebarExtra: createKanjiGradeCollectionToolbarHtml({
+        toolbarAriaLabel: "한자 짝 맞추기 필터",
+        toolbarClassName: "vocab-select-toolbar vocab-select-toolbar-sidebar kanji-filter-toolbar",
+        gradeSelectId: "kanji-match-grade-select",
+        collectionSelectId: "kanji-match-filter-select",
+        ariaPrefix: "한자 짝 맞추기",
+        collectionOptions: KANJI_COLLECTION_OPTIONS_BASIC,
+        fieldOrder: "grade-first"
+      }),
+      startButton: createStartQuizButton({ id: "kanji-match-new-round", labelId: "kanji-match-new-round-label" }),
+      boardId: "kanji-match-board",
+      emptyId: "kanji-match-empty",
+      playBoardConfig: {
+        boardId: "kanji-match-play-view",
+        progressId: "kanji-match-progress",
+        timerId: "kanji-match-timer",
+        feedbackId: "kanji-match-feedback",
+        leftColumnTitle: "한자 보기",
+        rightColumnTitle: "의미 보기",
+        leftListId: "kanji-match-left-list",
+        rightListId: "kanji-match-right-list"
+      },
+      resultPrefix: "kanji-match",
+      resultFilterAriaLabel: "한자 짝 맞추기 결과 필터",
+      resultClassName: "match-result-view kanji-result-view",
+      bulkActionLabel: QUIZ_RESULT_RETRY_ALL_ACTION_LABEL
+    });
   }
-
   function createGrammarPracticeLayout() {
     return `
       <div class="match-shell">
