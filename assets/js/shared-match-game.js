@@ -49,6 +49,17 @@
     localStorage.setItem(storageKey, JSON.stringify(value));
   }
 
+  function shuffleItems(items) {
+    const copy = Array.isArray(items) ? [...items] : [];
+
+    for (let index = copy.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [copy[index], copy[swapIndex]] = [copy[copyIndex], copy[index]];
+    }
+
+    return copy;
+  }
+
   function replaceObjectContents(target, nextState) {
     Object.keys(target).forEach((key) => {
       delete target[key];
@@ -315,6 +326,461 @@
     list.innerHTML = filteredResults.map((item) => createItemMarkup(item)).join("");
   }
 
+  function createMatchGameEngine({
+    state,
+    pageSize = 5,
+    wrongFlashDuration = 520,
+    pageTransitionDelay = 720,
+    getDuration = () => 0,
+    getDefaultSessionItems = () => [],
+    mapResultItem = (item) => ({ ...item }),
+    buildCardsFromPageItems = () => ({
+      leftCards: [],
+      rightCards: []
+    }),
+    onRender = () => {},
+    onSetActionAvailability,
+    onSetFeedback = () => {},
+    onUnavailable = () => {},
+    onPageOpened = () => {},
+    getTimeoutMessage = () => ""
+  }) {
+    if (!state || typeof state !== "object") {
+      state = {
+        sessionItems: [],
+        pageItems: [],
+        pageIndex: 0,
+        results: [],
+        leftCards: [],
+        rightCards: [],
+        selectedLeft: null,
+        selectedRight: null,
+        wrongLeft: null,
+        wrongRight: null,
+        matchedIds: [],
+        isLocked: false,
+        timedOut: false,
+        timeLeft: 0,
+        hasStarted: false,
+        showResults: false,
+        resultFilter: "all"
+      };
+    }
+
+    const safePageSize = Number.isFinite(pageSize) && pageSize > 0 ? Math.max(1, Math.floor(pageSize)) : 5;
+
+    let roundTimer = null;
+    let wrongMatchTimer = null;
+    let transitionTimer = null;
+
+    const render = () => {
+      if (typeof onRender === "function") {
+        onRender();
+      }
+    };
+
+    const setActionAvailability = (startEnabled) => {
+      if (typeof onSetActionAvailability === "function") {
+        onSetActionAvailability(startEnabled);
+      }
+    };
+
+    const setFeedback = (message, tone = "") => {
+      if (typeof onSetFeedback === "function") {
+        onSetFeedback(message, tone);
+      }
+    };
+
+    const getActiveDuration = () => Number(getDuration() || 0);
+
+    function clearTransitionTimer() {
+      if (!transitionTimer) {
+        return;
+      }
+
+      window.clearTimeout(transitionTimer);
+      transitionTimer = null;
+    }
+
+    function stopRoundTimer() {
+      if (!roundTimer) {
+        return;
+      }
+
+      window.clearInterval(roundTimer);
+      roundTimer = null;
+    }
+
+    function clearWrongMatchTimer() {
+      if (!wrongMatchTimer) {
+        return;
+      }
+
+      window.clearTimeout(wrongMatchTimer);
+      wrongMatchTimer = null;
+    }
+
+    function clearAllTimers() {
+      clearTransitionTimer();
+      clearWrongMatchTimer();
+      stopRoundTimer();
+    }
+
+    function resetCurrentPageState() {
+      clearAllTimers();
+      state.selectedLeft = null;
+      state.selectedRight = null;
+      state.wrongLeft = null;
+      state.wrongRight = null;
+      state.matchedIds = [];
+      state.isLocked = false;
+      state.timedOut = false;
+      state.timeLeft = getActiveDuration();
+    }
+
+    function resetSelectedCards() {
+      state.selectedLeft = null;
+      state.selectedRight = null;
+    }
+
+    function queueTransition(callback) {
+      clearTransitionTimer();
+      transitionTimer = window.setTimeout(() => {
+        transitionTimer = null;
+        if (typeof callback === "function") {
+          callback();
+        }
+      }, pageTransitionDelay);
+    }
+
+    function getPageCount() {
+      return Math.max(1, Math.ceil(state.sessionItems.length / safePageSize));
+    }
+
+    function getResolvedCount() {
+      return state.results.filter((item) => item.status === "correct").length;
+    }
+
+    function getResultCounts() {
+      return {
+        all: state.results.length,
+        correct: state.results.filter((item) => item.status === "correct").length,
+        wrong: state.results.filter((item) => item.status === "wrong").length
+      };
+    }
+
+    function getCurrentPageItems(pageIndex = state.pageIndex) {
+      const startIndex = pageIndex * safePageSize;
+      return state.sessionItems.slice(startIndex, startIndex + safePageSize);
+    }
+
+    function setResultStatus(ids, status) {
+      const targetIds = new Set(Array.isArray(ids) ? ids : []);
+
+      state.results = state.results.map((item) => {
+        if (!targetIds.has(item.id)) {
+          return item;
+        }
+
+        return {
+          ...item,
+          status
+        };
+      });
+    }
+
+    function resetResultStatus(ids) {
+      setResultStatus(ids, "pending");
+    }
+
+    function getFilteredResults(filter = state.resultFilter) {
+      if (filter === "correct") {
+        return state.results.filter((item) => item.status === "correct");
+      }
+
+      if (filter === "wrong") {
+        return state.results.filter((item) => item.status === "wrong");
+      }
+
+      return state.results;
+    }
+
+    function setResultFilter(nextFilter, normalize = (value) => value) {
+      const normalizedFilter = normalize(nextFilter);
+      if (state.resultFilter === normalizedFilter) {
+        return false;
+      }
+
+      state.resultFilter = normalizedFilter;
+      render();
+      return true;
+    }
+
+    function startRoundTimer() {
+      const activeDuration = getActiveDuration();
+
+      stopRoundTimer();
+      state.timeLeft = activeDuration;
+      render();
+
+      if (activeDuration <= 0) {
+        return;
+      }
+
+      roundTimer = window.setInterval(() => {
+        state.timeLeft = Math.max(0, state.timeLeft - 1);
+        render();
+
+        if (state.timeLeft === 0) {
+          stopRoundTimer();
+          handleTimeout();
+        }
+      }, 1000);
+    }
+
+    function finalizeCompletedPage() {
+      state.isLocked = true;
+      render();
+
+      if (state.pageIndex + 1 >= getPageCount()) {
+        setFeedback("");
+        queueTransition(showResults);
+        return;
+      }
+
+      setFeedback("");
+      queueTransition(moveToNextPage);
+    }
+
+    function moveToNextPage() {
+      state.pageIndex += 1;
+      const nextItems = getCurrentPageItems(state.pageIndex);
+
+      if (!nextItems.length) {
+        showResults();
+        return;
+      }
+
+      openPage(nextItems, { isInitialPage: false });
+    }
+
+    function showResults() {
+      clearAllTimers();
+      resetSelectedCards();
+      state.showResults = true;
+      state.isLocked = false;
+      state.timedOut = false;
+      setActionAvailability(true);
+      render();
+    }
+
+    function queueWrongReset() {
+      state.isLocked = true;
+      render();
+      clearWrongMatchTimer();
+
+      wrongMatchTimer = window.setTimeout(() => {
+        state.wrongLeft = null;
+        state.wrongRight = null;
+        state.isLocked = false;
+        resetSelectedCards();
+        render();
+        wrongMatchTimer = null;
+      }, wrongFlashDuration);
+    }
+
+    function handleSelection(card) {
+      if (state.isLocked || state.timedOut || state.matchedIds.includes(card.id)) {
+        return;
+      }
+
+      if (card.side === "left") {
+        state.selectedLeft = state.selectedLeft === card.id ? null : card.id;
+      } else {
+        state.selectedRight = state.selectedRight === card.id ? null : card.id;
+      }
+
+      render();
+
+      if (!state.selectedLeft || !state.selectedRight) {
+        return;
+      }
+
+      if (state.selectedLeft === state.selectedRight) {
+        state.matchedIds.push(state.selectedLeft);
+        setResultStatus([state.selectedLeft], "correct");
+        resetSelectedCards();
+        render();
+
+        if (state.matchedIds.length === state.pageItems.length) {
+          stopRoundTimer();
+          finalizeCompletedPage();
+          return;
+        }
+
+        setFeedback("");
+        return;
+      }
+
+      state.wrongLeft = state.selectedLeft;
+      state.wrongRight = state.selectedRight;
+      queueWrongReset();
+    }
+
+    function handleTimeout() {
+      const remainingIds = state.pageItems
+        .filter((item) => !state.matchedIds.includes(item.id))
+        .map((item) => item.id);
+      const isFinalPage = state.pageIndex + 1 >= getPageCount();
+
+      setResultStatus(remainingIds, "wrong");
+      state.timedOut = true;
+      state.isLocked = true;
+      resetSelectedCards();
+      render();
+
+      setFeedback(
+        getTimeoutMessage({
+          isFinalPage,
+          remainingCount: remainingIds.length,
+          pageIndex: state.pageIndex,
+          pageCount: getPageCount()
+        }),
+        "is-fail"
+      );
+      queueTransition(isFinalPage ? showResults : moveToNextPage);
+    }
+
+    function enterReadyState(message = "") {
+      clearAllTimers();
+      state.sessionItems = [];
+      state.pageItems = [];
+      state.results = [];
+      state.leftCards = [];
+      state.rightCards = [];
+      state.pageIndex = 0;
+      state.resultFilter = "all";
+      state.showResults = false;
+      state.hasStarted = false;
+      state.timeLeft = getActiveDuration();
+      resetCurrentPageState();
+      setActionAvailability(true);
+      setFeedback(message);
+      render();
+    }
+
+    function openPage(pageItems, { isInitialPage = true } = {}) {
+      state.hasStarted = true;
+      state.showResults = false;
+      state.pageItems = Array.isArray(pageItems) ? pageItems : [];
+      resetCurrentPageState();
+
+      const cards = buildCardsFromPageItems(state.pageItems);
+      state.leftCards = Array.isArray(cards.leftCards) ? cards.leftCards : [];
+      state.rightCards = Array.isArray(cards.rightCards) ? cards.rightCards : [];
+      setActionAvailability(true);
+      setFeedback("");
+      render();
+      startRoundTimer();
+      onPageOpened({ isInitialPage, pageItems: state.pageItems, state });
+    }
+
+    function startSession(items = getDefaultSessionItems()) {
+      clearAllTimers();
+
+      const sessionItems = Array.isArray(items) ? items : [];
+
+      if (!sessionItems.length) {
+        state.sessionItems = [];
+        state.pageItems = [];
+        state.results = [];
+        state.pageIndex = 0;
+        state.resultFilter = "all";
+        state.showResults = false;
+        state.hasStarted = false;
+        state.isLocked = false;
+        state.timedOut = false;
+        setActionAvailability(false);
+        setFeedback("");
+        onUnavailable();
+        render();
+        return false;
+      }
+
+      state.sessionItems = sessionItems.map((item) => ({ ...item }));
+      state.results = sessionItems.map((item) => ({
+        ...mapResultItem(item),
+        status: "pending"
+      }));
+      state.pageIndex = 0;
+      state.resultFilter = "all";
+      state.hasStarted = true;
+      state.showResults = false;
+      openPage(getCurrentPageItems(0), { isInitialPage: true });
+      return true;
+    }
+
+    function replayCurrentPage() {
+      const currentItems = [...state.pageItems];
+
+      if (!currentItems.length) {
+        return startSession();
+      }
+
+      resetResultStatus(currentItems.map((item) => item.id));
+      openPage(currentItems, { isInitialPage: true });
+      return true;
+    }
+
+    function replayCurrentSet() {
+      const sessionItems = [...state.sessionItems];
+
+      if (!sessionItems.length) {
+        return startSession();
+      }
+
+      return startSession(sessionItems);
+    }
+
+    function startNewSession() {
+      if (state.hasStarted || state.showResults) {
+        enterReadyState();
+        return false;
+      }
+
+      return startSession();
+    }
+
+  return {
+    state,
+    clearTransitionTimer,
+    clearWrongMatchTimer,
+    stopRoundTimer,
+      clearAllTimers,
+      resetCurrentPageState,
+      resetSelectedCards,
+      getPageCount,
+      getResolvedCount,
+      getResultCounts,
+      getCurrentPageItems,
+      setResultStatus,
+      resetResultStatus,
+      getFilteredResults,
+      setResultFilter,
+      startRoundTimer,
+    openPage,
+    startSession,
+    replayCurrentPage,
+    replayCurrentSet,
+    enterReadyState,
+    handleSelection,
+    handleTimeout,
+    startNewSession,
+    moveToNextPage,
+    showResults
+  };
+}
+
   function renderScreen({
     boardId,
     emptyId,
@@ -503,6 +969,8 @@
     attachSpinnerListeners,
     attachOptionsToggleListener,
     attachBulkActionListener,
-    attachResultSaveListener
+    attachResultSaveListener,
+    createMatchGameEngine,
+    shuffleItems
   };
 })(globalThis);

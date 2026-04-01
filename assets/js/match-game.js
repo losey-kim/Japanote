@@ -1,4 +1,4 @@
-const matchStorageKey = "japanote-match-state";
+﻿const matchStorageKey = "japanote-match-state";
 const studyStateStorageKey = "jlpt-compass-state";
 const sharedMatchGame = globalThis.japanoteSharedMatchGame;
 
@@ -22,24 +22,24 @@ const defaultMatchPreferences = {
 };
 
 const fallbackMatchPool = [
-  { id: "match-fallback-1", level: "N5", reading: "たべる", meaning: "먹다" },
-  { id: "match-fallback-2", level: "N5", reading: "いく", meaning: "가다" },
-  { id: "match-fallback-3", level: "N5", reading: "みる", meaning: "보다" },
-  { id: "match-fallback-4", level: "N5", reading: "がっこう", meaning: "학교" },
-  { id: "match-fallback-5", level: "N5", reading: "ともだち", meaning: "친구" }
+  { id: "match-fallback-1", level: "N5", reading: "?잆겧??, meaning: "癒밸떎" },
+  { id: "match-fallback-2", level: "N5", reading: "?꾠걦", meaning: "媛?? },
+  { id: "match-fallback-3", level: "N5", reading: "?욍굥", meaning: "蹂대떎" },
+  { id: "match-fallback-4", level: "N5", reading: "?뚣겂?볝걝", meaning: "?숆탳" },
+  { id: "match-fallback-5", level: "N5", reading: "?ⓦ굚?졼걾", meaning: "移쒓뎄" }
 ];
 
 const matchResultFilterLabels = {
-  all: "전체",
-  correct: "정답",
-  wrong: "오답"
+  all: "?꾩껜",
+  correct: "?뺣떟",
+  wrong: "?ㅻ떟"
 };
 
 const matchFilterLabels = {
-  all: "전체",
-  review: "다시 볼래요",
-  mastered: "익혔어요",
-  unmarked: "아직 안 봤어요"
+  all: "?꾩껜",
+  review: "?ㅼ떆 蹂쇰옒??,
+  mastered: "?듯삍?댁슂",
+  unmarked: "?꾩쭅 ??遊ㅼ뼱??
 };
 
 function loadMatchPreferences() {
@@ -120,8 +120,8 @@ function formatMatchLevelLabel(level) {
     return "N5";
   }
 
-  if (normalizedLevel === "ALL" || normalizedLevel === "전체") {
-    return "전체";
+  if (normalizedLevel === "ALL" || normalizedLevel === "?꾩껜") {
+    return "?꾩껜";
   }
 
   if (/^N\d+$/.test(normalizedLevel)) {
@@ -137,7 +137,7 @@ function formatMatchLevelLabel(level) {
 
 function getMatchLevelLabel(level = matchPreferences.level) {
   const activeLevel = getMatchLevel(level);
-  return activeLevel === "all" ? "전체" : formatMatchLevelLabel(activeLevel);
+  return activeLevel === "all" ? "?꾩껜" : formatMatchLevelLabel(activeLevel);
 }
 
 function getMatchTotalCount(value = matchPreferences.totalCount) {
@@ -152,11 +152,11 @@ function getMatchDuration(value = matchPreferences.duration) {
 
 function getMatchDurationLabel(duration = matchPreferences.duration) {
   const activeDuration = Number(duration);
-  return activeDuration <= 0 ? "천천히" : `${activeDuration}초`;
+  return activeDuration <= 0 ? "泥쒖쿇?? : `${activeDuration}珥?;
 }
 
 function getMatchOptionsSummaryText() {
-  return [`${getMatchTotalCount()}문제`, getMatchDurationLabel()].join(" · ");
+  return [`${getMatchTotalCount()}臾몄젣`, getMatchDurationLabel()].join(" 쨌 ");
 }
 
 function getMatchResultFilter(value = matchState.resultFilter) {
@@ -225,17 +225,6 @@ function getMatchMeaning(item) {
   }
 
   return normalizeMatchText(item.means.find((value) => normalizeMatchText(value)) || "");
-}
-
-function shuffleMatchItems(items) {
-  const copy = [...items];
-
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
-  }
-
-  return copy;
 }
 
 function buildMatchPool(source) {
@@ -348,9 +337,55 @@ const matchState = {
 };
 
 let matchPool = [];
-let wrongMatchTimer = null;
-let matchRoundTimer = null;
-let matchTransitionTimer = null;
+
+const matchEngine = sharedMatchGame.createMatchGameEngine({
+  state: matchState,
+  pageSize: matchPageSize,
+  wrongFlashDuration: matchWrongFlashDuration,
+  pageTransitionDelay: matchPageTransitionDelay,
+  getDuration: () => getMatchDuration(matchPreferences.duration),
+  getDefaultSessionItems: buildMatchSessionItems,
+  mapResultItem: (item) => ({
+    id: item.id,
+    level: item.level,
+    reading: item.reading,
+    meaning: item.meaning
+  }),
+  buildCardsFromPageItems: (pageItems) => ({
+    leftCards: sharedMatchGame.shuffleItems(
+      pageItems.map((item) => ({
+        id: item.id,
+        value: item.reading,
+        side: "left"
+      }))
+    ),
+    rightCards: sharedMatchGame.shuffleItems(
+      pageItems.map((item) => ({
+        id: item.id,
+        value: item.meaning,
+        side: "right"
+      }))
+    )
+  }),
+  onRender: renderMatchScreen,
+  onSetActionAvailability: setMatchActionAvailability,
+  onSetFeedback: setMatchFeedback,
+  onUnavailable: () => {
+    renderMatchUnavailableState("留ㅼ묶???⑥뼱 ?곗씠?곌? ?놁뼱???쒖옉?????놁뒿?덈떎.");
+  },
+  onPageOpened: ({ isInitialPage }) => {
+    if (isInitialPage) {
+      scrollMatchBoardIntoView();
+    }
+  },
+  getTimeoutMessage: ({ isFinalPage }) => {
+    if (isFinalPage) {
+      return "?쒓컙??珥덇낵?섏뼱 ?⑥뼱 留ㅼ묶 寃곌낵瑜?諛섏쁺?덉뼱??";
+    }
+
+    return "?쒓컙??珥덇낵?섏뼱 ?ㅼ쓬 ?섏씠吏濡??대룞?좉쾶??";
+  }
+});
 
 matchPreferences.level = getMatchLevel(matchPreferences.level);
 matchPreferences.filter = getMatchFilter(matchPreferences.filter);
@@ -360,36 +395,19 @@ matchPreferences.duration = getMatchDuration(matchPreferences.duration);
 matchPreferences.optionsOpen = false;
 
 function clearMatchTransitionTimer() {
-  if (!matchTransitionTimer) {
-    return;
-  }
-
-  window.clearTimeout(matchTransitionTimer);
-  matchTransitionTimer = null;
+  matchEngine.clearTransitionTimer();
 }
 
 function stopMatchRoundTimer() {
-  if (!matchRoundTimer) {
-    return;
-  }
-
-  window.clearInterval(matchRoundTimer);
-  matchRoundTimer = null;
+  matchEngine.stopRoundTimer();
 }
 
 function clearWrongMatchTimer() {
-  if (!wrongMatchTimer) {
-    return;
-  }
-
-  window.clearTimeout(wrongMatchTimer);
-  wrongMatchTimer = null;
+  matchEngine.clearWrongMatchTimer();
 }
 
 function clearAllMatchTimers() {
-  clearMatchTransitionTimer();
-  clearWrongMatchTimer();
-  stopMatchRoundTimer();
+  matchEngine.clearAllTimers();
 }
 
 function refreshMatchPool() {
@@ -399,34 +417,19 @@ function refreshMatchPool() {
 }
 
 function getMatchPageCount() {
-  return Math.max(1, Math.ceil(matchState.sessionItems.length / matchPageSize));
+  return matchEngine.getPageCount();
 }
 
 function getMatchResolvedCount() {
-  return matchState.results.filter((item) => item.status === "correct").length;
+  return matchEngine.getResolvedCount();
 }
 
 function getMatchResultCounts() {
-  return {
-    all: matchState.results.length,
-    correct: matchState.results.filter((item) => item.status === "correct").length,
-    wrong: matchState.results.filter((item) => item.status === "wrong").length
-  };
+  return matchEngine.getResultCounts();
 }
 
 function setMatchResultStatus(ids, status) {
-  const targetIds = new Set(ids);
-
-  matchState.results = matchState.results.map((item) => {
-    if (!targetIds.has(item.id)) {
-      return item;
-    }
-
-    return {
-      ...item,
-      status
-    };
-  });
+  matchEngine.setResultStatus(ids, status);
 }
 
 function resetMatchResultStatus(ids) {
@@ -434,24 +437,15 @@ function resetMatchResultStatus(ids) {
 }
 
 function getCurrentPageItems(pageIndex = matchState.pageIndex) {
-  const startIndex = pageIndex * matchPageSize;
-  return matchState.sessionItems.slice(startIndex, startIndex + matchPageSize);
+  return matchEngine.getCurrentPageItems(pageIndex);
 }
 
 function resetSelectedCards() {
-  matchState.selectedLeft = null;
-  matchState.selectedRight = null;
+  matchEngine.resetSelectedCards();
 }
 
 function resetCurrentPageState() {
-  clearAllMatchTimers();
-  resetSelectedCards();
-  matchState.wrongLeft = null;
-  matchState.wrongRight = null;
-  matchState.matchedIds = [];
-  matchState.isLocked = false;
-  matchState.timedOut = false;
-  matchState.timeLeft = getMatchDuration(matchPreferences.duration);
+  matchEngine.resetCurrentPageState();
 }
 
 function setMatchFeedback(message, tone = "") {
@@ -524,7 +518,7 @@ function populateMatchPartSelect(select, parts, activePart) {
   select.innerHTML = "";
   [{ value: "all", count: parts.reduce((sum, item) => sum + item.count, 0) }, ...parts].forEach((partOption) => {
     const option = document.createElement("option");
-    const label = partOption.value === "all" ? "전체 품사" : partOption.value;
+    const label = partOption.value === "all" ? "?꾩껜 ?덉궗" : partOption.value;
     option.value = partOption.value;
     option.textContent = `${label} (${partOption.count})`;
     select.appendChild(option);
@@ -580,7 +574,7 @@ function renderMatchSettings() {
         spinner: countSpinner,
         options: matchTotalCountOptions,
         activeValue: getMatchTotalCount(matchPreferences.totalCount),
-        formatValue: (value) => `${value}문제`,
+        formatValue: (value) => `${value}臾몄젣`,
         disabled: isSettingsLocked
       },
       {
@@ -663,15 +657,7 @@ function renderMatchBoard() {
 }
 
 function getFilteredMatchResults(filter = getMatchResultFilter(matchState.resultFilter)) {
-  if (filter === "correct") {
-    return matchState.results.filter((item) => item.status === "correct");
-  }
-
-  if (filter === "wrong") {
-    return matchState.results.filter((item) => item.status === "wrong");
-  }
-
-  return matchState.results;
+  return matchEngine.getFilteredResults(filter);
 }
 
 function renderMatchBulkActionButton(results) {
@@ -685,13 +671,13 @@ function renderMatchBulkActionButton(results) {
 
   const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
   const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
-  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
+  const actionLabel = allSaved ? "?꾩껜 鍮쇨린" : "?꾩껜 ?닿린";
   const actionTitle =
     uniqueIds.length === 0
-      ? "지금 담아둘 단어가 없어요."
+      ? "吏湲??댁븘???⑥뼱媛 ?놁뼱??"
       : allSaved
-        ? "지금 보이는 단어를 다시 볼래요에서 모두 뺄게요."
-        : "지금 보이는 단어를 다시 볼래요에 모두 담아둘게요.";
+        ? "吏湲?蹂댁씠???⑥뼱瑜??ㅼ떆 蹂쇰옒?붿뿉??紐⑤몢 類꾧쾶??"
+        : "吏湲?蹂댁씠???⑥뼱瑜??ㅼ떆 蹂쇰옒?붿뿉 紐⑤몢 ?댁븘?섍쾶??";
 
   bulkActionButton.disabled = uniqueIds.length === 0;
   bulkActionButton.dataset.matchBulkAction = allSaved ? "remove" : "save";
@@ -732,8 +718,8 @@ function renderMatchResults() {
     renderBulkActionButton: renderMatchBulkActionButton,
     createItemMarkup: (item) => {
       const saved = isWordSavedToMemorizationList(item.id);
-      const statusLabel = item.status === "correct" ? "정답" : "오답";
-      const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+      const statusLabel = item.status === "correct" ? "?뺣떟" : "?ㅻ떟";
+      const actionLabel = saved ? "?ㅼ떆 蹂쇰옒?붿뿉??鍮쇨린" : "?ㅼ떆 蹂쇰옒?붿뿉 ?닿린";
       const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
@@ -774,8 +760,8 @@ function renderMatchScreen() {
     hasStarted: matchState.hasStarted,
     showResults: matchState.showResults,
     isReady: matchPool.length > 0,
-    emptyReadyText: "준비됐다면 시작해볼까요?",
-    emptyUnavailableText: "짝맞추기를 준비하고 있어요.",
+    emptyReadyText: "以鍮꾨릱?ㅻ㈃ ?쒖옉?대낵源뚯슂?",
+    emptyUnavailableText: "吏앸쭪異붽린瑜?以鍮꾪븯怨??덉뼱??",
     renderSettings: renderMatchSettings,
     renderActionCopy: renderMatchActionCopy,
     renderStats: renderMatchStats,
@@ -785,97 +771,23 @@ function renderMatchScreen() {
 }
 
 function startMatchRoundTimer() {
-  const activeDuration = getMatchDuration(matchPreferences.duration);
-
-  stopMatchRoundTimer();
-  matchState.timeLeft = activeDuration;
-  renderMatchTimer();
-
-  if (activeDuration <= 0) {
-    return;
-  }
-
-  matchRoundTimer = window.setInterval(() => {
-    matchState.timeLeft = Math.max(0, matchState.timeLeft - 1);
-    renderMatchTimer();
-
-    if (matchState.timeLeft === 0) {
-      stopMatchRoundTimer();
-      handleMatchTimeout();
-    }
-  }, 1000);
+  matchEngine.startRoundTimer();
 }
 
 function enterMatchReadyState(message = "") {
-  clearAllMatchTimers();
-  matchState.sessionItems = [];
-  matchState.pageItems = [];
-  matchState.results = [];
-  matchState.leftCards = [];
-  matchState.rightCards = [];
-  matchState.pageIndex = 0;
-  matchState.resultFilter = "all";
-  matchState.showResults = false;
-  matchState.hasStarted = false;
-  resetCurrentPageState();
-  setMatchActionAvailability(true);
-  setMatchFeedback(message);
-  renderMatchScreen();
+  matchEngine.enterReadyState(message);
 }
 
 function openMatchPage(pageItems) {
-  matchState.hasStarted = true;
-  matchState.showResults = false;
-  matchState.pageItems = pageItems;
-  resetCurrentPageState();
-  matchState.leftCards = shuffleMatchItems(
-    pageItems.map((item) => ({
-      id: item.id,
-      value: item.reading,
-      side: "left"
-    }))
-  );
-  matchState.rightCards = shuffleMatchItems(
-    pageItems.map((item) => ({
-      id: item.id,
-      value: item.meaning,
-      side: "right"
-    }))
-  );
-  setMatchActionAvailability(true);
-  setMatchFeedback("");
-  renderMatchScreen();
-  startMatchRoundTimer();
+  matchEngine.openPage(pageItems);
 }
 
 function showMatchResults() {
-  clearAllMatchTimers();
-  resetSelectedCards();
-  matchState.showResults = true;
-  matchState.isLocked = false;
-  matchState.timedOut = false;
-  setMatchActionAvailability(true);
-  renderMatchScreen();
-}
-
-function queueMatchPageTransition(callback) {
-  clearMatchTransitionTimer();
-  matchTransitionTimer = window.setTimeout(() => {
-    matchTransitionTimer = null;
-    callback();
-  }, matchPageTransitionDelay);
+  matchEngine.showResults();
 }
 
 function moveToNextMatchPage() {
-  matchState.pageIndex += 1;
-  const nextItems = getCurrentPageItems(matchState.pageIndex);
-
-  if (!nextItems.length) {
-    showMatchResults();
-    return;
-  }
-
-  openMatchPage(nextItems);
+  matchEngine.moveToNextPage();
 }
 
 function buildMatchSessionItems() {
@@ -886,53 +798,19 @@ function buildMatchSessionItems() {
   }
 
   const totalCount = Math.min(getMatchTotalCount(matchPreferences.totalCount), matchPool.length);
-  return shuffleMatchItems(matchPool).slice(0, totalCount);
+  return sharedMatchGame.shuffleItems(matchPool).slice(0, totalCount);
 }
 
 function startMatchSession(items = buildMatchSessionItems()) {
-  clearAllMatchTimers();
-
-  if (!items.length) {
-    renderMatchUnavailableState("단어를 불러오는 중이에요. 잠시 후 다시 해볼까요?");
-    return;
-  }
-
-  matchState.sessionItems = items.map((item) => ({ ...item }));
-  matchState.results = items.map((item) => ({
-    id: item.id,
-    level: item.level,
-    reading: item.reading,
-    meaning: item.meaning,
-    status: "pending"
-  }));
-  matchState.pageIndex = 0;
-  matchState.resultFilter = "all";
-  matchState.hasStarted = true;
-  openMatchPage(getCurrentPageItems(0));
-  scrollMatchBoardIntoView();
+  matchEngine.startSession(items);
 }
 
 function replayCurrentMatchPage() {
-  const currentItems = [...matchState.pageItems];
-
-  if (!currentItems.length) {
-    startMatchSession();
-    return;
-  }
-
-  resetMatchResultStatus(currentItems.map((item) => item.id));
-  openMatchPage(currentItems);
+  matchEngine.replayCurrentPage();
 }
 
 function replayCurrentMatchSet() {
-  const sessionItems = [...matchState.sessionItems];
-
-  if (!sessionItems.length) {
-    startMatchSession();
-    return;
-  }
-
-  startMatchSession(sessionItems);
+  matchEngine.replayCurrentSet();
 }
 
 function renderMatchUnavailableState(message) {
@@ -973,110 +851,16 @@ function renderMatchUnavailableState(message) {
   renderMatchScreen();
 }
 
-function finalizeCompletedMatchPage() {
-  matchState.isLocked = true;
-  renderMatchBoard();
-
-  if (matchState.pageIndex + 1 >= getMatchPageCount()) {
-    setMatchFeedback("");
-    queueMatchPageTransition(showMatchResults);
-    return;
-  }
-
-  setMatchFeedback("");
-  queueMatchPageTransition(moveToNextMatchPage);
-}
-
-function handleSuccessfulMatch(id) {
-  matchState.matchedIds.push(id);
-  setMatchResultStatus([id], "correct");
-
-  if (matchState.matchedIds.length === matchState.pageItems.length) {
-    stopMatchRoundTimer();
-    finalizeCompletedMatchPage();
-    return;
-  }
-
-  setMatchFeedback("");
-}
-
-function handleFailedMatch() {
-  setMatchFeedback("");
-}
-
-function queueFailedMatchReset() {
-  matchState.isLocked = true;
-  renderMatchBoard();
-
-  clearWrongMatchTimer();
-  wrongMatchTimer = window.setTimeout(() => {
-    matchState.wrongLeft = null;
-    matchState.wrongRight = null;
-    matchState.isLocked = false;
-    resetSelectedCards();
-    renderMatchBoard();
-    wrongMatchTimer = null;
-  }, matchWrongFlashDuration);
-}
-
 function handleMatchSelection(card) {
-  if (matchState.isLocked || matchState.timedOut || matchState.matchedIds.includes(card.id)) {
-    return;
-  }
-
-  if (card.side === "left") {
-    matchState.selectedLeft = matchState.selectedLeft === card.id ? null : card.id;
-  } else {
-    matchState.selectedRight = matchState.selectedRight === card.id ? null : card.id;
-  }
-
-  renderMatchBoard();
-
-  if (!matchState.selectedLeft || !matchState.selectedRight) {
-    return;
-  }
-
-  if (matchState.selectedLeft === matchState.selectedRight) {
-    handleSuccessfulMatch(matchState.selectedLeft);
-    resetSelectedCards();
-    renderMatchBoard();
-    return;
-  }
-
-  matchState.wrongLeft = matchState.selectedLeft;
-  matchState.wrongRight = matchState.selectedRight;
-  handleFailedMatch();
-  queueFailedMatchReset();
+  matchEngine.handleSelection(card);
 }
 
 function handleMatchTimeout() {
-  const remainingIds = matchState.pageItems
-    .filter((item) => !matchState.matchedIds.includes(item.id))
-    .map((item) => item.id);
-
-  setMatchResultStatus(remainingIds, "wrong");
-  matchState.timedOut = true;
-  matchState.isLocked = true;
-  resetSelectedCards();
-  renderMatchBoard();
-
-  if (matchState.pageIndex + 1 >= getMatchPageCount()) {
-    setMatchFeedback("아깝네요! 시간이 끝났어요. 남은 단어는 틀린 문제로 넘기고 결과로 갈게요.", "is-fail");
-    queueMatchPageTransition(showMatchResults);
-    return;
-  }
-
-  setMatchFeedback("아깝네요! 시간이 끝났어요. 지금 보이는 단어는 틀린 문제로 넘기고 다음으로 갈게요.", "is-fail");
-  queueMatchPageTransition(moveToNextMatchPage);
+  matchEngine.handleTimeout();
 }
 
 function startNewMatchSession() {
-  if (matchState.hasStarted || matchState.showResults) {
-    enterMatchReadyState();
-    return;
-  }
-
-  startMatchSession();
+  matchEngine.startNewSession();
 }
 
 function setMatchLevel(level) {
