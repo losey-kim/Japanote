@@ -727,14 +727,6 @@
     return createCatalogLayout({ ...config });
   }
 
-  function createVocabCatalogLayout() {
-    return createCatalogLayoutByScope("vocab");
-  }
-
-  function createKanjiCatalogLayout() {
-    return createCatalogLayoutByScope("kanji");
-  }
-
   function createChoiceQuizCard({
     articleId,
     className,
@@ -1601,8 +1593,8 @@
 
   function createStudyLayout(kind) {
     const studyLayoutMap = {
-      "vocab-catalog": createVocabCatalogLayout,
-      "kanji-catalog": createKanjiCatalogLayout
+      "vocab-catalog": () => createCatalogLayoutByScope("vocab"),
+      "kanji-catalog": () => createCatalogLayoutByScope("kanji")
     };
     const layoutFactory = studyLayoutMap[kind];
 
