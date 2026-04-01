@@ -1072,7 +1072,7 @@ function buildWordPracticeQuestionSet(items, level = "N5", fallbackItems = [], c
 }
 
 function buildDynamicWordPracticeItems(items, level = "N5") {
-  return buildWordPracticeQuestionSet(items, level, basicPracticeSets.words.items);
+  return buildWordPracticeQuestionSet(items, level, basicPracticeSets.words?.items ?? []);
 }
 
 function getVocabLevel(level = state?.vocabLevel) {
@@ -1088,6 +1088,9 @@ function refreshDynamicVocabContent(level = "N5") {
   const activeLevel = getVocabLevel(level);
   const activeSource = getDynamicVocabSource(activeLevel);
   const activePool = buildDynamicQuizPool(activeSource);
+  if (!basicPracticeSets.words) {
+    basicPracticeSets.words = normalizeBasicPracticeTrack({});
+  }
   basicPracticeSets.words.items = buildDynamicWordPracticeItems(activePool, activeLevel);
 }
 
