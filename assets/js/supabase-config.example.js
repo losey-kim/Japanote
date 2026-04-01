@@ -5,5 +5,7 @@ window.japanoteSupabaseConfig = window.japanoteSupabaseConfig || {
   url: "",
   anonKey: "",
   stateTable: "user_state",
-  emailRedirectTo: ""
+  emailRedirectTo: "",
+  // Supabase 대시보드 Authentication → Providers에서 켠 것만 추가. 예: ["google"], ["google","github"]
+  oauthProviders: []
 };

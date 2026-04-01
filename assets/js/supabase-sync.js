@@ -9,7 +9,9 @@
     url: "",
     anonKey: "",
     stateTable: "user_state",
-    emailRedirectTo: ""
+    emailRedirectTo: "",
+    /** Supabase Auth에서 켠 OAuth만 나열. 예: ["google"], ["google","github"] */
+    oauthProviders: []
   };
   const rawConfig =
     globalThis.japanoteSupabaseConfig && typeof globalThis.japanoteSupabaseConfig === "object"
@@ -21,6 +23,11 @@
   };
 
   config.enabled = Boolean(config.enabled && config.url && config.anonKey && config.stateTable);
+
+  const oauthProviderAllowlist = new Set(["google", "github", "apple"]);
+  config.oauthProviders = Array.isArray(config.oauthProviders)
+    ? config.oauthProviders.filter((p) => typeof p === "string" && oauthProviderAllowlist.has(p))
+    : [];
 
   const localValues = {
     [studyStateKey]: readLocalJson(studyStateKey, {}),
@@ -373,6 +380,44 @@
     return rawMessage;
   }
 
+  async function signInWithOAuth(provider) {
+    if (!config.enabled || !client) {
+      return { ok: false };
+    }
+
+    const normalized = String(provider || "").toLowerCase();
+
+    if (!oauthProviderAllowlist.has(normalized)) {
+      return { ok: false };
+    }
+
+    if (!config.oauthProviders.includes(normalized)) {
+      setStatus("error", "로그인 방식 비활성", "이 로그인 방식은 supabase-config.js에서 켜져 있지 않아요.");
+      return { ok: false };
+    }
+
+    authUrlErrorVisible = false;
+    setStatus("syncing", "로그인 이동", "로그인 페이지로 이동해요.", true);
+
+    try {
+      const { error } = await client.auth.signInWithOAuth({
+        provider: normalized,
+        options: {
+          redirectTo: getEmailRedirectUrl()
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      return { ok: true };
+    } catch (error) {
+      setStatus("error", "로그인 실패", getFriendlyAuthErrorMessage(error));
+      return { ok: false, error };
+    }
+  }
+
   async function signInWithEmail(email) {
     if (!config.enabled || !client) {
       return { ok: false };
@@ -431,7 +476,7 @@
       return "이 기기만";
     }
 
-    if (currentUser?.email) {
+    if (currentUser) {
       return status.busy ? "동기화 중" : "연결됨";
     }
 
@@ -455,7 +500,7 @@
       return "cloud_alert";
     }
 
-    if (currentUser?.email) {
+    if (currentUser) {
       return status.busy ? "cloud_upload" : "cloud_done";
     }
 
@@ -569,6 +614,12 @@
       '<p class="auth-panel-title">기기 간 동기화</p>',
       '<p class="auth-panel-status" data-auth-status></p>',
       '<p class="auth-panel-copy" data-auth-detail></p>',
+      '<div class="auth-oauth" data-auth-oauth-row hidden>',
+      '<button class="secondary-btn auth-oauth-btn" type="button" data-auth-oauth="google">Google로 계속하기</button>',
+      '<button class="secondary-btn auth-oauth-btn" type="button" data-auth-oauth="github">GitHub로 계속하기</button>',
+      '<button class="secondary-btn auth-oauth-btn" type="button" data-auth-oauth="apple">Apple로 계속하기</button>',
+      "</div>",
+      '<p class="auth-panel-divider" data-auth-email-divider hidden>또는 이메일</p>',
       '<form class="auth-form" data-auth-form>',
       '<label class="auth-field" for="auth-email-input">',
       "<span>이메일</span>",
@@ -686,23 +737,47 @@
           : "supabase-config.example.js를 복사해 supabase-config.js를 만든 뒤 URL·anon key를 넣고 enabled를 true로 바꾸세요.";
       }
       if (form) {
-        form.hidden = !config.enabled || Boolean(currentUser?.email);
+        form.hidden = !config.enabled || Boolean(currentUser);
       }
       if (submitButton) {
         submitButton.disabled = status.busy;
       }
       if (signoutButton) {
-        signoutButton.hidden = !Boolean(currentUser?.email);
+        signoutButton.hidden = !Boolean(currentUser);
         signoutButton.disabled = status.busy;
       }
       if (userNode) {
-        userNode.hidden = !Boolean(currentUser?.email);
+        userNode.hidden = !Boolean(currentUser);
       }
       if (userEmailNode) {
-        userEmailNode.textContent = currentUser?.email || "";
+        userEmailNode.textContent =
+          currentUser?.email ||
+          currentUser?.user_metadata?.full_name ||
+          currentUser?.user_metadata?.name ||
+          currentUser?.user_metadata?.user_name ||
+          "로그인됨";
       }
       if (syncActions) {
-        syncActions.hidden = !config.enabled || !currentUser?.email;
+        syncActions.hidden = !config.enabled || !currentUser;
+      }
+      const oauthRow = panel?.querySelector("[data-auth-oauth-row]");
+      const emailDivider = panel?.querySelector("[data-auth-email-divider]");
+      if (oauthRow) {
+        const showOauth =
+          config.enabled && !currentUser && config.oauthProviders.length > 0;
+        oauthRow.hidden = !showOauth;
+        oauthRow.querySelectorAll("[data-auth-oauth]").forEach((btn) => {
+          const key = btn.getAttribute("data-auth-oauth");
+          btn.hidden = !config.oauthProviders.includes(key);
+          btn.disabled = status.busy;
+        });
+      }
+      if (emailDivider) {
+        emailDivider.hidden = !(
+          config.enabled &&
+          !currentUser &&
+          config.oauthProviders.length > 0
+        );
       }
       if (pullButton) {
         pullButton.disabled = status.busy;
@@ -739,8 +814,23 @@
     window.addEventListener("scroll", updateOpenAuthPanelPosition, true);
   }
 
-  function attachManualSyncHandlers() {
+  function attachDelegatedPanelHandlers() {
     document.addEventListener("click", async (event) => {
+      const oauthBtn = event.target.closest("[data-auth-oauth-row] [data-auth-oauth]");
+
+      if (oauthBtn) {
+        event.preventDefault();
+
+        if (oauthBtn.disabled) {
+          return;
+        }
+
+        const provider = oauthBtn.getAttribute("data-auth-oauth");
+        await signInWithOAuth(provider);
+        renderAuthUi();
+        return;
+      }
+
       const pullBtn = event.target.closest("[data-auth-pull]");
       const pushBtn = event.target.closest("[data-auth-push]");
 
@@ -855,7 +945,7 @@
     renderAuthUi();
     attachDismissHandler();
     attachViewportHandlers();
-    attachManualSyncHandlers();
+    attachDelegatedPanelHandlers();
 
     if (!config.enabled) {
       return;
@@ -908,6 +998,7 @@
     pullRemoteState,
     pushRemoteState,
     signInWithEmail,
+    signInWithOAuth,
     signOut
   };
 
