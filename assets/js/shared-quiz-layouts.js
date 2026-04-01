@@ -1393,22 +1393,17 @@
   }
 
   function createLayout(kind) {
-    switch (kind) {
-      case "vocab-quiz":
-        return createVocabQuizLayout();
-      case "starter-kanji-practice":
-        return createStarterKanjiLayout();
-      case "kanji-match-round":
-        return createKanjiMatchLayout();
-      case "match-round":
-        return createMatchLayout();
-      case "grammar-practice":
-        return createGrammarPracticeLayout();
-      case "reading-practice":
-        return createReadingPracticeLayout();
-      default:
-        return "";
-    }
+    const layoutMap = {
+      "vocab-quiz": createVocabQuizLayout,
+      "starter-kanji-practice": createStarterKanjiLayout,
+      "kanji-match-round": createKanjiMatchLayout,
+      "match-round": createMatchLayout,
+      "grammar-practice": createGrammarPracticeLayout,
+      "reading-practice": createReadingPracticeLayout
+    };
+
+    const layoutFactory = layoutMap[kind];
+    return layoutFactory ? layoutFactory() : "";
   }
 
   function createMatchBoardLayout({
