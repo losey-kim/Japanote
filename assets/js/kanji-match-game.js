@@ -20,16 +20,16 @@ const defaultKanjiMatchPreferences = {
 };
 
 const kanjiMatchResultFilterLabels = {
-  all: "?꾩껜",
-  correct: "?뺣떟",
-  wrong: "?ㅻ떟"
+  all: "전체",
+  correct: "정답",
+  wrong: "오답"
 };
 
 const kanjiMatchFilterLabels = {
-  all: "?꾩껜",
-  review: "?ㅼ떆 蹂쇰옒??,
-  mastered: "?듯삍?댁슂",
-  unmarked: "?꾩쭅 ???뺥뻽?댁슂"
+  all: "전체",
+  review: "다시 볼래요",
+  mastered: "익혔어요",
+  unmarked: "아직 안 골랐어요"
 };
 
 function normalizeKanjiMatchText(value) {
@@ -125,7 +125,7 @@ function getKanjiMatchGrade(value = kanjiMatchPreferences.grade) {
 
 function getKanjiMatchGradeLabel(grade = kanjiMatchPreferences.grade) {
   const activeGrade = getKanjiMatchGrade(grade);
-  return activeGrade === "all" ? "?꾩껜" : `${activeGrade}?숇뀈`;
+  return activeGrade === "all" ? "전체" : `${activeGrade}학년`;
 }
 
 function getKanjiMatchFilter(value = kanjiMatchPreferences.filter) {
@@ -148,7 +148,7 @@ function getKanjiMatchDuration(value = kanjiMatchPreferences.duration) {
 
 function getKanjiMatchDurationLabel(duration = kanjiMatchPreferences.duration) {
   const activeDuration = Number(duration);
-  return activeDuration <= 0 ? "泥쒖쿇?? : `${activeDuration}珥?;
+  return activeDuration <= 0 ? "천천히" : `${activeDuration}초`;
 }
 
 function getKanjiMatchResultFilter(value = kanjiMatchState.resultFilter) {
@@ -159,9 +159,9 @@ function getKanjiMatchOptionsSummaryText() {
   return [
     getKanjiMatchFilterLabel(),
     getKanjiMatchGradeLabel(),
-    `${getKanjiMatchTotalCount()}臾몄젣`,
+    `${getKanjiMatchTotalCount()}문제`,
     getKanjiMatchDurationLabel()
-  ].join(" 쨌 ");
+  ].join(" · ");
 }
 
 function getBaseKanjiMatchPool() {
@@ -257,7 +257,7 @@ function populateKanjiMatchGradeSelect(select, counts) {
   kanjiMatchGradeOptions.forEach((grade) => {
     const option = document.createElement("option");
     option.value = grade;
-    option.textContent = grade === "all" ? `?꾩껜 (${counts[grade] ?? 0})` : `${grade}?숇뀈 (${counts[grade] ?? 0})`;
+    option.textContent = grade === "all" ? `전체 (${counts[grade] ?? 0})` : `${grade}학년 (${counts[grade] ?? 0})`;
     select.appendChild(option);
   });
   select.value = getKanjiMatchGrade(kanjiMatchPreferences.grade);
@@ -333,7 +333,7 @@ const kanjiMatchEngine = sharedMatchGame.createMatchGameEngine({
   onSetActionAvailability: setKanjiMatchActionAvailability,
   onSetFeedback: setKanjiMatchFeedback,
   onUnavailable: () => {
-    renderKanjiMatchUnavailableState("??뽰쁽 筌욎빖彛ょ빊遺쎈┛??餓Β??쑵釉??餓λ쵐??癒?뒄.");
+    renderKanjiMatchUnavailableState("지금 선택한 조건에 맞는 한자가 없어요.");
   },
   onPageOpened: ({ isInitialPage }) => {
     if (isInitialPage) {
@@ -342,10 +342,10 @@ const kanjiMatchEngine = sharedMatchGame.createMatchGameEngine({
   },
   getTimeoutMessage: ({ isFinalPage }) => {
     if (isFinalPage) {
-      return "??볦퍢????멸텢??癰귣똻?????뽰쁽???????얜챷?ｆ에?野껉퀗?든몴?獄쏆꼷???됰선??";
+      return "시간이 끝났어요. 결과에서 맞춘 한자와 놓친 한자를 확인해봐요.";
     }
 
-    return "??볦퍢????멸텢??筌왖疫?癰귣똻?????뽰쁽???????얜챷?ｆ에??띾┛????쇱벉??곗쨮 揶쏅뜃苡??";
+    return "시간이 끝났어요. 다음 묶음으로 넘어갈게요.";
   }
 });
 
@@ -585,13 +585,13 @@ function renderKanjiMatchBulkActionButton(results) {
 
   const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
   const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isKanjiSavedToMemorizationList(id));
-  const actionLabel = allSaved ? "?꾩껜 鍮쇨린" : "?꾩껜 ?ㅼ떆 蹂쇰옒??;
+  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
   const actionTitle =
     uniqueIds.length === 0
-      ? "吏湲??댁븘???쒖옄媛 ?놁뼱??"
+      ? "지금 담을 한자가 없어요."
       : allSaved
-        ? "吏湲?蹂댁씠???쒖옄瑜??ㅼ떆 蹂쇰옒?붿뿉??紐⑤몢 類꾧쾶??"
-        : "吏湲?蹂댁씠???쒖옄瑜??ㅼ떆 蹂쇰옒?붿뿉 紐⑤몢 ?댁븘?섍쾶??";
+        ? "지금 보이는 한자를 다시 볼래요 목록에서 모두 빼요."
+        : "지금 보이는 한자를 다시 볼래요 목록에 모두 담아요.";
 
   bulkActionButton.disabled = uniqueIds.length === 0;
   bulkActionButton.dataset.kanjiMatchBulkAction = allSaved ? "remove" : "save";
@@ -632,8 +632,8 @@ function renderKanjiMatchResults() {
     renderBulkActionButton: renderKanjiMatchBulkActionButton,
     createItemMarkup: (item) => {
       const saved = isKanjiSavedToMemorizationList(item.id);
-      const statusLabel = item.status === "correct" ? "?뺣떟" : "?ㅻ떟";
-      const actionLabel = saved ? "?ㅼ떆 蹂쇰옒?붿뿉??鍮쇨린" : "?ㅼ떆 蹂쇰옒?붿뿉 ?닿린";
+      const statusLabel = item.status === "correct" ? "정답" : "오답";
+      const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
       const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
@@ -674,8 +674,8 @@ function renderKanjiMatchScreen() {
     hasStarted: kanjiMatchState.hasStarted,
     showResults: kanjiMatchState.showResults,
     isReady: kanjiMatchPool.length > 0,
-    emptyReadyText: "以鍮꾨릱?ㅻ㈃ ?쒖옉?대낵源뚯슂?",
-    emptyUnavailableText: "吏앸쭪異붽린瑜?以鍮꾪븯怨??덉뼱??",
+    emptyReadyText: "준비되면 시작해볼까요?",
+    emptyUnavailableText: "지금은 준비 중이에요.",
     renderSettings: renderKanjiMatchSettings,
     renderActionCopy: renderKanjiMatchActionCopy,
     renderStats: renderKanjiMatchStats,

@@ -22,24 +22,24 @@ const defaultMatchPreferences = {
 };
 
 const fallbackMatchPool = [
-  { id: "match-fallback-1", level: "N5", reading: "?잆겧??, meaning: "癒밸떎" },
-  { id: "match-fallback-2", level: "N5", reading: "?꾠걦", meaning: "媛?? },
-  { id: "match-fallback-3", level: "N5", reading: "?욍굥", meaning: "蹂대떎" },
-  { id: "match-fallback-4", level: "N5", reading: "?뚣겂?볝걝", meaning: "?숆탳" },
-  { id: "match-fallback-5", level: "N5", reading: "?ⓦ굚?졼걾", meaning: "移쒓뎄" }
+  { id: "match-fallback-1", level: "N5", reading: "たべる", meaning: "먹다" },
+  { id: "match-fallback-2", level: "N5", reading: "いく", meaning: "가다" },
+  { id: "match-fallback-3", level: "N5", reading: "みる", meaning: "보다" },
+  { id: "match-fallback-4", level: "N5", reading: "がっこう", meaning: "학교" },
+  { id: "match-fallback-5", level: "N5", reading: "ともだち", meaning: "친구" }
 ];
 
 const matchResultFilterLabels = {
-  all: "?꾩껜",
-  correct: "?뺣떟",
-  wrong: "?ㅻ떟"
+  all: "전체",
+  correct: "정답",
+  wrong: "오답"
 };
 
 const matchFilterLabels = {
-  all: "?꾩껜",
-  review: "?ㅼ떆 蹂쇰옒??,
-  mastered: "?듯삍?댁슂",
-  unmarked: "?꾩쭅 ??遊ㅼ뼱??
+  all: "전체",
+  review: "다시 볼래요",
+  mastered: "익혔어요",
+  unmarked: "아직 안 골랐어요"
 };
 
 function loadMatchPreferences() {
@@ -120,8 +120,8 @@ function formatMatchLevelLabel(level) {
     return "N5";
   }
 
-  if (normalizedLevel === "ALL" || normalizedLevel === "?꾩껜") {
-    return "?꾩껜";
+  if (normalizedLevel === "ALL" || normalizedLevel === "전체") {
+    return "전체";
   }
 
   if (/^N\d+$/.test(normalizedLevel)) {
@@ -137,7 +137,7 @@ function formatMatchLevelLabel(level) {
 
 function getMatchLevelLabel(level = matchPreferences.level) {
   const activeLevel = getMatchLevel(level);
-  return activeLevel === "all" ? "?꾩껜" : formatMatchLevelLabel(activeLevel);
+  return activeLevel === "all" ? "전체" : formatMatchLevelLabel(activeLevel);
 }
 
 function getMatchTotalCount(value = matchPreferences.totalCount) {
@@ -152,11 +152,11 @@ function getMatchDuration(value = matchPreferences.duration) {
 
 function getMatchDurationLabel(duration = matchPreferences.duration) {
   const activeDuration = Number(duration);
-  return activeDuration <= 0 ? "泥쒖쿇?? : `${activeDuration}珥?;
+  return activeDuration <= 0 ? "천천히" : `${activeDuration}초`;
 }
 
 function getMatchOptionsSummaryText() {
-  return [`${getMatchTotalCount()}臾몄젣`, getMatchDurationLabel()].join(" 쨌 ");
+  return [`${getMatchTotalCount()}문제`, getMatchDurationLabel()].join(" · ");
 }
 
 function getMatchResultFilter(value = matchState.resultFilter) {
@@ -371,7 +371,7 @@ const matchEngine = sharedMatchGame.createMatchGameEngine({
   onSetActionAvailability: setMatchActionAvailability,
   onSetFeedback: setMatchFeedback,
   onUnavailable: () => {
-    renderMatchUnavailableState("留ㅼ묶???⑥뼱 ?곗씠?곌? ?놁뼱???쒖옉?????놁뒿?덈떎.");
+    renderMatchUnavailableState("매칭할 단어 데이터가 없어서 시작할 수 없어요.");
   },
   onPageOpened: ({ isInitialPage }) => {
     if (isInitialPage) {
@@ -518,7 +518,7 @@ function populateMatchPartSelect(select, parts, activePart) {
   select.innerHTML = "";
   [{ value: "all", count: parts.reduce((sum, item) => sum + item.count, 0) }, ...parts].forEach((partOption) => {
     const option = document.createElement("option");
-    const label = partOption.value === "all" ? "?꾩껜 ?덉궗" : partOption.value;
+    const label = partOption.value === "all" ? "전체 품사" : partOption.value;
     option.value = partOption.value;
     option.textContent = `${label} (${partOption.count})`;
     select.appendChild(option);
@@ -671,13 +671,13 @@ function renderMatchBulkActionButton(results) {
 
   const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
   const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
-  const actionLabel = allSaved ? "?꾩껜 鍮쇨린" : "?꾩껜 ?닿린";
+  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
   const actionTitle =
     uniqueIds.length === 0
-      ? "吏湲??댁븘???⑥뼱媛 ?놁뼱??"
+      ? "지금 담을 단어가 없어요."
       : allSaved
-        ? "吏湲?蹂댁씠???⑥뼱瑜??ㅼ떆 蹂쇰옒?붿뿉??紐⑤몢 類꾧쾶??"
-        : "吏湲?蹂댁씠???⑥뼱瑜??ㅼ떆 蹂쇰옒?붿뿉 紐⑤몢 ?댁븘?섍쾶??";
+        ? "지금 보이는 단어를 다시 볼래요 목록에서 모두 빼요."
+        : "지금 보이는 단어를 다시 볼래요 목록에 모두 담아요.";
 
   bulkActionButton.disabled = uniqueIds.length === 0;
   bulkActionButton.dataset.matchBulkAction = allSaved ? "remove" : "save";
@@ -718,8 +718,8 @@ function renderMatchResults() {
     renderBulkActionButton: renderMatchBulkActionButton,
     createItemMarkup: (item) => {
       const saved = isWordSavedToMemorizationList(item.id);
-      const statusLabel = item.status === "correct" ? "?뺣떟" : "?ㅻ떟";
-      const actionLabel = saved ? "?ㅼ떆 蹂쇰옒?붿뿉??鍮쇨린" : "?ㅼ떆 蹂쇰옒?붿뿉 ?닿린";
+      const statusLabel = item.status === "correct" ? "정답" : "오답";
+      const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
       const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
@@ -760,8 +760,8 @@ function renderMatchScreen() {
     hasStarted: matchState.hasStarted,
     showResults: matchState.showResults,
     isReady: matchPool.length > 0,
-    emptyReadyText: "以鍮꾨릱?ㅻ㈃ ?쒖옉?대낵源뚯슂?",
-    emptyUnavailableText: "吏앸쭪異붽린瑜?以鍮꾪븯怨??덉뼱??",
+    emptyReadyText: "준비되면 시작해볼까요?",
+    emptyUnavailableText: "지금은 준비 중이에요.",
     renderSettings: renderMatchSettings,
     renderActionCopy: renderMatchActionCopy,
     renderStats: renderMatchStats,
