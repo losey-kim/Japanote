@@ -4,9 +4,28 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
 
 ## 실행 방법
 
-1. `C:\Users\admin\Documents\jlpt\index.html` 파일을 브라우저에서 엽니다.
-2. 상단 네비게이션 또는 홈의 카드에서 원하는 학습 페이지로 이동합니다.
-3. 또는 현재 폴더에서 간단한 정적 서버를 띄워 확인합니다.
+1. 저장소 루트에서 **HTTP로 여는 것**을 권장합니다 (`file://`로 열면 일부 기능·Supabase 로그인이 제한될 수 있어요).
+2. 예시 (PowerShell에서 프로젝트 폴더로 이동한 뒤):
+
+   ```text
+   python -m http.server 8080
+   ```
+
+   브라우저에서 `http://localhost:8080/` 로 접속합니다. 포트는 바꿔도 됩니다.
+
+3. 또는 `npx serve .` , VS Code **Live Server** 등으로 같은 폴더를 띄워도 됩니다.
+
+## 로컬에서 Supabase(클라우드 로그인) 테스트
+
+- `supabase-config.js`의 `emailRedirectTo`가 GitHub Pages로 되어 있어도, **로컬 origin**(`http://localhost:8080` 등)과 다르면 앱이 매직 링크 복귀 URL을 **현재 로컬 주소**로 잡습니다.
+- Supabase 대시보드 **Authentication → URL Configuration → Redirect URLs**에 로컬 주소를 추가해야 매직 링크가 열립니다. 예:
+
+  - `http://localhost:8080/**`
+  - `http://127.0.0.1:8080/**`
+
+  (위의 **8080**은 실제로 쓰는 포트에 맞게 바꾸세요.)
+
+- 개발할 때만 쓰고 배포에는 영향 없습니다.
 
 ## 페이지 구성
 
