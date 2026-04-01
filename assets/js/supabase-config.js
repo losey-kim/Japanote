@@ -5,6 +5,5 @@ window.japanoteSupabaseConfig = window.japanoteSupabaseConfig || {
   url: "",
   anonKey: "",
   stateTable: "user_state",
-  emailRedirectTo: "",
-  oauthProviders: []
+  emailRedirectTo: ""
 };

@@ -298,24 +298,6 @@ button {
   line-height: 1.5;
 }
 
-.auth-oauth {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.auth-oauth-btn {
-  justify-content: center;
-}
-
-.auth-panel-divider {
-  margin: 14px 0 0;
-  text-align: center;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--muted);
-}
-
 .auth-form {
   display: grid;
   gap: 12px;

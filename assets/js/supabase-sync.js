@@ -9,9 +9,7 @@
     url: "",
     anonKey: "",
     stateTable: "user_state",
-    emailRedirectTo: "",
-    /** Supabase Auth에서 켠 OAuth만 나열. 예: ["google"], ["google","github"] */
-    oauthProviders: []
+    emailRedirectTo: ""
   };
   const rawConfig =
     globalThis.japanoteSupabaseConfig && typeof globalThis.japanoteSupabaseConfig === "object"
@@ -23,11 +21,6 @@
   };
 
   config.enabled = Boolean(config.enabled && config.url && config.anonKey && config.stateTable);
-
-  const oauthProviderAllowlist = new Set(["google", "github", "apple"]);
-  config.oauthProviders = Array.isArray(config.oauthProviders)
-    ? config.oauthProviders.filter((p) => typeof p === "string" && oauthProviderAllowlist.has(p))
-    : [];
 
   const localValues = {
     [studyStateKey]: readLocalJson(studyStateKey, {}),
@@ -380,51 +373,19 @@
     return rawMessage;
   }
 
-  async function signInWithOAuth(provider) {
-    if (!config.enabled || !client) {
-      return { ok: false };
-    }
-
-    const normalized = String(provider || "").toLowerCase();
-
-    if (!oauthProviderAllowlist.has(normalized)) {
-      return { ok: false };
-    }
-
-    if (!config.oauthProviders.includes(normalized)) {
-      setStatus("error", "로그인 방식 비활성", "이 로그인 방식은 supabase-config.js에서 켜져 있지 않아요.");
-      return { ok: false };
-    }
-
-    authUrlErrorVisible = false;
-    setStatus("syncing", "로그인 이동", "로그인 페이지로 이동해요.", true);
-
-    try {
-      const { error } = await client.auth.signInWithOAuth({
-        provider: normalized,
-        options: {
-          redirectTo: getEmailRedirectUrl()
-        }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      return { ok: true };
-    } catch (error) {
-      setStatus("error", "로그인 실패", getFriendlyAuthErrorMessage(error));
-      return { ok: false, error };
-    }
-  }
-
-  async function signInWithEmail(email) {
+  async function signInWithEmail(email, displayName) {
     if (!config.enabled || !client) {
       return { ok: false };
     }
 
     authUrlErrorVisible = false;
     const normalizedEmail = String(email || "").trim();
+    const normalizedName = String(displayName || "").trim();
+
+    if (!normalizedName) {
+      setStatus("error", "이름 필요", "표시할 이름을 입력해 주세요.");
+      return { ok: false };
+    }
 
     if (!normalizedEmail) {
       setStatus("error", "이메일 필요", "로그인 링크를 받을 이메일 주소를 입력해 주세요.");
@@ -437,7 +398,11 @@
       const { error } = await client.auth.signInWithOtp({
         email: normalizedEmail,
         options: {
-          emailRedirectTo: getEmailRedirectUrl()
+          emailRedirectTo: getEmailRedirectUrl(),
+          data: {
+            full_name: normalizedName,
+            name: normalizedName
+          }
         }
       });
 
@@ -611,21 +576,19 @@
       '<span data-auth-summary>클라우드 연결</span>',
       "</button>",
       '<div class="auth-panel" data-auth-panel hidden>',
-      '<p class="auth-panel-title">기기 간 동기화</p>',
+      '<p class="auth-panel-title">로그인</p>',
       '<p class="auth-panel-status" data-auth-status></p>',
       '<p class="auth-panel-copy" data-auth-detail></p>',
-      '<div class="auth-oauth" data-auth-oauth-row hidden>',
-      '<button class="secondary-btn auth-oauth-btn" type="button" data-auth-oauth="google">Google로 계속하기</button>',
-      '<button class="secondary-btn auth-oauth-btn" type="button" data-auth-oauth="github">GitHub로 계속하기</button>',
-      '<button class="secondary-btn auth-oauth-btn" type="button" data-auth-oauth="apple">Apple로 계속하기</button>',
-      "</div>",
-      '<p class="auth-panel-divider" data-auth-email-divider hidden>또는 이메일</p>',
       '<form class="auth-form" data-auth-form>',
+      '<label class="auth-field" for="auth-name-input">',
+      "<span>이름</span>",
+      '<input id="auth-name-input" class="auth-input" type="text" autocomplete="name" placeholder="홍길동" data-auth-name>',
+      "</label>",
       '<label class="auth-field" for="auth-email-input">',
       "<span>이메일</span>",
       '<input id="auth-email-input" class="auth-input" type="email" autocomplete="email" placeholder="you@example.com" data-auth-email>',
       "</label>",
-      '<button class="secondary-btn auth-submit" type="submit" data-auth-submit>로그인 링크 보내기</button>',
+      '<button class="secondary-btn auth-submit" type="submit" data-auth-submit>로그인 링크 받기</button>',
       "</form>",
       '<div class="auth-user" data-auth-user hidden>',
       '<span class="material-symbols-rounded" aria-hidden="true">person</span>',
@@ -664,6 +627,7 @@
       const toggle = root.querySelector("[data-auth-toggle]");
       const form = panel?.querySelector("[data-auth-form]");
       const emailInput = panel?.querySelector("[data-auth-email]");
+      const nameInput = panel?.querySelector("[data-auth-name]");
       const signoutButton = panel?.querySelector("[data-auth-signout]");
 
       if (toggle && panel) {
@@ -674,10 +638,10 @@
         });
       }
 
-      if (form && emailInput) {
+      if (form && emailInput && nameInput) {
         form.addEventListener("submit", async (event) => {
           event.preventDefault();
-          await signInWithEmail(emailInput.value);
+          await signInWithEmail(emailInput.value, nameInput.value);
           renderAuthUi();
         });
       }
@@ -750,34 +714,16 @@
         userNode.hidden = !Boolean(currentUser);
       }
       if (userEmailNode) {
-        userEmailNode.textContent =
-          currentUser?.email ||
+        const display =
           currentUser?.user_metadata?.full_name ||
           currentUser?.user_metadata?.name ||
+          currentUser?.email ||
           currentUser?.user_metadata?.user_name ||
           "로그인됨";
+        userEmailNode.textContent = display;
       }
       if (syncActions) {
         syncActions.hidden = !config.enabled || !currentUser;
-      }
-      const oauthRow = panel?.querySelector("[data-auth-oauth-row]");
-      const emailDivider = panel?.querySelector("[data-auth-email-divider]");
-      if (oauthRow) {
-        const showOauth =
-          config.enabled && !currentUser && config.oauthProviders.length > 0;
-        oauthRow.hidden = !showOauth;
-        oauthRow.querySelectorAll("[data-auth-oauth]").forEach((btn) => {
-          const key = btn.getAttribute("data-auth-oauth");
-          btn.hidden = !config.oauthProviders.includes(key);
-          btn.disabled = status.busy;
-        });
-      }
-      if (emailDivider) {
-        emailDivider.hidden = !(
-          config.enabled &&
-          !currentUser &&
-          config.oauthProviders.length > 0
-        );
       }
       if (pullButton) {
         pullButton.disabled = status.busy;
@@ -816,21 +762,6 @@
 
   function attachDelegatedPanelHandlers() {
     document.addEventListener("click", async (event) => {
-      const oauthBtn = event.target.closest("[data-auth-oauth-row] [data-auth-oauth]");
-
-      if (oauthBtn) {
-        event.preventDefault();
-
-        if (oauthBtn.disabled) {
-          return;
-        }
-
-        const provider = oauthBtn.getAttribute("data-auth-oauth");
-        await signInWithOAuth(provider);
-        renderAuthUi();
-        return;
-      }
-
       const pullBtn = event.target.closest("[data-auth-pull]");
       const pushBtn = event.target.closest("[data-auth-push]");
 
@@ -998,7 +929,6 @@
     pullRemoteState,
     pushRemoteState,
     signInWithEmail,
-    signInWithOAuth,
     signOut
   };
 

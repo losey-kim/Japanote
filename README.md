@@ -35,11 +35,8 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
    - `anonKey`: Supabase anon public key
    - `stateTable`: 상태를 저장할 테이블명. 기본값은 `user_state`
    - `emailRedirectTo`: 로그인 링크 클릭 후 돌아올 URL. 비워두면 현재 페이지 URL을 사용
-   - `oauthProviders`: 이메일 대신 **Google / GitHub / Apple** 등으로 로그인하려면 Supabase에서 해당 Provider를 켠 뒤, 여기에 문자열 배열로 넣습니다. 예: `["google"]`, `["google","github"]`
-2. Supabase Authentication에서 사용할 로그인 방식을 켭니다.
-   - **이메일(매직 링크)**: Email provider 활성화
-   - **Google·GitHub·Apple 등**: Authentication → Providers에서 각각 켜고, 클라이언트 ID/Secret을 넣습니다.
-3. Authentication의 `Site URL`과 `Redirect URLs`에 실제 서비스 주소를 등록합니다. OAuth는 리다이렉트 URL이 맞지 않으면 로그인 후 돌아오지 못합니다.
+2. Supabase Authentication에서 **Email** 로그인(매직 링크)을 켭니다.
+3. Authentication의 `Site URL`과 `Redirect URLs`에 실제 서비스 주소를 등록합니다.
 4. SQL Editor에서 `supabase/migrations/001_user_state.sql` 내용을 실행합니다.
 
-설정이 끝나면 상단 헤더의 클라우드 버튼에서 **OAuth 버튼** 또는 이메일 로그인 링크를 쓰고, 로그인 후 **클라우드에서 받기** / **클라우드에 올리기**로 수동 동기화할 수 있습니다. 다른 기기에서 같은 계정으로 로그인하면 동일한 학습 상태를 불러옵니다.
+앱에서는 **이름 + 이메일**만 입력하면 매직 링크가 전송됩니다. 로그인 후 **클라우드에서 받기** / **클라우드에 올리기**로 동기화할 수 있고, 다른 기기에서도 같은 이메일로 링크 로그인하면 같은 데이터를 불러옵니다.
