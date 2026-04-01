@@ -15,8 +15,15 @@ const selectablePracticeLevels = [allLevelValue, ...contentLevels];
 const contentRegistry = globalThis.japanoteContent || {};
 const kanaStrokeSvgs = globalThis.kanaStrokeSvgs || {};
 const vocabContent = contentRegistry.vocab || {};
-const grammarContent = contentRegistry.grammar || {};
-const readingContent = contentRegistry.reading || {};
+const staticGrammarContent = contentRegistry.grammar || {};
+const staticReadingContent = contentRegistry.reading || {};
+const staticKanjiRows = Array.isArray(globalThis.JAPANOTE_KANJI_DATA) ? globalThis.JAPANOTE_KANJI_DATA : [];
+let grammarContent = normalizeGrammarContent(staticGrammarContent);
+let readingContent = normalizeReadingContent(staticReadingContent);
+let kanjiDataRows = normalizeKanjiRows(staticKanjiRows);
+let grammarItems = [];
+let grammarPracticeSets = {};
+let readingSets = {};
 
 function getVocabStore() {
   if (globalThis.japanoteVocabStore && typeof globalThis.japanoteVocabStore.ensureLevels === "function") {
@@ -53,6 +60,129 @@ function getLevelContentSets(source) {
     return sets;
   }, {});
 }
+
+function normalizeGrammarContent(payload) {
+  const normalized = payload || {};
+
+  return {
+    items: Array.isArray(normalized.items) ? normalized.items : [],
+    practiceSets: getLevelContentSets(normalized.practiceSets || {})
+  };
+}
+
+function normalizeReadingContent(payload) {
+  const normalized = payload || {};
+
+  return {
+    sets: getLevelContentSets(normalized.sets || {})
+  };
+}
+
+function normalizeKanjiRows(payload) {
+  return Array.isArray(payload) ? payload.filter((row) => Array.isArray(row)) : [];
+}
+
+function getContentDataUrl(fileName) {
+  if (typeof window === "undefined" || !window.location) {
+    return fileName;
+  }
+
+  return new URL(`data/${fileName}`, window.location.href).toString();
+}
+
+function isFileProtocol() {
+  return typeof window !== "undefined" && window.location && window.location.protocol === "file:";
+}
+
+function fetchJsonData(fileName, fallbackLabel) {
+  if (isFileProtocol()) {
+    return Promise.resolve(null);
+  }
+
+  return fetch(getContentDataUrl(fileName), {
+    cache: "default",
+    credentials: "same-origin"
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Failed to load ${fallbackLabel} (${response.status})`);
+    }
+
+    return response.json();
+  });
+}
+
+function refreshGrammarContentState(payload) {
+  const normalized = normalizeGrammarContent(payload || {});
+  grammarContent = normalized;
+  grammarItems = normalized.items;
+  grammarPracticeSets = getLevelContentSets(normalized.practiceSets);
+  grammarPracticeSets[allLevelValue] = getAllPracticeSets(grammarPracticeSets);
+}
+
+function refreshReadingContentState(payload) {
+  const normalized = normalizeReadingContent(payload || {});
+  readingContent = normalized;
+  readingSets = getLevelContentSets(normalized.sets);
+  readingSets[allLevelValue] = getAllPracticeSets(readingSets);
+}
+
+function refreshKanjiRows(payload) {
+  kanjiDataRows = normalizeKanjiRows(payload || []);
+}
+
+function loadGrammarDataFromJson() {
+  return fetchJsonData("grammar.json", "grammar.json")
+    .then((payload) => {
+      refreshGrammarContentState(payload || {});
+      return payload;
+    })
+    .catch((error) => {
+      console.warn("Using bundled grammar data (script fallback).", error);
+      refreshGrammarContentState(grammarContent);
+      return null;
+    });
+}
+
+function loadReadingDataFromJson() {
+  return fetchJsonData("reading.json", "reading.json")
+    .then((payload) => {
+      refreshReadingContentState(payload || {});
+      return payload;
+    })
+    .catch((error) => {
+      console.warn("Using bundled reading data (script fallback).", error);
+      refreshReadingContentState(readingContent);
+      return null;
+    });
+}
+
+function loadKanjiDataFromJson() {
+  return fetchJsonData("kanji.json", "kanji.json")
+    .then((payload) => {
+      refreshKanjiRows(payload || []);
+      return payload;
+    })
+    .catch((error) => {
+      console.warn("Using bundled kanji data (script fallback).", error);
+      refreshKanjiRows(kanjiDataRows);
+      return null;
+    });
+}
+
+function loadSupplementaryContentData() {
+  return Promise.all([
+    loadGrammarDataFromJson(),
+    loadReadingDataFromJson(),
+    loadKanjiDataFromJson()
+  ]).then(() => {
+    refreshKanjiPracticeSet();
+    renderAll();
+  });
+}
+
+refreshGrammarContentState(grammarContent);
+refreshReadingContentState(readingContent);
+refreshKanjiRows(kanjiDataRows);
 
 function getAllPracticeSets(levelSets = {}) {
   return contentLevels.reduce((items, level) => items.concat(levelSets[level] || []), []);
@@ -847,10 +977,6 @@ const basicPracticeSets = {
   }
 };
 
-const grammarItems = Array.isArray(grammarContent.items) ? grammarContent.items : [];
-const grammarPracticeSets = getLevelContentSets(grammarContent.practiceSets);
-grammarPracticeSets[allLevelValue] = getAllPracticeSets(grammarPracticeSets);
-
 const quizQuestions = [
   {
     id: "q1",
@@ -922,7 +1048,6 @@ const kanjiQuizFieldLabels = {
 const vocabPartAllValue = allLevelValue;
 const selectableStudyLevels = [...contentLevels, allLevelValue];
 const kanjiGradeOptions = [allLevelValue, "1", "2", "3", "4", "5", "6"];
-const kanjiDataRows = Array.isArray(globalThis.JAPANOTE_KANJI_DATA) ? globalThis.JAPANOTE_KANJI_DATA : [];
 const kanjiToneMap = {
   "1": "tone-gold",
   "2": "tone-sky",
@@ -2383,6 +2508,22 @@ if (dynamicKanjiItems.length) {
 }
 
 const basicPracticeTrackOrder = ["hiragana", "katakana", "words", "particles", "kanji", "sentences"];
+function refreshKanjiPracticeSet() {
+  const dynamicKanjiItems = buildKanjiPracticeItemsFromData();
+
+  if (dynamicKanjiItems.length) {
+    basicPracticeSets.kanji = {
+      label: "?쒖옄",
+      heading: "?숇뀈蹂?諛곕떦 ?쒖옄",
+      items: dynamicKanjiItems
+    };
+  } else {
+    delete basicPracticeSets.kanji;
+  }
+}
+
+refreshKanjiPracticeSet();
+
 const basicPracticeTrackLabels = {
   hiragana: "히라가나",
   katakana: "카타카나",
@@ -4255,9 +4396,6 @@ const starterKanjiState = {
   showResults: false,
   resultFilter: "all"
 };
-
-const readingSets = getLevelContentSets(readingContent.sets);
-readingSets[allLevelValue] = getAllPracticeSets(readingSets);
 
 const defaultState = {
   flashcardIndex: 0,
@@ -10568,3 +10706,6 @@ window.addEventListener("japanote:storage-updated", (event) => {
 });
 renderAll();
 loadRelevantVocabData();
+loadSupplementaryContentData().catch((error) => {
+  console.error("Failed to load supplementary content data.", error);
+});
