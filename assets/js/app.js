@@ -3006,11 +3006,21 @@ function updateWritingPracticeControls() {
   };
 
   if (guideToggle) {
-    syncButtonState(
-      guideToggle,
-      writingPracticeState.guideVisible ? "가이드 숨길래요" : "가이드 볼래요",
-      !writingPracticeState.hasVectorGuide || isBusy
-    );
+    guideToggle.disabled = !writingPracticeState.hasVectorGuide || isBusy;
+    const isGuideVisible = writingPracticeState.guideVisible;
+    const guideLabel = guideToggle.querySelector(".writing-practice-guide-label");
+    const guideIcon = guideToggle.querySelector(".writing-practice-guide-icon");
+
+    if (guideLabel) {
+      guideLabel.textContent = "가이드";
+    }
+
+    if (guideIcon) {
+      guideIcon.textContent = isGuideVisible ? "visibility_off" : "visibility";
+      guideIcon.setAttribute("aria-label", isGuideVisible ? "숨김" : "표시");
+    }
+
+    guideToggle.setAttribute("aria-label", `가이드 ${isGuideVisible ? "숨기기" : "보기"}`);
   }
 
   if (revealToggle) {
@@ -5907,6 +5917,11 @@ function applyChoiceOptionFeedback({
 
 function hasAnsweredChoiceOptions(options) {
   return Array.from(options).some((item) => item.disabled);
+}
+
+function hasAnsweredAllChoiceOptions(options) {
+  const list = Array.from(options);
+  return list.length > 0 && list.every((item) => item.disabled);
 }
 
 function attachStateSpinner({
@@ -8826,16 +8841,30 @@ function rememberQuizMistake(question, userAnswer) {
 }
 
 function revealQuizAnswer(question, selectedOption, correct) {
+  const answerIndex = question.options.indexOf(selectedOption);
   const options = document.querySelectorAll(".quiz-option");
 
   options.forEach((item) => {
     item.disabled = true;
 
-    if (item.textContent === question.answer) {
+    if (item.textContent === question.answer || options.length && options.item(item)??) {
+      // item text comparison kept for backward compatibility
+    }
+  });
+}
+
+function revealQuizAnswerWithIndex(question, selectedIndex, correct) {
+  const answerIndex = question.options.indexOf(question.answer);
+  const options = document.querySelectorAll(".quiz-option");
+
+  options.forEach((item, optionIndex) => {
+    item.disabled = true;
+
+    if (optionIndex === answerIndex) {
       item.classList.add("is-correct");
     }
 
-    if (!correct && selectedOption && item.textContent === selectedOption) {
+    if (!correct && selectedIndex === optionIndex) {
       item.classList.add("is-wrong");
     }
   });
@@ -8924,13 +8953,14 @@ function renderQuiz() {
   optionsContainer.hidden = false;
   optionsContainer.innerHTML = "";
 
-  question.options.forEach((option) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "quiz-option";
-    button.textContent = softenVisibleKoreanCopy(option);
-    button.addEventListener("click", () => handleQuizAnswer(question, option));
-    optionsContainer.appendChild(button);
+  renderChoiceOptionButtons({
+    container: optionsContainer,
+    options: question.options,
+    buttonClassName: "quiz-option",
+    formatText: softenVisibleKoreanCopy,
+    getOptionValue: (_, index) => index,
+    onSelect: (index) => handleQuizAnswer(question, index),
+    setPressedState: true
   });
 
   setQuizActionState({
@@ -8946,20 +8976,23 @@ function renderQuiz() {
 }
 
 function handleQuizAnswer(question, option) {
+  const selectedIndex = Number.isFinite(option) ? option : question.options.indexOf(option);
   const options = document.querySelectorAll(".quiz-option");
-  const alreadyAnswered = Array.from(options).some((item) => item.disabled);
+  const alreadyAnswered = hasAnsweredChoiceOptions(options);
 
   if (alreadyAnswered) {
     return;
   }
 
-  finalizeQuizQuestion(question, option, option === question.answer);
+  const correctAnswer = question.options.indexOf(question.answer);
+  const selectedOption = question.options[selectedIndex] ?? "";
+  finalizeQuizQuestion(question, selectedOption, selectedIndex === correctAnswer);
 }
 
 function handleQuizTimeout() {
   const question = getQuizQuestion();
   const options = document.querySelectorAll(".quiz-option");
-  const alreadyAnswered = Array.from(options).some((item) => item.disabled);
+  const alreadyAnswered = hasAnsweredChoiceOptions(options);
 
   if (alreadyAnswered || !question) {
     return;
@@ -8970,7 +9003,7 @@ function handleQuizTimeout() {
 
 function nextQuiz() {
   const options = document.querySelectorAll(".quiz-option");
-  const answered = Array.from(options).length > 0 && Array.from(options).every((item) => item.disabled);
+  const answered = hasAnsweredAllChoiceOptions(options);
   const feedback = document.getElementById("quiz-feedback");
 
   if (state.quizSessionFinished) {
@@ -10160,4 +10193,3 @@ window.addEventListener("japanote:storage-updated", (event) => {
   applyExternalStudyState(event.detail.value);
 });
 renderAll();
-
