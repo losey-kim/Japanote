@@ -1,6 +1,7 @@
 ﻿const kanjiMatchStorageKey = "japanote-kanji-match-state";
 const kanjiStudyStateStorageKey = "jlpt-compass-state";
 const sharedMatchGame = globalThis.japanoteSharedMatchGame;
+const matchCopy = globalThis.japanoteMatchCopy || {};
 
 const kanjiMatchGradeOptions = ["all", "1", "2", "3", "4", "5", "6"];
 const kanjiMatchDurationOptions = [10, 15, 20, 0];
@@ -19,18 +20,26 @@ const defaultKanjiMatchPreferences = {
   optionsOpen: false
 };
 
-const kanjiMatchResultFilterLabels = {
+const kanjiMatchResultFilterLabels = matchCopy.resultFilterLabels || {
   all: "전체",
   correct: "정답",
   wrong: "오답"
 };
 
-const kanjiMatchFilterLabels = {
+const kanjiMatchFilterLabels = matchCopy.studyFilterLabels || {
   all: "전체",
   review: "다시 볼래요",
   mastered: "익혔어요",
   unmarked: "아직 안 골랐어요"
 };
+
+const kanjiMatchReadyStateText =
+  typeof matchCopy.getReadyStateText === "function"
+    ? matchCopy.getReadyStateText()
+    : {
+        ready: "준비되면 시작해볼까요?",
+        unavailable: "지금은 준비 중이에요."
+      };
 
 function normalizeKanjiMatchText(value) {
   const text = String(value ?? "").trim();
@@ -147,6 +156,10 @@ function getKanjiMatchDuration(value = kanjiMatchPreferences.duration) {
 }
 
 function getKanjiMatchDurationLabel(duration = kanjiMatchPreferences.duration) {
+  if (typeof matchCopy.formatDurationLabel === "function") {
+    return matchCopy.formatDurationLabel(duration);
+  }
+
   const activeDuration = Number(duration);
   return activeDuration <= 0 ? "천천히" : `${activeDuration}초`;
 }
@@ -156,12 +169,14 @@ function getKanjiMatchResultFilter(value = kanjiMatchState.resultFilter) {
 }
 
 function getKanjiMatchOptionsSummaryText() {
-  return [
+  const summaryItems = [
     getKanjiMatchFilterLabel(),
     getKanjiMatchGradeLabel(),
     `${getKanjiMatchTotalCount()}문제`,
     getKanjiMatchDurationLabel()
-  ].join(" · ");
+  ];
+
+  return typeof matchCopy.joinSummaryItems === "function" ? matchCopy.joinSummaryItems(summaryItems) : summaryItems.join(" · ");
 }
 
 function getBaseKanjiMatchPool() {
@@ -585,13 +600,15 @@ function renderKanjiMatchBulkActionButton(results) {
 
   const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
   const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isKanjiSavedToMemorizationList(id));
-  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
+  const actionLabel = typeof matchCopy.getBulkActionLabel === "function" ? matchCopy.getBulkActionLabel(allSaved) : allSaved ? "전체 빼기" : "전체 담기";
   const actionTitle =
-    uniqueIds.length === 0
-      ? "지금 담을 한자가 없어요."
-      : allSaved
-        ? "지금 보이는 한자를 다시 볼래요 목록에서 모두 빼요."
-        : "지금 보이는 한자를 다시 볼래요 목록에 모두 담아요.";
+    typeof matchCopy.getBulkActionTitle === "function"
+      ? matchCopy.getBulkActionTitle({ count: uniqueIds.length, itemLabel: "한자", allSaved })
+      : uniqueIds.length === 0
+        ? "지금 담을 한자가 없어요."
+        : allSaved
+          ? "지금 보이는 한자를 다시 볼래요 목록에서 모두 빼요."
+          : "지금 보이는 한자를 다시 볼래요 목록에 모두 담아요.";
 
   bulkActionButton.disabled = uniqueIds.length === 0;
   bulkActionButton.dataset.kanjiMatchBulkAction = allSaved ? "remove" : "save";
@@ -633,7 +650,12 @@ function renderKanjiMatchResults() {
     createItemMarkup: (item) => {
       const saved = isKanjiSavedToMemorizationList(item.id);
       const statusLabel = item.status === "correct" ? "정답" : "오답";
-      const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+      const actionLabel =
+        typeof matchCopy.getSavedActionLabel === "function"
+          ? matchCopy.getSavedActionLabel(saved)
+          : saved
+            ? "다시 볼래요에서 빼기"
+            : "다시 볼래요에 담기";
       const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
@@ -674,8 +696,8 @@ function renderKanjiMatchScreen() {
     hasStarted: kanjiMatchState.hasStarted,
     showResults: kanjiMatchState.showResults,
     isReady: kanjiMatchPool.length > 0,
-    emptyReadyText: "준비되면 시작해볼까요?",
-    emptyUnavailableText: "지금은 준비 중이에요.",
+    emptyReadyText: kanjiMatchReadyStateText.ready,
+    emptyUnavailableText: kanjiMatchReadyStateText.unavailable,
     renderSettings: renderKanjiMatchSettings,
     renderActionCopy: renderKanjiMatchActionCopy,
     renderStats: renderKanjiMatchStats,

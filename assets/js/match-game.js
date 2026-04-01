@@ -1,6 +1,7 @@
 ﻿const matchStorageKey = "japanote-match-state";
 const studyStateStorageKey = "jlpt-compass-state";
 const sharedMatchGame = globalThis.japanoteSharedMatchGame;
+const matchCopy = globalThis.japanoteMatchCopy || {};
 
 const matchSourceLevels = ["N5", "N4", "N3"];
 const matchLevelOptions = [...matchSourceLevels, "all"];
@@ -29,18 +30,26 @@ const fallbackMatchPool = [
   { id: "match-fallback-5", level: "N5", reading: "ともだち", meaning: "친구" }
 ];
 
-const matchResultFilterLabels = {
+const matchResultFilterLabels = matchCopy.resultFilterLabels || {
   all: "전체",
   correct: "정답",
   wrong: "오답"
 };
 
-const matchFilterLabels = {
+const matchFilterLabels = matchCopy.studyFilterLabels || {
   all: "전체",
   review: "다시 볼래요",
   mastered: "익혔어요",
   unmarked: "아직 안 골랐어요"
 };
+
+const matchReadyStateText =
+  typeof matchCopy.getReadyStateText === "function"
+    ? matchCopy.getReadyStateText()
+    : {
+        ready: "준비되면 시작해볼까요?",
+        unavailable: "지금은 준비 중이에요."
+      };
 
 function loadMatchPreferences() {
   return sharedMatchGame.loadStoredObject(matchStorageKey, defaultMatchPreferences);
@@ -151,12 +160,17 @@ function getMatchDuration(value = matchPreferences.duration) {
 }
 
 function getMatchDurationLabel(duration = matchPreferences.duration) {
+  if (typeof matchCopy.formatDurationLabel === "function") {
+    return matchCopy.formatDurationLabel(duration);
+  }
+
   const activeDuration = Number(duration);
   return activeDuration <= 0 ? "천천히" : `${activeDuration}초`;
 }
 
 function getMatchOptionsSummaryText() {
-  return [`${getMatchTotalCount()}문제`, getMatchDurationLabel()].join(" · ");
+  const summaryItems = [`${getMatchTotalCount()}문제`, getMatchDurationLabel()];
+  return typeof matchCopy.joinSummaryItems === "function" ? matchCopy.joinSummaryItems(summaryItems) : summaryItems.join(" · ");
 }
 
 function getMatchResultFilter(value = matchState.resultFilter) {
@@ -671,13 +685,15 @@ function renderMatchBulkActionButton(results) {
 
   const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
   const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
-  const actionLabel = allSaved ? "전체 빼기" : "전체 담기";
+  const actionLabel = typeof matchCopy.getBulkActionLabel === "function" ? matchCopy.getBulkActionLabel(allSaved) : allSaved ? "전체 빼기" : "전체 담기";
   const actionTitle =
-    uniqueIds.length === 0
-      ? "지금 담을 단어가 없어요."
-      : allSaved
-        ? "지금 보이는 단어를 다시 볼래요 목록에서 모두 빼요."
-        : "지금 보이는 단어를 다시 볼래요 목록에 모두 담아요.";
+    typeof matchCopy.getBulkActionTitle === "function"
+      ? matchCopy.getBulkActionTitle({ count: uniqueIds.length, itemLabel: "단어", allSaved })
+      : uniqueIds.length === 0
+        ? "지금 담을 단어가 없어요."
+        : allSaved
+          ? "지금 보이는 단어를 다시 볼래요 목록에서 모두 빼요."
+          : "지금 보이는 단어를 다시 볼래요 목록에 모두 담아요.";
 
   bulkActionButton.disabled = uniqueIds.length === 0;
   bulkActionButton.dataset.matchBulkAction = allSaved ? "remove" : "save";
@@ -719,7 +735,12 @@ function renderMatchResults() {
     createItemMarkup: (item) => {
       const saved = isWordSavedToMemorizationList(item.id);
       const statusLabel = item.status === "correct" ? "정답" : "오답";
-      const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+      const actionLabel =
+        typeof matchCopy.getSavedActionLabel === "function"
+          ? matchCopy.getSavedActionLabel(saved)
+          : saved
+            ? "다시 볼래요에서 빼기"
+            : "다시 볼래요에 담기";
       const actionIcon = saved ? "delete" : "bookmark_add";
 
       return `
@@ -760,8 +781,8 @@ function renderMatchScreen() {
     hasStarted: matchState.hasStarted,
     showResults: matchState.showResults,
     isReady: matchPool.length > 0,
-    emptyReadyText: "준비되면 시작해볼까요?",
-    emptyUnavailableText: "지금은 준비 중이에요.",
+    emptyReadyText: matchReadyStateText.ready,
+    emptyUnavailableText: matchReadyStateText.unavailable,
     renderSettings: renderMatchSettings,
     renderActionCopy: renderMatchActionCopy,
     renderStats: renderMatchStats,

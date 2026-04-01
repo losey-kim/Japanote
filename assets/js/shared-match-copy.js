@@ -1,0 +1,43 @@
+globalThis.japanoteMatchCopy = {
+  resultFilterLabels: {
+    all: "전체",
+    correct: "정답",
+    wrong: "오답"
+  },
+  studyFilterLabels: {
+    all: "전체",
+    review: "다시 볼래요",
+    mastered: "익혔어요",
+    unmarked: "아직 안 골랐어요"
+  },
+  formatDurationLabel(duration) {
+    const activeDuration = Number(duration);
+    return activeDuration <= 0 ? "천천히" : `${activeDuration}초`;
+  },
+  joinSummaryItems(items) {
+    return (Array.isArray(items) ? items : []).filter(Boolean).join(" · ");
+  },
+  getBulkActionLabel(allSaved) {
+    return allSaved ? "전체 빼기" : "전체 담기";
+  },
+  getBulkActionTitle({ count, itemLabel, allSaved }) {
+    const label = itemLabel || "항목";
+
+    if (!count) {
+      return `지금 담을 ${label}가 없어요.`;
+    }
+
+    return allSaved
+      ? `지금 보이는 ${label}를 다시 볼래요 목록에서 모두 빼요.`
+      : `지금 보이는 ${label}를 다시 볼래요 목록에 모두 담아요.`;
+  },
+  getSavedActionLabel(saved) {
+    return saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+  },
+  getReadyStateText() {
+    return {
+      ready: "준비되면 시작해볼까요?",
+      unavailable: "지금은 준비 중이에요."
+    };
+  }
+};
