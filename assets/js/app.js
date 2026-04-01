@@ -5416,6 +5416,39 @@ function renderPagedStudyList({
     .join("");
 }
 
+function renderStatefulStudyList({
+  list,
+  pageInfo,
+  prev,
+  next,
+  items,
+  pageKey,
+  pageSize,
+  emptyMessage,
+  renderItem
+}) {
+  renderPagedStudyList({
+    list,
+    pageInfo,
+    prev,
+    next,
+    items,
+    page: state[pageKey],
+    pageSize,
+    emptyMessage,
+    onPageChange: (page) => {
+      state[pageKey] = page;
+      saveState();
+    },
+    renderItem
+  });
+}
+
+function renderStudyViewWithStats(render) {
+  render();
+  renderStats();
+}
+
 function toggleStudyFlashcardReveal(revealedKey, render) {
   state[revealedKey] = !state[revealedKey];
   updateStudyStreak();
@@ -6619,19 +6652,15 @@ function renderKanjiList() {
   const next = document.getElementById("kanji-page-next");
   const items = getVisibleKanjiItems();
 
-  renderPagedStudyList({
+  renderStatefulStudyList({
     list,
     pageInfo,
     prev,
     next,
     items,
-    page: state.kanjiPage,
+    pageKey: "kanjiPage",
     pageSize: kanjiPageSize,
     emptyMessage: getKanjiEmptyMessage(),
-    onPageChange: (page) => {
-      state.kanjiPage = page;
-      saveState();
-    },
     renderItem: (item, displayIndex) => {
       const gradeLabel = item.gradeLabel || getKanjiGradeLabel(item.grade);
 
@@ -6863,8 +6892,7 @@ function setKanjiView(view) {
 
 function toggleKanjiFlashcardReveal() {
   toggleStudyFlashcardReveal("kanjiFlashcardRevealed", () => {
-    renderKanjiPageLayout();
-    renderStats();
+    renderStudyViewWithStats(renderKanjiPageLayout);
   });
 }
 
@@ -6884,10 +6912,7 @@ function markKanjiFlashcardForReview() {
     revealedKey: "kanjiFlashcardRevealed",
     saveItem: saveKanjiToReviewList,
     syncIndexAfterUpdate: syncKanjiFlashcardIndexAfterUpdate,
-    render: () => {
-      renderKanjiPageLayout();
-      renderStats();
-    }
+    render: () => renderStudyViewWithStats(renderKanjiPageLayout)
   });
 }
 
@@ -6898,10 +6923,7 @@ function markKanjiFlashcardMastered() {
     revealedKey: "kanjiFlashcardRevealed",
     saveItem: saveKanjiToMasteredList,
     syncIndexAfterUpdate: syncKanjiFlashcardIndexAfterUpdate,
-    render: () => {
-      renderKanjiPageLayout();
-      renderStats();
-    }
+    render: () => renderStudyViewWithStats(renderKanjiPageLayout)
   });
 }
 
@@ -7781,19 +7803,15 @@ function renderVocabList() {
   const activeFilter = getVocabFilter();
   const items = getVisibleVocabList();
 
-  renderPagedStudyList({
+  renderStatefulStudyList({
     list,
     pageInfo,
     prev,
     next,
     items,
-    page: state.vocabPage,
+    pageKey: "vocabPage",
     pageSize: vocabPageSize,
     emptyMessage: getVocabEmptyMessage(activeFilter),
-    onPageChange: (page) => {
-      state.vocabPage = page;
-      saveState();
-    },
     renderItem: (item, displayIndex) => {
       const vocabLevel = item.level || "";
 
@@ -8185,8 +8203,7 @@ function renderVocabPage() {
 
 function toggleFlashcardReveal() {
   toggleStudyFlashcardReveal("flashcardRevealed", () => {
-    renderVocabPage();
-    renderStats();
+    renderStudyViewWithStats(renderVocabPage);
   });
 }
 
