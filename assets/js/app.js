@@ -5531,6 +5531,16 @@ function updateStudyCatalogState({
   render();
 }
 
+function updateSimpleStateAndRender(stateKey, nextValue, render) {
+  if (state[stateKey] === nextValue) {
+    return;
+  }
+
+  state[stateKey] = nextValue;
+  saveState();
+  render();
+}
+
 function markStudyFlashcardStatus({
   getCards,
   indexKey,
@@ -9712,11 +9722,7 @@ function attachVocabStudyListeners({
     ]
   });
   attachVocabListStatusIconListeners({ list: vocabList, render: renderAll });
-  vocabTabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      setVocabTab(button.dataset.vocabTab);
-    });
-  });
+  attachValueButtonListeners(vocabTabButtons, (button) => button.dataset.vocabTab, setVocabTab);
 }
 
 function attachKanjiStudyListeners({
@@ -9769,16 +9775,9 @@ function attachKanjiStudyListeners({
   });
   attachKanjiListStatusIconListeners({
     list: kanjiList,
-    render: () => {
-      renderStats();
-      renderKanjiPageLayout();
-    }
+    render: () => renderStudyViewWithStats(renderKanjiPageLayout)
   });
-  kanjiGradeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      setKanjiGrade(button.dataset.kanjiGradeOption);
-    });
-  });
+  attachValueButtonListeners(kanjiGradeButtons, (button) => button.dataset.kanjiGradeOption, setKanjiGrade);
 }
 
 function attachEventListeners() {
@@ -9931,21 +9930,9 @@ function attachEventListeners() {
     invalidate: invalidateVocabQuizSession,
     render: renderVocabPage
   });
-  if (vocabQuizLevelSelect) {
-    vocabQuizLevelSelect.addEventListener("change", () => {
-      setVocabLevel(vocabQuizLevelSelect.value);
-    });
-  }
-  if (vocabQuizFilterSelect) {
-    vocabQuizFilterSelect.addEventListener("change", () => {
-      setVocabFilter(vocabQuizFilterSelect.value);
-    });
-  }
-  if (vocabQuizPartSelect) {
-    vocabQuizPartSelect.addEventListener("change", () => {
-      setVocabPartFilter(vocabQuizPartSelect.value);
-    });
-  }
+  attachSelectValueListener(vocabQuizLevelSelect, setVocabLevel);
+  attachSelectValueListener(vocabQuizFilterSelect, setVocabFilter);
+  attachSelectValueListener(vocabQuizPartSelect, setVocabPartFilter);
   attachResultFilterSelectListener({
     select: vocabQuizResultFilter,
     getNextValue: getVocabQuizResultFilter,
@@ -10008,11 +9995,7 @@ function attachEventListeners() {
   });
   attachValueButtonListeners(quizTimeButtons, (button) => button.dataset.quizTime, setQuizDuration);
   attachStateOptionsToggle(grammarPracticeOptionsToggle, "grammarPracticeOptionsOpen", renderGrammarPracticeControls);
-  if (grammarPracticeLevelSelect) {
-    grammarPracticeLevelSelect.addEventListener("change", () => {
-      setGrammarPracticeLevel(grammarPracticeLevelSelect.value);
-    });
-  }
+  attachSelectValueListener(grammarPracticeLevelSelect, setGrammarPracticeLevel);
   attachStateSpinner({
     spinner: grammarPracticeCountSpinner,
     options: grammarPracticeCountOptions,
@@ -10041,11 +10024,7 @@ function attachEventListeners() {
     grammarPracticeStart.addEventListener("click", restartGrammarPractice);
   }
   attachStateOptionsToggle(readingOptionsToggle, "readingOptionsOpen", renderReadingControls);
-  if (readingLevelSelect) {
-    readingLevelSelect.addEventListener("change", () => {
-      setReadingLevel(readingLevelSelect.value);
-    });
-  }
+  attachSelectValueListener(readingLevelSelect, setReadingLevel);
   attachStateSpinner({
     spinner: readingCountSpinner,
     options: readingCountOptions,
@@ -10111,16 +10090,8 @@ function attachEventListeners() {
     invalidate: invalidateStarterKanjiSession,
     render: renderKanjiPageLayout
   });
-  if (starterKanjiCollectionSelect) {
-    starterKanjiCollectionSelect.addEventListener("change", () => {
-      setKanjiCollectionFilter(starterKanjiCollectionSelect.value);
-    });
-  }
-  if (starterKanjiGradeSelect) {
-    starterKanjiGradeSelect.addEventListener("change", () => {
-      setKanjiGrade(starterKanjiGradeSelect.value);
-    });
-  }
+  attachSelectValueListener(starterKanjiCollectionSelect, setKanjiCollectionFilter);
+  attachSelectValueListener(starterKanjiGradeSelect, setKanjiGrade);
   if (starterKanjiStart) {
     starterKanjiStart.addEventListener("click", () => {
       if (state.starterKanjiQuizStarted) {
@@ -10193,11 +10164,7 @@ function attachEventListeners() {
     unselectItem: removeKanjiFromReviewList,
     render: renderKanjiPageLayout
   });
-  kanjiTabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      setKanjiTab(button.dataset.kanjiTab);
-    });
-  });
+  attachValueButtonListeners(kanjiTabButtons, (button) => button.dataset.kanjiTab, setKanjiTab);
   if (grammarPracticeNext) {
     grammarPracticeNext.addEventListener("click", nextGrammarPracticeSet);
   }
@@ -10237,51 +10204,25 @@ function attachEventListeners() {
       startKanaQuizSession(kanaQuizSettings.mode);
     });
   }
-  if (kanaQuizResultFilter) {
-    kanaQuizResultFilter.addEventListener("change", (event) => {
-      kanaQuizSheetState.resultFilter = getKanaQuizResultFilter(event.target.value);
-      renderKanaQuizResults();
-    });
-  }
-  charactersTabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextTab = getCharactersTab(button.dataset.charactersTab);
-
-      if (state.charactersTab === nextTab) {
-        return;
-      }
-
-      state.charactersTab = nextTab;
-      saveState();
-      renderCharactersPageLayout();
-    });
+  attachSelectValueListener(kanaQuizResultFilter, (value) => {
+    kanaQuizSheetState.resultFilter = getKanaQuizResultFilter(value);
+    renderKanaQuizResults();
   });
-  charactersLibraryTabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextTab = getCharactersLibraryTab(button.dataset.charactersLibraryTab);
-
-      if (state.charactersLibraryTab === nextTab) {
-        return;
-      }
-
-      state.charactersLibraryTab = nextTab;
-      saveState();
-      renderCharactersPageLayout();
-    });
-  });
-  grammarTabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const nextTab = getGrammarTab(button.dataset.grammarTab);
-
-      if (state.grammarTab === nextTab) {
-        return;
-      }
-
-      state.grammarTab = nextTab;
-      saveState();
-      renderGrammarPageLayout();
-    });
-  });
+  attachValueButtonListeners(
+    charactersTabButtons,
+    (button) => getCharactersTab(button.dataset.charactersTab),
+    (nextTab) => updateSimpleStateAndRender("charactersTab", nextTab, renderCharactersPageLayout)
+  );
+  attachValueButtonListeners(
+    charactersLibraryTabButtons,
+    (button) => getCharactersLibraryTab(button.dataset.charactersLibraryTab),
+    (nextTab) => updateSimpleStateAndRender("charactersLibraryTab", nextTab, renderCharactersPageLayout)
+  );
+  attachValueButtonListeners(
+    grammarTabButtons,
+    (button) => getGrammarTab(button.dataset.grammarTab),
+    (nextTab) => updateSimpleStateAndRender("grammarTab", nextTab, renderGrammarPageLayout)
+  );
   attachValueButtonListeners(writingModeButtons, (button) => button.dataset.writingMode || "hiragana", (nextMode) => {
     if (nextMode === writingPracticeSettings.mode) {
       return;
