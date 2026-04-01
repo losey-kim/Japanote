@@ -5,15 +5,21 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
 ## 실행 방법
 
 1. 저장소 루트에서 **HTTP로 여는 것**을 권장합니다 (`file://`로 열면 일부 기능·Supabase 로그인이 제한될 수 있어요).
-2. 예시 (PowerShell에서 프로젝트 폴더로 이동한 뒤):
+2. **Node.js**가 있으면:
+
+   ```text
+   npm run dev
+   ```
+
+   브라우저에서 `http://localhost:8080/` 로 접속합니다.
+
+3. Node 없이 **Python**만 있으면:
 
    ```text
    python -m http.server 8080
    ```
 
-   브라우저에서 `http://localhost:8080/` 로 접속합니다. 포트는 바꿔도 됩니다.
-
-3. 또는 `npx serve .` , VS Code **Live Server** 등으로 같은 폴더를 띄워도 됩니다.
+4. 또는 VS Code **Live Server** 등으로 같은 폴더를 띄워도 됩니다.
 
 ## 로컬에서 Supabase(클라우드 로그인) 테스트
 

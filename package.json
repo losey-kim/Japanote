@@ -1,0 +1,8 @@
+{
+  "name": "japanote",
+  "private": true,
+  "scripts": {
+    "dev": "npx --yes serve@14 -l 8080 .",
+    "start": "npm run dev"
+  }
+}
