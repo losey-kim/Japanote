@@ -49,6 +49,59 @@
     busy: false
   };
 
+  const AUTH_STATUS_STATES = {
+    offline: {
+      summary: "로컬 전용",
+      icon: "cloud_off",
+      toggleState: "offline"
+    },
+    ready: {
+      summary: "클라우드 연결",
+      icon: "cloud_sync",
+      toggleState: "ready"
+    },
+    connected: {
+      summary: "연결됨",
+      icon: "cloud_done",
+      toggleState: "connected"
+    },
+    syncing: {
+      summary: "동기화 중",
+      icon: "cloud_upload",
+      toggleState: "syncing"
+    },
+    linkSent: {
+      summary: "이메일 확인",
+      icon: "mark_email_read",
+      toggleState: "link-sent"
+    },
+    error: {
+      summary: "동기화 오류",
+      icon: "cloud_alert",
+      toggleState: "error"
+    }
+  };
+
+  function getAuthUiState() {
+    if (!config.enabled) {
+      return "offline";
+    }
+
+    if (status.code === "error") {
+      return "error";
+    }
+
+    if (currentUser) {
+      return displaySyncBusy ? "syncing" : "connected";
+    }
+
+    if (status.code === "link-sent") {
+      return "linkSent";
+    }
+
+    return "ready";
+  }
+
   function clone(value) {
     if (value == null || typeof value !== "object") {
       return value;
@@ -613,43 +666,13 @@
   }
 
   function getSummaryLabel() {
-    if (!config.enabled) {
-      return "이 기기만";
-    }
-
-    if (currentUser) {
-      return displaySyncBusy ? "동기화 중" : "연결됨";
-    }
-
-    if (status.code === "link-sent") {
-      return "메일 확인";
-    }
-
-    if (status.code === "error") {
-      return "동기화 오류";
-    }
-
-    return "클라우드 연결";
+    const state = getAuthUiState();
+    return AUTH_STATUS_STATES[state].summary;
   }
 
   function getSummaryIcon() {
-    if (!config.enabled) {
-      return "cloud_off";
-    }
-
-    if (status.code === "error") {
-      return "cloud_alert";
-    }
-
-    if (currentUser) {
-      return displaySyncBusy ? "cloud_upload" : "cloud_done";
-    }
-
-    if (status.code === "link-sent") {
-      return "mark_email_read";
-    }
-
-    return "cloud_sync";
+    const state = getAuthUiState();
+    return AUTH_STATUS_STATES[state].icon;
   }
 
   function getPanelForRoot(root) {
@@ -851,21 +874,12 @@
       }
       if (toggle) {
         const summaryLabel = getSummaryLabel();
+        const stateMeta = AUTH_STATUS_STATES[getAuthUiState()];
         toggle.setAttribute("aria-expanded", String(authPanelOpen));
         toggle.setAttribute("aria-label", summaryLabel);
         toggle.setAttribute("title", summaryLabel);
-        if (!config.enabled) {
-          toggle.dataset.authSyncState = "offline";
-        } else if (status.code === "error") {
-          toggle.dataset.authSyncState = "error";
-        } else if (displaySyncBusy) {
-          toggle.dataset.authSyncState = "syncing";
-        } else if (status.code === "link-sent") {
-          toggle.dataset.authSyncState = "link-sent";
-        } else if (currentUser) {
-          toggle.dataset.authSyncState = "connected";
-        } else {
-          toggle.dataset.authSyncState = "ready";
+        if (stateMeta?.toggleState) {
+          toggle.dataset.authSyncState = stateMeta.toggleState;
         }
       }
       if (statusNode) {
