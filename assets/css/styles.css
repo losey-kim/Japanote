@@ -251,9 +251,63 @@ button {
 }
 
 .auth-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   min-height: 44px;
-  padding: 0 14px;
-  white-space: nowrap;
+  padding: 0;
+  border: 1px solid rgba(25, 21, 22, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #3b355e;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease, color 140ms ease;
+  box-shadow: 0 10px 20px rgba(25, 21, 22, 0.1);
+}
+
+.auth-toggle:hover,
+.auth-toggle:focus-visible {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(25, 21, 22, 0.14),
+    0 12px 22px rgba(25, 21, 22, 0.14);
+}
+
+.auth-toggle .material-symbols-rounded {
+  font-size: 1.3rem;
+}
+
+.auth-toggle[data-auth-sync-state="connected"] {
+  background: linear-gradient(135deg, rgba(95, 174, 139, 0.35), rgba(93, 133, 207, 0.38));
+  color: #1f2d28;
+}
+
+.auth-toggle[data-auth-sync-state="syncing"] {
+  background: linear-gradient(135deg, #ffd76a, #7a98d7);
+  color: #241f3b;
+}
+
+.auth-toggle[data-auth-sync-state="error"] {
+  background: linear-gradient(135deg, #ffb4a2, #de6b48);
+  color: #3b1510;
+}
+
+.auth-toggle[data-auth-sync-state="offline"] {
+  background: rgba(25, 21, 22, 0.08);
+  color: var(--muted);
+}
+
+.auth-toggle[data-auth-sync-state="link-sent"] {
+  background: linear-gradient(135deg, #c8e6c9, #81c784);
+  color: #1b3d1f;
+}
+
+.auth-toggle[data-auth-sync-state="ready"] {
+  background: linear-gradient(135deg, #e3e8ff, #b8c5ff);
+  color: #2a2f55;
 }
 
 .auth-panel {
@@ -359,15 +413,6 @@ button {
 }
 
 @media (max-width: 540px) {
-  .topbar-auth {
-    width: 100%;
-  }
-
-  .auth-toggle {
-    width: 100%;
-    justify-content: center;
-  }
-
   .auth-actions {
     grid-template-columns: 1fr;
   }
@@ -2016,6 +2061,13 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* 사이드바 + 한자 2열: 일반 sidebar 규칙(3열·margin 0)보다 우선 — 목록 탭과 동일한 학년/모아보기 너비·간격 */
+.vocab-select-toolbar.vocab-select-toolbar-sidebar.kanji-filter-toolbar {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
 .kanji-list-head-meta {
   display: flex;
   align-items: center;
@@ -2385,6 +2437,13 @@ button {
 .vocab-tab-panel {
   display: grid;
   gap: 18px;
+}
+
+/* 탭 줄(.vocab-tab-list margin-bottom)만으로 간격을 쓰고, match-shell 기본 margin-top(24px)은 이중 여백이 됨 */
+.vocab-tab-panel .match-shell,
+.grammar-tab-panel .match-shell,
+.characters-tab-panel .match-shell {
+  margin-top: 0;
 }
 
 .vocab-view-toggle {
@@ -3256,10 +3315,11 @@ button {
 
 .grammar-panel-copy {
   max-width: 62ch;
+  margin-bottom: 20px;
 }
 
 .grammar-panel-copy h3 {
-  margin: 12px 0 0;
+  margin: 0;
   font-family: "Space Grotesk", sans-serif;
   letter-spacing: -0.03em;
   font-size: clamp(1.5rem, 2.8vw, 2.1rem);
@@ -4890,6 +4950,12 @@ body::after {
     gap: 10px;
   }
 
+  .vocab-select-toolbar.vocab-select-toolbar-sidebar.kanji-filter-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
   .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) .vocab-select-field {
     grid-template-columns: 1fr;
     gap: 6px;
@@ -5730,6 +5796,11 @@ html[data-theme="dark"] .theme-toggle {
 html[data-theme="dark"] .theme-toggle:hover,
 html[data-theme="dark"] .theme-toggle:focus-visible {
   color: inherit;
+}
+
+html[data-theme="dark"] .auth-toggle {
+  border-color: rgba(237, 242, 248, 0.12);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
 }
 
 html[data-theme="dark"] .hero-copy,
