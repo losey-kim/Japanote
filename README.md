@@ -61,6 +61,6 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
    - `emailRedirectTo`: 비워 두면 현재 페이지 기준으로 돌아옵니다.
 3. Supabase Authentication에서 **Email** 로그인(매직 링크)을 켭니다.
 4. Authentication의 `Site URL`과 `Redirect URLs`에 실제 서비스 주소를 등록합니다. GitHub Pages 예: `https://losey-kim.github.io/Japanote/` 및 `https://losey-kim.github.io/Japanote/**` (또는 `config`의 `emailRedirectTo`와 동일한 origin).
-5. SQL Editor에서 `supabase/migrations/001_user_state.sql` 내용을 실행합니다.
+5. **SQL Editor**(Supabase 대시보드 → SQL)에서 `supabase/migrations/001_user_state.sql` **전체를 복사해 한 번에 실행**합니다. 이걸 하지 않으면 동기화 시 `Could not find the table 'public.user_state' in the schema cache` 같은 오류가 납니다.
 
 앱에서는 **이름 + 이메일**만 입력하면 매직 링크가 전송됩니다. 로그인 후 **클라우드에서 받기** / **클라우드에 올리기**로 동기화할 수 있고, 다른 기기에서도 같은 이메일로 링크 로그인하면 같은 데이터를 불러옵니다.
