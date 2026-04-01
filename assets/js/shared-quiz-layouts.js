@@ -266,17 +266,32 @@
     viewSwitchAriaLabel,
     viewButtons,
     flashcard,
-    listView
+    listView,
+    panelHeadLayout = "spread"
   }) {
+    const viewSwitchMarkup = createStudyViewSwitch({ ariaLabel: viewSwitchAriaLabel, buttons: viewButtons });
+    const headBlock =
+      panelHeadLayout === "inline"
+        ? `
+        <div class="study-panel-head study-panel-head--inline">
+          <div class="study-panel-summary-row">
+            <p class="vocab-summary" id="${escapeHtml(summaryId)}">${escapeHtml(summaryText)}</p>
+            ${viewSwitchMarkup}
+          </div>
+        </div>
+      `
+        : `
+        <div class="study-panel-head">
+          <p class="vocab-summary" id="${escapeHtml(summaryId)}">${escapeHtml(summaryText)}</p>
+          ${viewSwitchMarkup}
+        </div>
+      `;
     return `
       <div class="flashcard-panel">
         <div class="${escapeHtml(toolbarClassName)}" aria-label="${escapeHtml(toolbarAriaLabel)}">
           ${selectFields.join("")}
         </div>
-        <div class="study-panel-head">
-          <p class="vocab-summary" id="${escapeHtml(summaryId)}">${escapeHtml(summaryText)}</p>
-          ${createStudyViewSwitch({ ariaLabel: viewSwitchAriaLabel, buttons: viewButtons })}
-        </div>
+        ${headBlock}
         ${createStudyFlashcardBlock(flashcard)}
         ${createStudyListBlock(listView)}
       </div>
@@ -383,19 +398,9 @@
   function createKanjiCatalogLayout() {
     return createStudyCatalogLayout({
       toolbarClassName: "vocab-select-toolbar kanji-filter-toolbar",
+      panelHeadLayout: "inline",
       toolbarAriaLabel: "한자 필터",
       selectFields: [
-        createSelectField({
-          id: "kanji-collection-select",
-          label: "모아보기",
-          ariaLabel: "한자 모아보기 고르기",
-          options: [
-            { value: "all", label: "전체" },
-            { value: "review", label: "다시 볼래요" },
-            { value: "mastered", label: "익혔어요" },
-            { value: "unmarked", label: "아직 안 정했어요" }
-          ]
-        }),
         createSelectField({
           id: "kanji-grade-select",
           label: "학년",
@@ -408,6 +413,17 @@
             { value: "4", label: "4학년" },
             { value: "5", label: "5학년" },
             { value: "6", label: "6학년" }
+          ]
+        }),
+        createSelectField({
+          id: "kanji-collection-select",
+          label: "모아보기",
+          ariaLabel: "한자 모아보기 고르기",
+          options: [
+            { value: "all", label: "전체" },
+            { value: "review", label: "다시 볼래요" },
+            { value: "mastered", label: "익혔어요" },
+            { value: "unmarked", label: "아직 안 정했어요" }
           ]
         })
       ],

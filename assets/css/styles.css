@@ -2012,6 +2012,10 @@ button {
   margin: 0 0 18px;
 }
 
+.kanji-filter-toolbar.vocab-select-toolbar {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .kanji-list-head-meta {
   display: flex;
   align-items: center;
@@ -2401,6 +2405,31 @@ button {
   flex-wrap: wrap;
 }
 
+.study-panel-head--inline {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.study-panel-summary-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+.study-panel-summary-row .vocab-summary {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.study-panel-summary-row .study-view-switch {
+  flex-shrink: 0;
+}
+
 .study-panel-head .vocab-summary {
   margin: 0;
 }
@@ -2452,6 +2481,10 @@ button {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
+}
+
+.vocab-select-toolbar:not(.kanji-filter-toolbar):not(.vocab-select-toolbar-sidebar) {
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.14fr) minmax(0, 1.14fr);
 }
 
 .vocab-select-field {
@@ -4740,8 +4773,16 @@ body::after {
     align-items: flex-start;
   }
 
+  .study-panel-head--inline {
+    align-items: center;
+  }
+
   .study-view-switch {
     margin-left: auto;
+  }
+
+  .study-panel-head--inline .study-view-switch {
+    margin-left: 0;
   }
 
   .vocab-view-toggle {
@@ -4752,8 +4793,13 @@ body::after {
     grid-template-columns: 1fr;
   }
 
-  .vocab-select-toolbar:not(.vocab-select-toolbar-sidebar) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .vocab-select-toolbar:not(.kanji-filter-toolbar):not(.vocab-select-toolbar-sidebar) {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.14fr) minmax(0, 1.14fr);
+    gap: 10px;
+  }
+
+  .vocab-select-toolbar.kanji-filter-toolbar:not(.vocab-select-toolbar-sidebar) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
@@ -4790,6 +4836,10 @@ body::after {
   .vocab-page-info,
   .vocab-summary {
     text-align: center;
+  }
+
+  .study-panel-summary-row .vocab-summary {
+    text-align: left;
   }
 
   .reading-card,
