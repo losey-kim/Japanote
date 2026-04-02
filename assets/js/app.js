@@ -4211,12 +4211,20 @@ const quizSessions = {
 function stopQuizSessionTimer(key) {
   const session = quizSessions[key];
 
-  if (!session || !session.timerId) {
+  if (!session) {
     return;
   }
 
-  window.clearInterval(session.timerId);
+  if (Number.isFinite(session.deadlineAt)) {
+    syncQuizSessionClock(session);
+  }
+
+  if (session.timerId) {
+    window.clearInterval(session.timerId);
+  }
+
   session.timerId = null;
+  session.deadlineAt = null;
 }
 
 function getQuizSessionRemainingMs(session) {
@@ -4231,6 +4239,14 @@ function getQuizSessionRemainingMs(session) {
   return Math.max(0, (Number(session.timeLeft) || 0) * 1000);
 }
 
+function getQuizSessionDisplaySeconds(session, remainingMs = getQuizSessionRemainingMs(session)) {
+  if (!session || session.duration <= 0 || remainingMs <= 0) {
+    return 0;
+  }
+
+  return Math.ceil(remainingMs / 1000);
+}
+
 function syncQuizSessionClock(session) {
   if (!session || session.duration <= 0 || !Number.isFinite(session.deadlineAt)) {
     return;
@@ -4238,7 +4254,7 @@ function syncQuizSessionClock(session) {
 
   const remainingMs = Math.max(0, session.deadlineAt - Date.now());
   session.timeLeftMs = remainingMs;
-  session.timeLeft = remainingMs > 0 ? Math.max(0, Number((remainingMs / 1000).toFixed(1))) : 0;
+  session.timeLeft = getQuizSessionDisplaySeconds(session, remainingMs);
 }
 
 function formatQuizSessionTimerText(session) {
@@ -4247,19 +4263,13 @@ function formatQuizSessionTimerText(session) {
   }
 
   const remainingMs = getQuizSessionRemainingMs(session);
-  const remainingSeconds = remainingMs / 1000;
-
-  if (session.timerId) {
-    return `${Math.max(0, remainingSeconds).toFixed(1)}초`;
-  }
-
-  return `${Math.max(0, Math.ceil(remainingSeconds))}초`;
+  return `${getQuizSessionDisplaySeconds(session, remainingMs)}초`;
 }
 
-function updateQuizTimerItem(timerItem, progress, warning, isStatic) {
+function updateQuizTimerItem(timerItem, progress, warning, isStatic, instant = false) {
   const nextProgress = progress.toFixed(3);
   const previousProgress = Number(timerItem.dataset.timerProgress || "1");
-  const shouldReset = progress > previousProgress + 0.01;
+  const shouldReset = instant || progress > previousProgress + 0.01;
 
   timerItem.classList.add("is-timer");
   timerItem.classList.toggle("is-warning", warning);
@@ -4302,7 +4312,16 @@ function renderQuizSessionHud(key) {
       session.duration > 0 && remainingMs <= Math.max(5, Math.floor(session.duration / 3)) * 1000;
     const timerItem = timer.closest(".quiz-hud-item");
     const progress =
-      session.duration > 0 ? Math.max(0, Math.min(1, remainingMs / (session.duration * 1000))) : 0;
+      session.duration > 0
+        ? Math.max(
+          0,
+          Math.min(
+            1,
+            remainingMs / (session.duration * 1000)
+          )
+        )
+        : 0;
+    const shouldFreezeProgress = !session.timerId || progress <= 0;
 
     timer.textContent = formatQuizSessionTimerText(session);
     timer.classList.toggle(
@@ -4311,7 +4330,7 @@ function renderQuizSessionHud(key) {
     );
 
     if (timerItem) {
-      updateQuizTimerItem(timerItem, progress, warning, session.duration <= 0);
+      updateQuizTimerItem(timerItem, progress, warning, session.duration <= 0, shouldFreezeProgress);
     }
   }
 
