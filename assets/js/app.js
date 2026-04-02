@@ -1971,8 +1971,8 @@ function refreshKanjiPracticeSet() {
 
   if (dynamicKanjiItems.length) {
     basicPracticeSets.kanji = {
-      label: "?쒖옄",
-      heading: "?숇뀈蹂?諛곕떦 ?쒖옄",
+      label: "한자",
+      heading: "학년별 배당 한자",
       items: dynamicKanjiItems
     };
   } else {

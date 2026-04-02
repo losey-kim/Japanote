@@ -394,10 +394,10 @@ const matchEngine = sharedMatchGame.createMatchGameEngine({
   },
   getTimeoutMessage: ({ isFinalPage }) => {
     if (isFinalPage) {
-      return "?쒓컙??珥덇낵?섏뼱 ?⑥뼱 留ㅼ묶 寃곌낵瑜?諛섏쁺?덉뼱??";
+      return "시간이 끝났어요. 결과에서 맞춘 단어와 놓친 단어를 확인해봐요.";
     }
 
-    return "?쒓컙??珥덇낵?섏뼱 ?ㅼ쓬 ?섏씠吏濡??대룞?좉쾶??";
+    return "시간이 끝났어요. 다음 묶음으로 넘어갈게요.";
   }
 });
 
