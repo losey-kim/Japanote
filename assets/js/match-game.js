@@ -1015,6 +1015,7 @@ function attachMatchEventListeners() {
 sharedMatchGame.initializeStandardMatchScreen({
   guardElement: document.getElementById("match-new-round"),
   renderSettings: renderMatchSettings,
+  renderActionCopy: renderMatchActionCopy,
   attachEventListeners: attachMatchEventListeners,
   storageHandlers: {
     [matchStorageKey]: () => {
@@ -1029,5 +1030,14 @@ sharedMatchGame.initializeStandardMatchScreen({
       enterMatchReadyState();
     }
   },
+  windowListeners: [
+    {
+      eventName: "japanote:vocab-loaded",
+      handler: () => {
+        renderMatchSettings();
+        enterMatchReadyState();
+      }
+    }
+  ],
   enterReadyState: enterMatchReadyState
 });
