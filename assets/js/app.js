@@ -1822,10 +1822,13 @@ function renderKanaQuizSheet() {
   options.innerHTML = "";
   current.item.options.forEach((option, optionIndex) => {
     const button = document.createElement("button");
+    const label = document.createElement("span");
     button.type = "button";
     button.className = "basic-practice-option kana-quiz-option";
     button.dataset.kanaQuizOption = String(optionIndex);
-    button.textContent = formatQuizLineBreaks(option);
+    label.className = "button-text-clamp";
+    label.textContent = formatQuizLineBreaks(option);
+    button.appendChild(label);
     button.addEventListener("click", () => handleKanaQuizSheetAnswer(optionIndex));
     options.appendChild(button);
   });
@@ -6210,10 +6213,13 @@ function renderChoiceOptionButtons({
   options.forEach((option, index) => {
     const value = getOptionValue(option, index);
     const button = document.createElement("button");
+    const label = document.createElement("span");
 
     button.type = "button";
     button.className = buttonClassName;
-    button.textContent = formatText(getButtonText(option, index, value));
+    label.className = "button-text-clamp";
+    label.textContent = formatText(getButtonText(option, index, value));
+    button.appendChild(label);
 
     if (datasetKey) {
       button.dataset[datasetKey] = String(value);

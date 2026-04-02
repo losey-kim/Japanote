@@ -4,8 +4,6 @@
 create table if not exists public.user_state (
   user_id uuid primary key references auth.users (id) on delete cascade,
   study_state jsonb not null default '{}'::jsonb,
-  match_state jsonb not null default '{}'::jsonb,
-  theme_mode text not null default 'system',
   updated_at timestamptz not null default timezone('utc', now())
 );
 

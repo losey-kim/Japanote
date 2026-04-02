@@ -4,6 +4,7 @@
   const themeStorageKey = "japanote-theme";
   const authStorageKey = "japanote-supabase-auth";
   const supportedKeys = new Set([studyStateKey, matchStateKey, themeStorageKey]);
+  const remoteEnabledKeys = new Set([studyStateKey]);
   const defaultConfig = {
     enabled: false,
     url: "",
@@ -164,6 +165,7 @@
   ]);
 
   const studyIndexObjectKeys = ["basicPracticeIndexes", "readingIndexes", "grammarPracticeIndexes"];
+  const remoteStudyArrayIdKeys = ["masteredIds", "reviewIds", "kanjiMasteredIds", "kanjiReviewIds"];
 
   function unionIdArrays(a, b) {
     const seen = new Set();
@@ -183,6 +185,59 @@
     }
 
     return out;
+  }
+
+  function getStudySyncEditedAt(state) {
+    const editedAt = Number(state?._sync?.clientEditedAt);
+    return Number.isFinite(editedAt) && editedAt > 0 ? editedAt : 0;
+  }
+
+  function createRemoteStudyStatePayload(state) {
+    const source = state && typeof state === "object" ? state : {};
+    const payload = {};
+
+    for (const key of remoteStudyArrayIdKeys) {
+      payload[key] = unionIdArrays(source?.[key], []);
+    }
+
+    const mastered = new Set(payload.masteredIds.map((id) => String(id)));
+    payload.reviewIds = payload.reviewIds.filter((id) => !mastered.has(String(id)));
+
+    const kanjiMastered = new Set(payload.kanjiMasteredIds.map((id) => String(id)));
+    payload.kanjiReviewIds = payload.kanjiReviewIds.filter((id) => !kanjiMastered.has(String(id)));
+
+    return payload;
+  }
+
+  function applyRemoteStudyStateToLocalState(localState, remoteStudyState) {
+    const nextLocalState = localState && typeof localState === "object" ? { ...localState } : {};
+    const remotePayload = createRemoteStudyStatePayload(remoteStudyState);
+
+    for (const key of remoteStudyArrayIdKeys) {
+      nextLocalState[key] = [...remotePayload[key]];
+    }
+
+    nextLocalState._sync = {
+      clientEditedAt: getStudySyncEditedAt(remoteStudyState)
+    };
+
+    return nextLocalState;
+  }
+
+  function hasRemoteStudyStateChanged(previousState, nextState) {
+    return JSON.stringify(createRemoteStudyStatePayload(previousState)) !== JSON.stringify(createRemoteStudyStatePayload(nextState));
+  }
+
+  function shouldQueueRemoteSave(key, previousValue, nextValue, options = {}) {
+    if (options.source === "remote" || options.remote === false || !remoteEnabledKeys.has(key)) {
+      return false;
+    }
+
+    if (key === studyStateKey) {
+      return hasRemoteStudyStateChanged(previousValue, nextValue);
+    }
+
+    return false;
   }
 
   function mergeIndexObjects(a, b) {
@@ -227,60 +282,27 @@
   }
 
   function mergeStudyState(local, remote) {
-    const la = local?._sync?.clientEditedAt ?? 0;
-    const ra = remote?._sync?.clientEditedAt ?? 0;
-    const newer = la >= ra ? local : remote;
-    const older = la >= ra ? remote : local;
-    const merged = {
-      ...(older && typeof older === "object" ? older : {}),
-      ...(newer && typeof newer === "object" ? newer : {})
-    };
+    const localPayload = createRemoteStudyStatePayload(local);
+    const remotePayload = createRemoteStudyStatePayload(remote);
+    const la = getStudySyncEditedAt(local);
+    const ra = getStudySyncEditedAt(remote);
+    const merged = {};
 
-    for (const key of studyArrayIdKeys) {
-      if (studyArrayIdKeysLastWriteWins.has(key)) {
-        if (la > ra) {
-          merged[key] = Array.isArray(local?.[key]) ? [...local[key]] : [];
-        } else if (ra > la) {
-          merged[key] = Array.isArray(remote?.[key]) ? [...remote[key]] : [];
-        } else {
-          merged[key] = unionIdArrays(local?.[key], remote?.[key]);
-        }
+    for (const key of remoteStudyArrayIdKeys) {
+      if (la > ra) {
+        merged[key] = [...localPayload[key]];
+      } else if (ra > la) {
+        merged[key] = [...remotePayload[key]];
       } else {
-        merged[key] = unionIdArrays(local?.[key], remote?.[key]);
+        merged[key] = unionIdArrays(localPayload[key], remotePayload[key]);
       }
     }
 
-    merged.quizMistakes = mergeQuizMistakes(local?.quizMistakes, remote?.quizMistakes);
-
-    for (const key of studyIndexObjectKeys) {
-      merged[key] = mergeIndexObjects(local?.[key], remote?.[key]);
-    }
-
-    merged.streak = Math.max(Number(local?.streak) || 0, Number(remote?.streak) || 0);
-    merged.lastStudyDate = maxDateString(local?.lastStudyDate, remote?.lastStudyDate);
-    merged.quizCorrectCount = Math.max(Number(local?.quizCorrectCount) || 0, Number(remote?.quizCorrectCount) || 0);
-    merged.quizAnsweredCount = Math.max(Number(local?.quizAnsweredCount) || 0, Number(remote?.quizAnsweredCount) || 0);
-    merged.stateVersion = Math.max(Number(local?.stateVersion) || 0, Number(remote?.stateVersion) || 0);
-
     const mastered = new Set(merged.masteredIds.map((id) => String(id)));
     merged.reviewIds = merged.reviewIds.filter((id) => !mastered.has(String(id)));
-    const km = new Set(merged.kanjiMasteredIds.map((id) => String(id)));
-    merged.kanjiReviewIds = merged.kanjiReviewIds.filter((id) => !km.has(String(id)));
 
-    merged._sync = { clientEditedAt: Math.max(la, ra) || Date.now() };
-
-    return merged;
-  }
-
-  function mergeMatchState(local, remote) {
-    const la = local?._sync?.clientEditedAt ?? 0;
-    const ra = remote?._sync?.clientEditedAt ?? 0;
-    const newer = la >= ra ? local : remote;
-    const older = la >= ra ? remote : local;
-    const merged = {
-      ...(older && typeof older === "object" ? older : {}),
-      ...(newer && typeof newer === "object" ? newer : {})
-    };
+    const kanjiMastered = new Set(merged.kanjiMasteredIds.map((id) => String(id)));
+    merged.kanjiReviewIds = merged.kanjiReviewIds.filter((id) => !kanjiMastered.has(String(id)));
 
     merged._sync = { clientEditedAt: Math.max(la, ra) || Date.now() };
 
@@ -398,11 +420,18 @@
       return;
     }
 
+    const previousValue = localValues[key];
     const nextValue = clone(value);
 
     if (options.source !== "remote") {
       if (key === studyStateKey && nextValue && typeof nextValue === "object") {
-        nextValue._sync = { clientEditedAt: Date.now() };
+        const syncedStudyChanged = hasRemoteStudyStateChanged(previousValue, nextValue);
+
+        // 저장 목록이 바뀔 때만 원격 sync 타임스탬프를 갱신해야
+        // 화면 상태 변경이 다른 기기의 저장 목록을 덮어쓰지 않는다.
+        nextValue._sync = {
+          clientEditedAt: syncedStudyChanged ? Date.now() : getStudySyncEditedAt(previousValue)
+        };
       }
 
       if (key === matchStateKey && nextValue && typeof nextValue === "object") {
@@ -414,7 +443,7 @@
     persistLocalValue(key, nextValue);
     dispatchStorageUpdate(key, nextValue, options.source || "local");
 
-    if (options.remote !== false) {
+    if (shouldQueueRemoteSave(key, previousValue, nextValue, options)) {
       queueRemoteSave();
     }
 
@@ -439,7 +468,7 @@
 
     return client
       .from(config.stateTable)
-      .select("study_state, match_state, theme_mode, updated_at")
+      .select("study_state, updated_at")
       .eq("user_id", currentUser.id)
       .maybeSingle();
   }
@@ -449,18 +478,11 @@
       return;
     }
 
-    const mergedStudy = mergeStudyState(readValue(studyStateKey, {}), remoteState.study_state || {});
-    const mergedMatch = mergeMatchState(readValue(matchStateKey, {}), remoteState.match_state || {});
+    const localStudy = readValue(studyStateKey, {});
+    const mergedStudy = mergeStudyState(localStudy, remoteState.study_state || {});
+    const nextLocalStudy = applyRemoteStudyStateToLocalState(localStudy, mergedStudy);
 
-    writeValue(studyStateKey, mergedStudy, {
-      remote: false,
-      source: "remote"
-    });
-    writeValue(matchStateKey, mergedMatch, {
-      remote: false,
-      source: "remote"
-    });
-    writeValue(themeStorageKey, remoteState.theme_mode || "light", {
+    writeValue(studyStateKey, nextLocalStudy, {
       remote: false,
       source: "remote"
     });
@@ -516,17 +538,12 @@
       }
 
       const localStudy = readValue(studyStateKey, {});
-      const localMatch = readValue(matchStateKey, {});
       const mergedStudy = mergeStudyState(localStudy, row?.study_state || {});
-      const mergedMatch = mergeMatchState(localMatch, row?.match_state || {});
-      const themeMode =
-        typeof localValues[themeStorageKey] === "string" ? localValues[themeStorageKey] : "light";
+      const nextLocalStudy = applyRemoteStudyStateToLocalState(localStudy, mergedStudy);
 
       const payload = {
         user_id: currentUser.id,
         study_state: mergedStudy,
-        match_state: mergedMatch,
-        theme_mode: themeMode,
         updated_at: new Date().toISOString()
       };
 
@@ -538,11 +555,7 @@
         throw error;
       }
 
-      writeValue(studyStateKey, mergedStudy, {
-        remote: false,
-        source: "remote"
-      });
-      writeValue(matchStateKey, mergedMatch, {
+      writeValue(studyStateKey, nextLocalStudy, {
         remote: false,
         source: "remote"
       });

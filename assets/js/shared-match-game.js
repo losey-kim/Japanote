@@ -82,6 +82,43 @@
     );
   }
 
+  function createBoundListenerAttributeName(bindingKind) {
+    const safeKind = String(bindingKind || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, "-");
+
+    return `data-japanote-bound-${safeKind}`;
+  }
+
+  function hasBoundListener(element, bindingKind) {
+    if (!element) {
+      return false;
+    }
+
+    return element.hasAttribute(createBoundListenerAttributeName(bindingKind));
+  }
+
+  function markBoundListener(element, bindingKind) {
+    if (!element) {
+      return;
+    }
+
+    element.setAttribute(createBoundListenerAttributeName(bindingKind), "true");
+  }
+
+  function isSettingsPanelOpen({ optionsShell, optionsToggle, optionsPanel }) {
+    if (optionsPanel && !optionsPanel.hidden) {
+      return true;
+    }
+
+    if (optionsShell?.classList.contains("is-open")) {
+      return true;
+    }
+
+    return optionsToggle?.getAttribute("aria-expanded") === "true";
+  }
+
   function attachStorageUpdateListener(handlersByKey, source = "remote") {
     window.addEventListener("japanote:storage-updated", (event) => {
       if (event.detail?.source !== source) {
@@ -264,6 +301,19 @@
     const optionsToggle = document.getElementById(optionsToggleId);
     const optionsPanel = document.getElementById(optionsPanelId);
     const optionsSummary = document.getElementById(optionsSummaryId);
+    const closeRequested = optionsToggle?.dataset.japanoteOptionsIntent === "close";
+    const requestedOpen = shouldShowOptionsPanel !== false;
+    // 저장/동기화 렌더가 중간에 한 번 끼어들어도, 사용자가 직접 닫기 전까지는
+    // 이미 열어 둔 설정 패널을 유지해야 연속으로 옵션을 바꿀 때 흐름이 끊기지 않는다.
+    const resolvedShouldShowOptionsPanel =
+      !isSettingsLocked &&
+      (requestedOpen ||
+        (isSettingsPanelOpen({
+          optionsShell,
+          optionsToggle,
+          optionsPanel
+        }) &&
+          !closeRequested));
 
     if (optionsSummary) {
       optionsSummary.textContent = summaryText;
@@ -288,17 +338,18 @@
     }
 
     if (optionsShell) {
-      optionsShell.classList.toggle("is-open", shouldShowOptionsPanel);
+      optionsShell.classList.toggle("is-open", resolvedShouldShowOptionsPanel);
     }
 
     if (optionsToggle) {
       optionsToggle.disabled = isSettingsLocked;
-      optionsToggle.setAttribute("aria-expanded", String(shouldShowOptionsPanel));
+      optionsToggle.setAttribute("aria-expanded", String(resolvedShouldShowOptionsPanel));
+      delete optionsToggle.dataset.japanoteOptionsIntent;
     }
 
     if (optionsPanel) {
-      optionsPanel.hidden = !shouldShowOptionsPanel;
-      optionsPanel.setAttribute("aria-hidden", String(!shouldShowOptionsPanel));
+      optionsPanel.hidden = !resolvedShouldShowOptionsPanel;
+      optionsPanel.setAttribute("aria-hidden", String(!resolvedShouldShowOptionsPanel));
     }
 
     spinnerConfigs.forEach((config) => {
@@ -1142,7 +1193,16 @@
       return;
     }
 
-    button.addEventListener("click", onToggle);
+    if (hasBoundListener(button, "shared-options-toggle-click")) {
+      return;
+    }
+
+    markBoundListener(button, "shared-options-toggle-click");
+    button.addEventListener("click", () => {
+      const isExpanded = button.getAttribute("aria-expanded") === "true";
+      button.dataset.japanoteOptionsIntent = isExpanded ? "close" : "open";
+      onToggle();
+    });
   }
 
   function attachStandardMatchEventListeners({

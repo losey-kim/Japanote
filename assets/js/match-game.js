@@ -620,6 +620,7 @@ function scrollMatchBoardIntoView() {
 
 function createMatchCard(card, selectedId) {
   const button = document.createElement("button");
+  const label = document.createElement("span");
   const matched = matchState.matchedIds.includes(card.id);
   const wrong =
     (card.side === "left" && matchState.wrongLeft === card.id) ||
@@ -627,7 +628,9 @@ function createMatchCard(card, selectedId) {
 
   button.type = "button";
   button.className = "match-card";
-  button.textContent = card.value;
+  label.className = "button-text-clamp match-card-label";
+  label.textContent = card.value;
+  button.appendChild(label);
   button.disabled = matched || matchState.isLocked || matchState.timedOut;
 
   if (selectedId === card.id) {

@@ -52,7 +52,7 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
 
 ## Supabase 동기화 설정
 
-기기 간에 같은 학습 상태를 보려면 `Supabase Auth`와 `user_state` 테이블을 설정하면 됩니다. 앱은 `assets/js/supabase-sync.js`에서 학습 상태(`jlpt-compass-state`), 짝 맞추기 상태, 테마를 `user_state` 행에 upsert합니다.
+기기 간에 같은 학습 상태를 보려면 `Supabase Auth`와 `user_state` 테이블을 설정하면 됩니다. 앱은 `assets/js/supabase-sync.js`에서 저장한 단어/한자 목록만 `study_state`에 upsert합니다.
 
 1. [Supabase](https://supabase.com/) 프로젝트를 만들고, **Project Settings → API**에서 **Project URL**과 **anon public** 키를 복사합니다.
 2. `assets/js/supabase-config.js` 맨 위의 `SUPABASE_URL`, `SUPABASE_ANON_KEY` 두 줄에 붙여 넣습니다. 둘 다 채워지면 `enabled`가 자동으로 켜집니다. (실 키는 공개 저장소에 커밋하지 않는 것이 좋습니다.)
@@ -60,8 +60,8 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
    - `emailRedirectTo`: 비워 두면 현재 페이지 기준으로 돌아옵니다.
 3. Supabase Authentication에서 **Email** 로그인(매직 링크)을 켭니다.
 4. Authentication의 `Site URL`과 `Redirect URLs`에 실제 서비스 주소를 등록합니다. GitHub Pages 예: `https://losey-kim.github.io/Japanote/**`. 로컬 개발 주소는 아래「로컬에서 Supabase」절을 참고하세요.
-5. **SQL Editor**(Supabase 대시보드 → SQL)에서 `supabase/migrations/001_user_state.sql` **전체를 복사해 한 번에 실행**합니다. 이걸 하지 않으면 동기화 시 `Could not find the table 'public.user_state' in the schema cache` 같은 오류가 납니다.
+5. **SQL Editor**(Supabase 대시보드 → SQL)에서 `supabase/migrations/001_user_state.sql`을 실행합니다. 예전에 `match_state`, `theme_mode`까지 쓰던 버전으로 이미 테이블을 만든 적이 있다면 이어서 `supabase/migrations/002_trim_user_state_columns.sql`도 실행합니다. 이걸 하지 않으면 동기화 시 `Could not find the table 'public.user_state' in the schema cache` 같은 오류가 납니다.
 
-앱에서는 **이름 + 이메일**만 입력하면 매직 링크가 전송됩니다. 로그인하면 **클라우드에서 학습 상태를 자동으로 불러오고**, 이후 학습 데이터가 바뀔 때마다 **잠시 후 자동으로 클라우드에 저장**됩니다. 여러 기기에서 동시에 진행한 내용은 **ID 목록은 합치고(합집합), 스트릭·인덱스 등은 더 진행된 쪽을 반영**하는 방식으로 맞춥니다(`_sync.clientEditedAt`·서버 `updated_at` 기준).
+앱에서는 **이름 + 이메일**만 입력하면 매직 링크가 전송됩니다. 로그인하면 **클라우드에서 저장한 단어/한자 목록을 자동으로 불러오고**, 이후 그 목록이 바뀔 때마다 **잠시 후 자동으로 클라우드에 저장**됩니다. 현재 원격 동기화 대상은 `reviewIds`, `masteredIds`, `kanjiReviewIds`, `kanjiMasteredIds` 4개뿐이며, 짝 맞추기 설정이나 테마 같은 화면 상태는 각 기기 로컬에만 남습니다.
 
 다른 기기에서도 같은 계정으로 로그인하면 같은 데이터를 이어서 볼 수 있어요.
