@@ -2,7 +2,8 @@
   const pageName = (() => {
     const path = global.location?.pathname || "";
     const segments = path.split("/").filter(Boolean);
-    return segments[segments.length - 1] || "index.html";
+    const rawPageName = segments[segments.length - 1] || "index.html";
+    return rawPageName.includes(".") ? rawPageName : `${rawPageName}.html`;
   })();
 
   const pageScriptMap = {
