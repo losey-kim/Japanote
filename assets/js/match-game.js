@@ -781,6 +781,8 @@ function startMatchRoundTimer() {
 }
 
 function enterMatchReadyState(message = "") {
+  refreshMatchPool();
+  setMatchActionAvailability(matchPool.length > 0);
   matchEngine.enterReadyState(message);
 }
 
