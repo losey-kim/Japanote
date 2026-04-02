@@ -392,12 +392,14 @@
     const actionTitle =
       typeof getActionTitle === "function" ? getActionTitle({ count, allSaved }) : "";
 
+    const actionIcon = allSaved ? "delete_sweep" : "bookmark_add";
+
     button.disabled = !count;
     button.dataset[datasetKey] = allSaved ? "remove" : "save";
     button.setAttribute("aria-label", actionTitle);
     button.title = actionTitle;
-    label.textContent = actionCopy.label;
-    icon.textContent = actionCopy.icon;
+    label.textContent = actionLabel;
+    icon.textContent = actionIcon;
   }
 
   function createResultItemHeadMarkup({
