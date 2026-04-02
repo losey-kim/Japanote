@@ -94,6 +94,48 @@
     });
   }
 
+  function initializeStandardMatchScreen({
+    guardElement,
+    renderSettings,
+    renderActionCopy,
+    attachEventListeners,
+    storageHandlers,
+    windowListeners = [],
+    enterReadyState
+  }) {
+    if (!guardElement) {
+      return;
+    }
+
+    if (typeof renderSettings === "function") {
+      renderSettings();
+    }
+
+    if (typeof renderActionCopy === "function") {
+      renderActionCopy();
+    }
+
+    if (typeof attachEventListeners === "function") {
+      attachEventListeners();
+    }
+
+    if (storageHandlers && typeof storageHandlers === "object" && Object.keys(storageHandlers).length) {
+      attachStorageUpdateListener(storageHandlers);
+    }
+
+    windowListeners.forEach(({ eventName, handler }) => {
+      if (!eventName || typeof handler !== "function") {
+        return;
+      }
+
+      window.addEventListener(eventName, handler);
+    });
+
+    if (typeof enterReadyState === "function") {
+      enterReadyState();
+    }
+  }
+
   function renderSpinnerControl({ spinner, options = [], activeValue, formatValue, disabled = false }) {
     if (!spinner) {
       return;
@@ -1063,6 +1105,7 @@
     replaceObjectContents,
     dispatchStorageUpdated,
     attachStorageUpdateListener,
+    initializeStandardMatchScreen,
     renderActionCopy,
     renderTimer,
     renderStats,

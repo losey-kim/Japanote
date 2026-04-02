@@ -1027,19 +1027,22 @@ function attachMatchEventListeners() {
   });
 }
 
-renderMatchSettings();
-attachMatchEventListeners();
-sharedMatchGame.attachStorageUpdateListener({
-  [matchStorageKey]: () => {
-    const nextPreferences = loadMatchPreferences();
-    nextPreferences.optionsOpen = false;
-    sharedMatchGame.replaceObjectContents(matchPreferences, nextPreferences);
-    renderMatchSettings();
-    enterMatchReadyState();
+sharedMatchGame.initializeStandardMatchScreen({
+  guardElement: document.getElementById("match-new-round"),
+  renderSettings: renderMatchSettings,
+  attachEventListeners: attachMatchEventListeners,
+  storageHandlers: {
+    [matchStorageKey]: () => {
+      const nextPreferences = loadMatchPreferences();
+      nextPreferences.optionsOpen = false;
+      sharedMatchGame.replaceObjectContents(matchPreferences, nextPreferences);
+      renderMatchSettings();
+      enterMatchReadyState();
+    },
+    [studyStateStorageKey]: () => {
+      renderMatchSettings();
+      enterMatchReadyState();
+    }
   },
-  [studyStateStorageKey]: () => {
-    renderMatchSettings();
-    enterMatchReadyState();
-  }
+  enterReadyState: enterMatchReadyState
 });
-enterMatchReadyState();

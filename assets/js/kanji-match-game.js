@@ -906,11 +906,12 @@ function attachKanjiMatchEventListeners() {
   });
 }
 
-if (document.getElementById("kanji-match-new-round")) {
-  renderKanjiMatchSettings();
-  renderKanjiMatchActionCopy();
-  attachKanjiMatchEventListeners();
-  sharedMatchGame.attachStorageUpdateListener({
+sharedMatchGame.initializeStandardMatchScreen({
+  guardElement: document.getElementById("kanji-match-new-round"),
+  renderSettings: renderKanjiMatchSettings,
+  renderActionCopy: renderKanjiMatchActionCopy,
+  attachEventListeners: attachKanjiMatchEventListeners,
+  storageHandlers: {
     [kanjiMatchStorageKey]: () => {
       const nextPreferences = loadKanjiMatchPreferences();
       nextPreferences.optionsOpen = false;
@@ -922,10 +923,15 @@ if (document.getElementById("kanji-match-new-round")) {
       renderKanjiMatchSettings();
       enterKanjiMatchReadyState();
     }
-  });
-  window.addEventListener("japanote:supplementary-content-loaded", () => {
-    renderKanjiMatchSettings();
-    enterKanjiMatchReadyState();
-  });
-  enterKanjiMatchReadyState();
-}
+  },
+  windowListeners: [
+    {
+      eventName: "japanote:supplementary-content-loaded",
+      handler: () => {
+        renderKanjiMatchSettings();
+        enterKanjiMatchReadyState();
+      }
+    }
+  ],
+  enterReadyState: enterKanjiMatchReadyState
+});
