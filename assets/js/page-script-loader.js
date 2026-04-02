@@ -1,4 +1,5 @@
 (function loadJapanotePageScripts(global) {
+  const assetVersion = "20260402a";
   const pageName = (() => {
     const path = global.location?.pathname || "";
     const segments = path.split("/").filter(Boolean);
@@ -77,7 +78,20 @@
     ]
   };
 
-  const scripts = pageScriptMap[pageName] || [];
+  function resolveScriptSrc(src) {
+    if (!src || /^https?:\/\//.test(src)) {
+      return src;
+    }
+
+    if (/[?&]v=/.test(src)) {
+      return src.replace(/([?&])v=[^&]*/u, `$1v=${assetVersion}`);
+    }
+
+    const separator = src.includes("?") ? "&" : "?";
+    return `${src}${separator}v=${assetVersion}`;
+  }
+
+  const scripts = (pageScriptMap[pageName] || []).map(resolveScriptSrc);
 
   function hasScript(src) {
     return Boolean(document.querySelector(`script[data-japanote-src="${src}"]`));

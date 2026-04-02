@@ -1731,6 +1731,10 @@ function closeKanaQuizSheet() {
 }
 
 function renderKanaQuizSheet() {
+  if (flushPendingExternalStudyStateIfIdle()) {
+    return;
+  }
+
   const practiceView = document.getElementById("kana-quiz-practice-view");
   const card = document.getElementById("kana-quiz-card");
   const empty = document.getElementById("kana-quiz-empty");
@@ -4129,6 +4133,7 @@ function normalizeLoadedState(inputState) {
 }
 
 state = normalizeLoadedState(loadState());
+let pendingExternalStudyState = null;
 
 const quizSessions = {
   basic: {
@@ -4214,6 +4219,43 @@ function stopQuizSessionTimer(key) {
   session.timerId = null;
 }
 
+function getQuizSessionRemainingMs(session) {
+  if (!session) {
+    return 0;
+  }
+
+  if (Number.isFinite(session.timeLeftMs)) {
+    return Math.max(0, Number(session.timeLeftMs));
+  }
+
+  return Math.max(0, (Number(session.timeLeft) || 0) * 1000);
+}
+
+function syncQuizSessionClock(session) {
+  if (!session || session.duration <= 0 || !Number.isFinite(session.deadlineAt)) {
+    return;
+  }
+
+  const remainingMs = Math.max(0, session.deadlineAt - Date.now());
+  session.timeLeftMs = remainingMs;
+  session.timeLeft = remainingMs > 0 ? Math.max(0, Number((remainingMs / 1000).toFixed(1))) : 0;
+}
+
+function formatQuizSessionTimerText(session) {
+  if (!session || session.duration <= 0) {
+    return "천천히";
+  }
+
+  const remainingMs = getQuizSessionRemainingMs(session);
+  const remainingSeconds = remainingMs / 1000;
+
+  if (session.timerId) {
+    return `${Math.max(0, remainingSeconds).toFixed(1)}초`;
+  }
+
+  return `${Math.max(0, Math.ceil(remainingSeconds))}초`;
+}
+
 function updateQuizTimerItem(timerItem, progress, warning, isStatic) {
   const nextProgress = progress.toFixed(3);
   const previousProgress = Number(timerItem.dataset.timerProgress || "1");
@@ -4252,12 +4294,17 @@ function renderQuizSessionHud(key) {
     return;
   }
 
-  if (timer) {
-    const warning = session.duration > 0 && session.timeLeft <= Math.max(5, Math.floor(session.duration / 3));
-    const timerItem = timer.closest(".quiz-hud-item");
-    const progress = session.duration > 0 ? Math.max(0, Math.min(1, session.timeLeft / session.duration)) : 0;
+  syncQuizSessionClock(session);
 
-    timer.textContent = session.duration <= 0 ? "천천히" : `${session.timeLeft}초`;
+  if (timer) {
+    const remainingMs = getQuizSessionRemainingMs(session);
+    const warning =
+      session.duration > 0 && remainingMs <= Math.max(5, Math.floor(session.duration / 3)) * 1000;
+    const timerItem = timer.closest(".quiz-hud-item");
+    const progress =
+      session.duration > 0 ? Math.max(0, Math.min(1, remainingMs / (session.duration * 1000))) : 0;
+
+    timer.textContent = formatQuizSessionTimerText(session);
     timer.classList.toggle(
       "is-warning",
       warning
@@ -4288,6 +4335,8 @@ function setQuizSessionDuration(key, duration) {
   stopQuizSessionTimer(key);
   session.duration = nextDuration;
   session.timeLeft = nextDuration;
+  session.timeLeftMs = nextDuration * 1000;
+  session.deadlineAt = null;
   renderQuizSessionHud(key);
 }
 
@@ -4307,21 +4356,25 @@ function resetQuizSessionTimer(key, onExpire) {
 
   stopQuizSessionTimer(key);
   session.timeLeft = session.duration;
-  renderQuizSessionHud(key);
+  session.timeLeftMs = session.duration * 1000;
+  session.deadlineAt = session.duration > 0 ? Date.now() + session.duration * 1000 : null;
 
   if (session.duration <= 0) {
+    renderQuizSessionHud(key);
     return;
   }
 
   session.timerId = window.setInterval(() => {
-    session.timeLeft = Math.max(0, session.timeLeft - 1);
+    syncQuizSessionClock(session);
     renderQuizSessionHud(key);
 
-    if (session.timeLeft === 0) {
+    if (getQuizSessionRemainingMs(session) === 0) {
       stopQuizSessionTimer(key);
       onExpire();
     }
-  }, 1000);
+  }, 100);
+
+  renderQuizSessionHud(key);
 }
 
 function finalizeQuizSession(key, correct) {
@@ -4381,7 +4434,42 @@ function resetStateDrivenQuizSessions() {
   setQuizSessionDuration("starterKanji", state.starterKanjiQuizDuration);
 }
 
-function applyExternalStudyState(nextState) {
+function hasBlockingStudySession() {
+  const legacyQuizOpen =
+    Boolean(document.getElementById("quiz-question")) &&
+    Array.isArray(activeQuizQuestions) &&
+    activeQuizQuestions.length > 0 &&
+    state?.quizSessionFinished === false;
+
+  return Boolean(
+    legacyQuizOpen ||
+    state?.vocabQuizStarted ||
+    state?.starterKanjiQuizStarted ||
+    state?.grammarPracticeStarted ||
+    state?.readingStarted ||
+    kanaQuizSheetState?.open === true
+  );
+}
+
+function flushPendingExternalStudyStateIfIdle() {
+  if (!pendingExternalStudyState || hasBlockingStudySession()) {
+    return false;
+  }
+
+  const nextState = pendingExternalStudyState;
+  pendingExternalStudyState = null;
+  applyExternalStudyState(nextState, { force: true });
+  return true;
+}
+
+function applyExternalStudyState(nextState, options = {}) {
+  if (!options.force && hasBlockingStudySession()) {
+    pendingExternalStudyState = nextState && typeof nextState === "object"
+      ? JSON.parse(JSON.stringify(nextState))
+      : nextState;
+    return;
+  }
+
   const panelOpenKeys = [
     "quizOptionsOpen",
     "vocabOptionsOpen",
@@ -4394,22 +4482,118 @@ function applyExternalStudyState(nextState) {
     "kanaSetupOpen",
     "writingSetupOpen"
   ];
+  const runtimeSessionKeys = [
+    "quizIndex",
+    "quizSessionFinished",
+    "vocabQuizStarted",
+    "vocabQuizIndex",
+    "vocabQuizFinished",
+    "starterKanjiQuizStarted",
+    "starterKanjiQuizFinished",
+    "grammarPracticeStarted",
+    "grammarPracticeSessionQuestionIndex",
+    "readingStarted",
+    "readingSessionQuestionIndex"
+  ];
+  const activeSessionStateKeys = new Set();
   const preservedPanels = {};
+  const preservedRuntimeSessions = {};
 
   if (state && typeof state === "object") {
     for (const key of panelOpenKeys) {
       preservedPanels[key] = state[key];
     }
+
+    for (const key of runtimeSessionKeys) {
+      preservedRuntimeSessions[key] = state[key];
+    }
+
+    if (!state.quizSessionFinished) {
+      [
+        "quizLevel",
+        "quizMode",
+        "quizSessionSize",
+        "quizDuration",
+        "quizAnsweredCount",
+        "quizCorrectCount",
+        "quizMistakes",
+        "quizSessionMistakeIds"
+      ].forEach((key) => activeSessionStateKeys.add(key));
+    }
+
+    if (state.vocabQuizStarted && !state.vocabQuizFinished) {
+      [
+        "vocabLevel",
+        "vocabFilter",
+        "vocabPartFilter",
+        "vocabQuizMode",
+        "vocabQuizQuestionField",
+        "vocabQuizOptionField",
+        "vocabQuizCount",
+        "vocabQuizDuration",
+        "vocabQuizResultFilter",
+        "masteredIds",
+        "reviewIds"
+      ].forEach((key) => activeSessionStateKeys.add(key));
+    }
+
+    if (state.starterKanjiQuizStarted && !state.starterKanjiQuizFinished) {
+      [
+        "starterKanjiQuestionField",
+        "starterKanjiOptionField",
+        "starterKanjiQuizCount",
+        "starterKanjiQuizDuration",
+        "kanjiGrade",
+        "kanjiCollectionFilter",
+        "kanjiMasteredIds",
+        "kanjiReviewIds",
+        "basicPracticeIndexes"
+      ].forEach((key) => activeSessionStateKeys.add(key));
+    }
+
+    if (state.grammarPracticeStarted) {
+      [
+        "grammarPracticeLevel",
+        "grammarPracticeCount",
+        "grammarPracticeDuration",
+        "grammarPracticeIndexes",
+        "grammarDoneIds"
+      ].forEach((key) => activeSessionStateKeys.add(key));
+    }
+
+    if (state.readingStarted) {
+      [
+        "readingLevel",
+        "readingCount",
+        "readingDuration",
+        "readingIndexes"
+      ].forEach((key) => activeSessionStateKeys.add(key));
+    }
   }
 
-  state = normalizeLoadedState({
+  const nextMergedState = {
     ...defaultState,
     ...(nextState || {})
+  };
+
+  activeSessionStateKeys.forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(state, key)) {
+      nextMergedState[key] = state[key];
+    }
   });
+
+  state = normalizeLoadedState(nextMergedState);
+  pendingExternalStudyState = null;
 
   for (const key of panelOpenKeys) {
     if (Object.prototype.hasOwnProperty.call(preservedPanels, key)) {
       state[key] = preservedPanels[key];
+    }
+  }
+
+  for (const key of runtimeSessionKeys) {
+    if (Object.prototype.hasOwnProperty.call(preservedRuntimeSessions, key)) {
+      state[key] = preservedRuntimeSessions[key];
     }
   }
 
@@ -5744,6 +5928,32 @@ function hasAnsweredAllChoiceOptions(options) {
   return list.length > 0 && list.every((item) => item.disabled);
 }
 
+function createBoundListenerAttributeName(bindingKind) {
+  const safeKind = String(bindingKind || "listener")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "-");
+
+  return `data-japanote-bound-${safeKind}`;
+}
+
+function hasBoundListener(element, bindingKind) {
+  if (!element) {
+    return false;
+  }
+
+  const attributeName = createBoundListenerAttributeName(bindingKind);
+  return element.hasAttribute(attributeName);
+}
+
+function markBoundListener(element, bindingKind) {
+  if (!element) {
+    return;
+  }
+
+  element.setAttribute(createBoundListenerAttributeName(bindingKind), "true");
+}
+
 function attachStateSpinner({
   spinner,
   options = [],
@@ -5757,6 +5967,11 @@ function attachStateSpinner({
   }
 
   spinner.querySelectorAll("[data-spinner-direction]").forEach((button) => {
+    if (hasBoundListener(button, "spinner-click")) {
+      return;
+    }
+
+    markBoundListener(button, "spinner-click");
     button.addEventListener("click", () => {
       const currentValue = getCurrentValue();
       const currentIndex = options.indexOf(currentValue);
@@ -5790,6 +6005,11 @@ function attachStateOptionsToggle(button, stateKey, render) {
     return;
   }
 
+  if (hasBoundListener(button, "options-toggle-click")) {
+    return;
+  }
+
+  markBoundListener(button, "options-toggle-click");
   button.addEventListener("click", () => {
     state[stateKey] = !state[stateKey];
     saveState();
@@ -5799,6 +6019,11 @@ function attachStateOptionsToggle(button, stateKey, render) {
 
 function attachValueButtonListeners(buttons, getValue, onChange) {
   buttons.forEach((button) => {
+    if (hasBoundListener(button, "value-button-click")) {
+      return;
+    }
+
+    markBoundListener(button, "value-button-click");
     button.addEventListener("click", () => {
       onChange(getValue(button), button);
     });
@@ -5810,6 +6035,11 @@ function attachSelectValueListener(element, handler) {
     return;
   }
 
+  if (hasBoundListener(element, "select-change")) {
+    return;
+  }
+
+  markBoundListener(element, "select-change");
   element.addEventListener("change", () => {
     handler(element.value);
   });
@@ -5820,6 +6050,11 @@ function attachClickListener(element, handler) {
     return;
   }
 
+  if (hasBoundListener(element, "click")) {
+    return;
+  }
+
+  markBoundListener(element, "click");
   element.addEventListener("click", handler);
 }
 
@@ -5840,56 +6075,62 @@ function attachLinkedFieldSelectors({
   render
 }) {
   if (questionSelect) {
-    questionSelect.addEventListener("change", () => {
-      const previousQuestionField = getQuestionField();
-      const previousOptionField = getOptionField();
-      const nextQuestionField = normalizeQuestionField(questionSelect.value);
+    if (!hasBoundListener(questionSelect, "linked-question-change")) {
+      markBoundListener(questionSelect, "linked-question-change");
+      questionSelect.addEventListener("change", () => {
+        const previousQuestionField = getQuestionField();
+        const previousOptionField = getOptionField();
+        const nextQuestionField = normalizeQuestionField(questionSelect.value);
 
-      if (previousQuestionField === nextQuestionField) {
-        return;
-      }
+        if (previousQuestionField === nextQuestionField) {
+          return;
+        }
 
-      state[questionStateKey] = nextQuestionField;
+        state[questionStateKey] = nextQuestionField;
 
-      if (previousOptionField === nextQuestionField) {
-        state[optionStateKey] =
-          previousQuestionField !== nextQuestionField
-            ? previousQuestionField
-            : getDefaultOptionField(nextQuestionField);
-      }
+        if (previousOptionField === nextQuestionField) {
+          state[optionStateKey] =
+            previousQuestionField !== nextQuestionField
+              ? previousQuestionField
+              : getDefaultOptionField(nextQuestionField);
+        }
 
-      state[optionStateKey] = normalizeStoredOptionField(state[optionStateKey], state[questionStateKey]);
-      invalidate();
-      saveState();
-      render();
-    });
+        state[optionStateKey] = normalizeStoredOptionField(state[optionStateKey], state[questionStateKey]);
+        invalidate();
+        saveState();
+        render();
+      });
+    }
   }
 
   if (optionSelect) {
-    optionSelect.addEventListener("change", () => {
-      const previousQuestionField = getQuestionField();
-      const previousOptionField = getOptionField();
-      const nextOptionField = normalizeOptionField(optionSelect.value, previousOptionField);
+    if (!hasBoundListener(optionSelect, "linked-option-change")) {
+      markBoundListener(optionSelect, "linked-option-change");
+      optionSelect.addEventListener("change", () => {
+        const previousQuestionField = getQuestionField();
+        const previousOptionField = getOptionField();
+        const nextOptionField = normalizeOptionField(optionSelect.value, previousOptionField);
 
-      if (previousOptionField === nextOptionField) {
-        return;
-      }
+        if (previousOptionField === nextOptionField) {
+          return;
+        }
 
-      state[optionStateKey] = nextOptionField;
+        state[optionStateKey] = nextOptionField;
 
-      if (previousQuestionField === nextOptionField) {
-        state[questionStateKey] =
-          previousOptionField !== nextOptionField
-            ? previousOptionField
-            : getDefaultQuestionField(nextOptionField);
-      }
+        if (previousQuestionField === nextOptionField) {
+          state[questionStateKey] =
+            previousOptionField !== nextOptionField
+              ? previousOptionField
+              : getDefaultQuestionField(nextOptionField);
+        }
 
-      state[questionStateKey] = normalizeStoredQuestionField(state[questionStateKey]);
-      state[optionStateKey] = normalizeStoredOptionField(state[optionStateKey], state[questionStateKey]);
-      invalidate();
-      saveState();
-      render();
-    });
+        state[questionStateKey] = normalizeStoredQuestionField(state[questionStateKey]);
+        state[optionStateKey] = normalizeStoredOptionField(state[optionStateKey], state[questionStateKey]);
+        invalidate();
+        saveState();
+        render();
+      });
+    }
   }
 }
 
@@ -6058,6 +6299,11 @@ function attachResultFilterSelectListener({
     return;
   }
 
+  if (hasBoundListener(select, "result-filter-change")) {
+    return;
+  }
+
+  markBoundListener(select, "result-filter-change");
   select.addEventListener("change", () => {
     const nextValue = getNextValue(select.value);
 
@@ -6090,6 +6336,11 @@ function attachBulkResultActionListener({
     return;
   }
 
+  if (hasBoundListener(button, "bulk-action-click")) {
+    return;
+  }
+
+  markBoundListener(button, "bulk-action-click");
   button.addEventListener("click", () => {
     const uniqueIds = getUniqueStudyResultIds(getResults(), getId);
 
@@ -6130,6 +6381,11 @@ function attachToggleResultActionListener({
     return;
   }
 
+  if (hasBoundListener(list, "toggle-result-click")) {
+    return;
+  }
+
+  markBoundListener(list, "toggle-result-click");
   list.addEventListener("click", (event) => {
     const button = event.target.closest(selector);
 
@@ -6551,6 +6807,10 @@ function renderKanjiList() {
 }
 
 function renderKanjiPageLayout() {
+  if (flushPendingExternalStudyStateIfIdle()) {
+    return;
+  }
+
   const activeTab = getKanjiTab(state.kanjiTab);
   const cardView = document.getElementById("kanji-card-view");
   const listView = document.getElementById("kanji-list-view");
@@ -8033,6 +8293,10 @@ function renderVocabQuiz() {
 }
 
 function renderVocabPage() {
+  if (flushPendingExternalStudyStateIfIdle()) {
+    return;
+  }
+
   const cardView = document.getElementById("vocab-card-view");
   const listView = document.getElementById("vocab-list-view");
   const summary = document.getElementById("vocab-summary");
@@ -8292,6 +8556,10 @@ function getCurrentGrammarPracticeSet() {
 }
 
 function renderGrammarPractice() {
+  if (flushPendingExternalStudyStateIfIdle()) {
+    return;
+  }
+
   const empty = document.getElementById("grammar-practice-empty");
   const practiceView = document.getElementById("grammar-practice-view");
   const grammarCard = document.querySelector(".grammar-practice-card");
@@ -9106,6 +9374,10 @@ function getCurrentReadingSet() {
 }
 
 function renderReadingPractice() {
+  if (flushPendingExternalStudyStateIfIdle()) {
+    return;
+  }
+
   const empty = document.getElementById("reading-empty");
   const practiceView = document.getElementById("reading-practice-view");
   const readingCard = document.querySelector(".reading-card");
@@ -10077,6 +10349,10 @@ function attachEventListeners() {
 }
 
 function renderAll() {
+  if (flushPendingExternalStudyStateIfIdle()) {
+    return;
+  }
+
   renderReadingPractice();
   renderStarterPath();
   renderKanjiPageLayout();
