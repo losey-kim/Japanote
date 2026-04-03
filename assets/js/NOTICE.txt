@@ -1,4 +1,4 @@
-Kana writing SVG assets in `kana-strokes.js` are derived from:
+Kana writing SVG assets in `data/kana-strokes.json` are derived from:
 https://github.com/zhengkyl/strokesvg
 
 Attribution summary:

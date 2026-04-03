@@ -759,7 +759,7 @@
         collectionOptions: GRAMMAR_COLLECTION_OPTIONS_CATALOG
       }),
       summaryId: "grammar-summary",
-      summaryText: "문형을 준비하고 있어요",
+      summaryText: "문법을 준비하고 있어요",
       viewSwitchAriaLabel: "문법 보기 방식 고르기",
       flashcard: createCatalogFlashcardConfig({
         viewId: "grammar-card-view",
@@ -771,7 +771,7 @@
         levelId: "grammar-flashcard-level",
         levelText: "N5",
         wordId: "grammar-flashcard-word",
-        wordText: "문형을 불러오고 있어요",
+        wordText: "문법을 불러오고 있어요",
         readingId: "grammar-flashcard-reading",
         readingText: "",
         readingHidden: true,
@@ -779,7 +779,7 @@
         hintId: "grammar-flashcard-hint",
         hintText: "눌러서 설명을 확인해볼까요?",
         navAriaLabel: "문법 카드 넘기기",
-        scopeLabel: "문형",
+        scopeLabel: "문법",
         prevId: "grammar-flashcard-prev",
         nextId: "grammar-flashcard-next",
         againId: "grammar-flashcard-review",
@@ -1610,7 +1610,7 @@
           { id: "grammar-practice-source", text: "N5G 1" }
         ],
         hudItems: [
-          { kind: "progress", label: "진행", valueId: "grammar-practice-progress", value: "1 / 4" },
+          { kind: "progress", label: "진행", valueId: "grammar-practice-progress", value: "1 / 10" },
           { kind: "timer", label: "남은 시간", valueId: "grammar-timer", value: "00:25" },
           { kind: "correct", label: "정답", valueId: "grammar-correct", value: "0" },
           { kind: "wrong", label: "오답", valueId: "grammar-wrong", value: "0" }

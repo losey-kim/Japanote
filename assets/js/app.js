@@ -14,15 +14,23 @@ function getStudyStateStore() {
 const contentLevels = ["N5", "N4", "N3"];
 const allLevelValue = "all";
 const selectablePracticeLevels = [allLevelValue, ...contentLevels];
-const contentRegistry = globalThis.japanoteContent || {};
-const kanaStrokeSvgs = globalThis.kanaStrokeSvgs || {};
-const vocabContent = contentRegistry.vocab || {};
 let grammarContent = normalizeGrammarContent({});
 let readingContent = normalizeReadingContent({});
+let kanaContent = normalizeKanaContent({});
+let kanaStrokeSvgs = normalizeKanaStrokeContent({});
 let kanjiDataRows = normalizeKanjiRows([]);
 let grammarItems = [];
-let grammarPracticeSets = {};
+let grammarPracticeEntriesByLevel = {};
 let readingSets = {};
+let kanaStudyDecks = {
+  hiragana: [],
+  katakana: []
+};
+let writingPracticePools = {
+  hiragana: [],
+  katakana: []
+};
+let kanaDerivedCollectionsReady = false;
 const studyViewHelpers = globalThis.japanoteStudyViewHelpers || {};
 const sharedTimer = globalThis.japanoteSharedTimer || {};
 const applyStudyActionButtonState = studyViewHelpers.applyStudyActionButtonState;
@@ -74,12 +82,70 @@ function getLevelContentSets(source) {
   }, {});
 }
 
-function normalizeGrammarContent(payload) {
-  const normalized = payload || {};
+function resolveGrammarPracticeSetGrammarId(set) {
+  const explicitId = normalizeQuizText(set?.grammarId);
+
+  if (explicitId) {
+    return explicitId;
+  }
+
+  const legacyMatch = normalizeQuizText(set?.id).match(/g(\d+)$/i);
+  return legacyMatch ? `g${legacyMatch[1]}` : "";
+}
+
+function normalizeGrammarPracticeSet(set, item = null) {
+  const normalizedSet = set && typeof set === "object" ? set : {};
+  const grammarId = resolveGrammarPracticeSetGrammarId({ ...normalizedSet, grammarId: normalizedSet.grammarId || item?.id });
+  const sentence = normalizeQuizText(normalizedSet.sentence);
+  const options = Array.isArray(normalizedSet.options)
+    ? normalizedSet.options.map((option) => normalizeQuizText(option)).filter(Boolean)
+    : [];
+  const answer = Number(normalizedSet.answer);
+
+  if (!grammarId || !sentence || options.length < 2 || !Number.isInteger(answer) || answer < 0 || answer >= options.length) {
+    return null;
+  }
 
   return {
-    items: Array.isArray(normalized.items) ? normalized.items : [],
-    practiceSets: getLevelContentSets(normalized.practiceSets || {})
+    id: normalizeQuizText(normalizedSet.id || grammarId),
+    grammarId,
+    source: normalizeQuizText(normalizedSet.source || `${formatStudyLevelLabel(item?.level, "N5")} 문법`),
+    title: normalizeQuizText(normalizedSet.title || item?.pattern),
+    note: normalizeQuizText(normalizedSet.note),
+    tone: normalizeQuizText(normalizedSet.tone || "tone-gold"),
+    sentence,
+    options,
+    answer,
+    explanation: normalizeQuizText(normalizedSet.explanation || item?.description)
+  };
+}
+
+function getGrammarPracticeEntriesByLevelFromItems(items = []) {
+  return (Array.isArray(items) ? items : []).reduce((setsByLevel, item) => {
+    const level = normalizeStudyLevelValue(item?.level);
+
+    if (!contentLevels.includes(level)) {
+      return setsByLevel;
+    }
+
+    const normalizedPractice = normalizeGrammarPracticeSet(item?.practice, item);
+
+    if (normalizedPractice) {
+      setsByLevel[level].push(normalizedPractice);
+    }
+
+    return setsByLevel;
+  }, getLevelContentSets({}));
+}
+
+function normalizeGrammarContent(payload) {
+  const normalized = payload || {};
+  const items = Array.isArray(normalized.items) ? normalized.items : [];
+
+  // 문법 설명과 퀴즈를 같은 JSON 항목에서만 읽어오도록 고정한다.
+  return {
+    items,
+    practiceEntriesByLevel: getGrammarPracticeEntriesByLevelFromItems(items)
   };
 }
 
@@ -89,6 +155,56 @@ function normalizeReadingContent(payload) {
   return {
     sets: getLevelContentSets(normalized.sets || {})
   };
+}
+
+function normalizeKanaLibraryGroup(payload) {
+  const group = payload && typeof payload === "object" ? payload : {};
+  return {
+    title: normalizeQuizText(group.title),
+    items: Array.isArray(group.items)
+      ? group.items
+          .map((item) => {
+            const normalizedItem = item && typeof item === "object" ? item : {};
+            const reading = normalizeQuizText(normalizedItem.reading);
+            const char = normalizeQuizText(normalizedItem.char);
+
+            if (!reading || !char) {
+              return null;
+            }
+
+            return {
+              reading,
+              char,
+              quiz: normalizedItem.quiz !== false,
+              group: normalizeQuizText(normalizedItem.group || group.title)
+            };
+          })
+          .filter(Boolean)
+      : []
+  };
+}
+
+function normalizeKanaLibrary(payload) {
+  return Array.isArray(payload) ? payload.map((group) => normalizeKanaLibraryGroup(group)) : [];
+}
+
+function normalizeKanaContent(payload) {
+  const normalized = payload && typeof payload === "object" ? payload : {};
+
+  return {
+    library: {
+      hiragana: normalizeKanaLibrary(normalized.library?.hiragana),
+      katakana: normalizeKanaLibrary(normalized.library?.katakana)
+    },
+    tracks: {
+      hiragana: normalizeBasicPracticeTrackOrNull(normalized.tracks?.hiragana),
+      katakana: normalizeBasicPracticeTrackOrNull(normalized.tracks?.katakana)
+    }
+  };
+}
+
+function normalizeKanaStrokeContent(payload) {
+  return payload && typeof payload === "object" ? payload : {};
 }
 
 function normalizeKanjiRows(payload) {
@@ -213,8 +329,8 @@ function refreshGrammarContentState(payload) {
   const normalized = normalizeGrammarContent(payload || {});
   grammarContent = normalized;
   grammarItems = normalized.items;
-  grammarPracticeSets = getLevelContentSets(normalized.practiceSets);
-  grammarPracticeSets[allLevelValue] = getAllPracticeSets(grammarPracticeSets);
+  grammarPracticeEntriesByLevel = getLevelContentSets(normalized.practiceEntriesByLevel);
+  grammarPracticeEntriesByLevel[allLevelValue] = getAllPracticeSets(grammarPracticeEntriesByLevel);
 }
 
 function refreshReadingContentState(payload) {
@@ -222,6 +338,37 @@ function refreshReadingContentState(payload) {
   readingContent = normalized;
   readingSets = getLevelContentSets(normalized.sets);
   readingSets[allLevelValue] = getAllPracticeSets(readingSets);
+}
+
+function refreshKanaContentState(payload) {
+  const normalized = normalizeKanaContent(payload || {});
+  kanaContent = normalized;
+  kanaStudyDecks = {
+    hiragana: normalizeKanaLibrary(normalized.library?.hiragana),
+    katakana: normalizeKanaLibrary(normalized.library?.katakana)
+  };
+
+  if (normalized.tracks.hiragana) {
+    basicPracticeSets.hiragana = normalized.tracks.hiragana;
+  } else {
+    delete basicPracticeSets.hiragana;
+  }
+
+  if (normalized.tracks.katakana) {
+    basicPracticeSets.katakana = normalized.tracks.katakana;
+  } else {
+    delete basicPracticeSets.katakana;
+  }
+
+  delete basicPracticeSets.kana;
+
+  if (kanaDerivedCollectionsReady) {
+    refreshWritingPracticePools();
+  }
+}
+
+function refreshKanaStrokeContent(payload) {
+  kanaStrokeSvgs = normalizeKanaStrokeContent(payload || {});
 }
 
 function refreshKanjiRows(payload) {
@@ -260,6 +407,14 @@ function refreshQuizQuestions(payload) {
   quizQuestions = normalizeQuizQuestionList(payload?.questions);
 }
 
+function isCharactersPage() {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return Boolean(document.getElementById("hiragana-table") || document.getElementById("writing-practice-shell"));
+}
+
 function loadGrammarDataFromJson() {
   return fetchJsonData("grammar.json", "grammar.json")
     .then((payload) => {
@@ -286,6 +441,42 @@ function loadReadingDataFromJson() {
     });
 }
 
+function loadKanaDataFromJson() {
+  if (!isCharactersPage()) {
+    refreshKanaContentState(kanaContent);
+    return Promise.resolve(null);
+  }
+
+  return fetchJsonData("kana.json", "kana.json")
+    .then((payload) => {
+      refreshKanaContentState(payload || {});
+      return payload;
+    })
+    .catch((error) => {
+      console.warn("Failed to load kana.json. Using empty kana data.", error);
+      refreshKanaContentState({});
+      return null;
+    });
+}
+
+function loadKanaStrokeDataFromJson() {
+  if (!isCharactersPage()) {
+    refreshKanaStrokeContent(kanaStrokeSvgs);
+    return Promise.resolve(null);
+  }
+
+  return fetchJsonData("kana-strokes.json", "kana-strokes.json")
+    .then((payload) => {
+      refreshKanaStrokeContent(payload || {});
+      return payload;
+    })
+    .catch((error) => {
+      console.warn("Failed to load kana-strokes.json. Using empty kana stroke data.", error);
+      refreshKanaStrokeContent({});
+      return null;
+    });
+}
+
 function loadKanjiDataFromJson() {
   return fetchJsonData("kanji.json", "kanji.json")
     .then((payload) => {
@@ -306,7 +497,7 @@ function loadStarterItemsFromJson() {
       return payload;
     })
     .catch((error) => {
-      console.warn("Using default starter-items data (script fallback).", error);
+      console.warn("Failed to load starter-items.json. Using empty starter data.", error);
       refreshStarterItems({});
       return null;
     });
@@ -319,7 +510,7 @@ function loadBasicPracticeSetsFromJson() {
       return payload;
     })
     .catch((error) => {
-      console.warn("Using default basic-practice data (script fallback).", error);
+      console.warn("Failed to load basic-practice.json. Using empty basic practice data.", error);
       refreshBasicPracticeSets({});
       return null;
     });
@@ -332,7 +523,7 @@ function loadFallbackFlashcardsFromJson() {
       return payload;
     })
     .catch((error) => {
-      console.warn("Using default fallback flashcards (script fallback).", error);
+      console.warn("Failed to load fallback-flashcards.json. Using empty flashcard data.", error);
       refreshFallbackFlashcards({});
       return null;
     });
@@ -345,7 +536,7 @@ function loadQuizQuestionsFromJson() {
       return payload;
     })
     .catch((error) => {
-      console.warn("Using default quiz questions (script fallback).", error);
+      console.warn("Failed to load quiz-questions.json. Using empty quiz data.", error);
       refreshQuizQuestions({});
       return null;
     });
@@ -355,6 +546,8 @@ function loadSupplementaryContentData() {
   return Promise.all([
     loadGrammarDataFromJson(),
     loadReadingDataFromJson(),
+    loadKanaDataFromJson(),
+    loadKanaStrokeDataFromJson(),
     loadKanjiDataFromJson(),
     loadStarterItemsFromJson(),
     loadBasicPracticeSetsFromJson(),
@@ -367,14 +560,11 @@ function loadSupplementaryContentData() {
 
 refreshGrammarContentState(grammarContent);
 refreshReadingContentState(readingContent);
+refreshKanaStrokeContent(kanaStrokeSvgs);
 refreshKanjiRows(kanjiDataRows);
 
 function getAllPracticeSets(levelSets = {}) {
   return contentLevels.reduce((items, level) => items.concat(levelSets[level] || []), []);
-}
-
-function getLegacyVocabKey(level) {
-  return `jlpt${level}`;
 }
 
 function withTaggedVocabLevel(items, level) {
@@ -385,20 +575,9 @@ function withTaggedVocabLevel(items, level) {
 }
 
 function getDynamicVocabSourceForLevel(level) {
-  if (Array.isArray(vocabContent?.[level]) && vocabContent[level].length) {
-    return withTaggedVocabLevel(vocabContent[level], level);
-  }
-
-  const legacyKey = getLegacyVocabKey(level);
-  if (Array.isArray(vocabContent?.[legacyKey]) && vocabContent[legacyKey].length) {
-    return withTaggedVocabLevel(vocabContent[legacyKey], level);
-  }
-
-  if (level === "N5" && Array.isArray(globalThis.jlptN5Vocab) && globalThis.jlptN5Vocab.length) {
-    return withTaggedVocabLevel(globalThis.jlptN5Vocab, level);
-  }
-
-  return [];
+  const vocabStore = getVocabStore();
+  const items = vocabStore && typeof vocabStore.getLevelItems === "function" ? vocabStore.getLevelItems(level) : [];
+  return withTaggedVocabLevel(items, level);
 }
 
 function getDynamicVocabSource(level = "N5") {
@@ -464,6 +643,7 @@ function getOrderedStudyCards(key, items) {
 let starterItems = [];
 
 let basicPracticeSets = {};
+refreshKanaContentState(kanaContent);
 
 
 let quizQuestions = [];
@@ -1225,205 +1405,6 @@ function handleLoadedVocabLevels() {
   renderAll();
 }
 
-const kanaBlueprintGroups = [
-  {
-    title: "기본음",
-    items: [
-      { reading: "a", hiragana: "あ" },
-      { reading: "i", hiragana: "い" },
-      { reading: "u", hiragana: "う" },
-      { reading: "e", hiragana: "え" },
-      { reading: "o", hiragana: "お" },
-      { reading: "ka", hiragana: "か" },
-      { reading: "ki", hiragana: "き" },
-      { reading: "ku", hiragana: "く" },
-      { reading: "ke", hiragana: "け" },
-      { reading: "ko", hiragana: "こ" },
-      { reading: "sa", hiragana: "さ" },
-      { reading: "shi", hiragana: "し" },
-      { reading: "su", hiragana: "す" },
-      { reading: "se", hiragana: "せ" },
-      { reading: "so", hiragana: "そ" },
-      { reading: "ta", hiragana: "た" },
-      { reading: "chi", hiragana: "ち" },
-      { reading: "tsu", hiragana: "つ" },
-      { reading: "te", hiragana: "て" },
-      { reading: "to", hiragana: "と" },
-      { reading: "na", hiragana: "な" },
-      { reading: "ni", hiragana: "に" },
-      { reading: "nu", hiragana: "ぬ" },
-      { reading: "ne", hiragana: "ね" },
-      { reading: "no", hiragana: "の" },
-      { reading: "ha", hiragana: "は" },
-      { reading: "hi", hiragana: "ひ" },
-      { reading: "fu", hiragana: "ふ" },
-      { reading: "he", hiragana: "へ" },
-      { reading: "ho", hiragana: "ほ" },
-      { reading: "ma", hiragana: "ま" },
-      { reading: "mi", hiragana: "み" },
-      { reading: "mu", hiragana: "む" },
-      { reading: "me", hiragana: "め" },
-      { reading: "mo", hiragana: "も" },
-      { reading: "ya", hiragana: "や" },
-      { reading: "yu", hiragana: "ゆ" },
-      { reading: "yo", hiragana: "よ" },
-      { reading: "ra", hiragana: "ら" },
-      { reading: "ri", hiragana: "り" },
-      { reading: "ru", hiragana: "る" },
-      { reading: "re", hiragana: "れ" },
-      { reading: "ro", hiragana: "ろ" },
-      { reading: "wa", hiragana: "わ" },
-      { reading: "wo", hiragana: "を" },
-      { reading: "n", hiragana: "ん" }
-    ]
-  },
-  {
-    title: "탁음 / 반탁음",
-    items: [
-      { reading: "ga", hiragana: "が" },
-      { reading: "gi", hiragana: "ぎ" },
-      { reading: "gu", hiragana: "ぐ" },
-      { reading: "ge", hiragana: "げ" },
-      { reading: "go", hiragana: "ご" },
-      { reading: "za", hiragana: "ざ" },
-      { reading: "ji", hiragana: "じ" },
-      { reading: "zu", hiragana: "ず" },
-      { reading: "ze", hiragana: "ぜ" },
-      { reading: "zo", hiragana: "ぞ" },
-      { reading: "da", hiragana: "だ" },
-      { reading: "ji", hiragana: "ぢ" },
-      { reading: "zu", hiragana: "づ" },
-      { reading: "de", hiragana: "で" },
-      { reading: "do", hiragana: "ど" },
-      { reading: "ba", hiragana: "ば" },
-      { reading: "bi", hiragana: "び" },
-      { reading: "bu", hiragana: "ぶ" },
-      { reading: "be", hiragana: "べ" },
-      { reading: "bo", hiragana: "ぼ" },
-      { reading: "pa", hiragana: "ぱ" },
-      { reading: "pi", hiragana: "ぴ" },
-      { reading: "pu", hiragana: "ぷ" },
-      { reading: "pe", hiragana: "ぺ" },
-      { reading: "po", hiragana: "ぽ" }
-    ]
-  },
-  {
-    title: "요음",
-    items: [
-      { reading: "kya", hiragana: "きゃ" },
-      { reading: "kyu", hiragana: "きゅ" },
-      { reading: "kyo", hiragana: "きょ" },
-      { reading: "sha", hiragana: "しゃ" },
-      { reading: "shu", hiragana: "しゅ" },
-      { reading: "sho", hiragana: "しょ" },
-      { reading: "cha", hiragana: "ちゃ" },
-      { reading: "chu", hiragana: "ちゅ" },
-      { reading: "cho", hiragana: "ちょ" },
-      { reading: "nya", hiragana: "にゃ" },
-      { reading: "nyu", hiragana: "にゅ" },
-      { reading: "nyo", hiragana: "にょ" },
-      { reading: "hya", hiragana: "ひゃ" },
-      { reading: "hyu", hiragana: "ひゅ" },
-      { reading: "hyo", hiragana: "ひょ" },
-      { reading: "mya", hiragana: "みゃ" },
-      { reading: "myu", hiragana: "みゅ" },
-      { reading: "myo", hiragana: "みょ" },
-      { reading: "rya", hiragana: "りゃ" },
-      { reading: "ryu", hiragana: "りゅ" },
-      { reading: "ryo", hiragana: "りょ" },
-      { reading: "gya", hiragana: "ぎゃ" },
-      { reading: "gyu", hiragana: "ぎゅ" },
-      { reading: "gyo", hiragana: "ぎょ" },
-      { reading: "ja", hiragana: "じゃ" },
-      { reading: "ju", hiragana: "じゅ" },
-      { reading: "jo", hiragana: "じょ" },
-      { reading: "bya", hiragana: "びゃ" },
-      { reading: "byu", hiragana: "びゅ" },
-      { reading: "byo", hiragana: "びょ" },
-      { reading: "pya", hiragana: "ぴゃ" },
-      { reading: "pyu", hiragana: "ぴゅ" },
-      { reading: "pyo", hiragana: "ぴょ" }
-    ]
-  },
-  {
-    title: "소문자 / 기타",
-    items: [
-      { reading: "xa", hiragana: "ぁ", quiz: false },
-      { reading: "xi", hiragana: "ぃ", quiz: false },
-      { reading: "xu", hiragana: "ぅ", quiz: false },
-      { reading: "xe", hiragana: "ぇ", quiz: false },
-      { reading: "xo", hiragana: "ぉ", quiz: false },
-      { reading: "xtu", hiragana: "っ", quiz: false },
-      { reading: "xya", hiragana: "ゃ", quiz: false },
-      { reading: "xyu", hiragana: "ゅ", quiz: false },
-      { reading: "xyo", hiragana: "ょ", quiz: false },
-      { reading: "xwa", hiragana: "ゎ", quiz: false },
-      { reading: "vu", hiragana: "ゔ" },
-      { reading: "wi", hiragana: "ゐ", quiz: false },
-      { reading: "we", hiragana: "ゑ", quiz: false },
-      { reading: "la", hiragana: "ゕ", quiz: false },
-      { reading: "le", hiragana: "ゖ", quiz: false }
-    ]
-  }
-];
-
-function convertHiraganaToKatakana(text) {
-  return Array.from(text)
-    .map((character) => String.fromCodePoint(character.codePointAt(0) + 0x60))
-    .join("");
-}
-
-function buildKanaDeck(script) {
-  const isKatakana = script === "katakana";
-  return kanaBlueprintGroups.map((group) => ({
-    title: group.title,
-    items: group.items.map((item) => ({
-      reading: item.reading,
-      char: isKatakana ? convertHiraganaToKatakana(item.hiragana) : item.hiragana,
-      quiz: item.quiz !== false,
-      group: group.title
-    }))
-  }));
-}
-
-function buildKanaPracticeItems(script) {
-  const deck = kanaStudyDecks[script] || [];
-  const quizItems = deck.flatMap((group) => group.items.filter((item) => item.quiz !== false));
-
-  return quizItems
-    .map((item, index) => {
-      const distractors = uniqueQuizValues(
-        shuffleQuizArray(
-          quizItems
-            .filter((candidate) => candidate.char !== item.char)
-            .map((candidate) => candidate.reading)
-        )
-      ).slice(0, 3);
-
-      if (distractors.length < 3) {
-        return null;
-      }
-
-      const options = shuffleQuizArray([item.reading, ...distractors]);
-      const answer = options.indexOf(item.reading);
-
-      return {
-        id: `bp-${script}-${index}`,
-        source: `${script === "hiragana" ? "히라가나" : "카타카나"} ${index + 1}`,
-        title: `${script === "hiragana" ? "히라가나" : "카타카나"} 읽기`,
-        note: "방금 표에서 본 글자들이에요.",
-        prompt: "이 글자, 어떻게 읽을까요?",
-        display: item.char,
-        displaySub: item.reading,
-        options,
-        answer,
-        explanation: `${item.char}는 ${item.reading}로 읽어요.`,
-        tone: index % 2 === 0 ? "tone-coral" : "tone-sky"
-      };
-    })
-    .filter(Boolean);
-}
-
 const kanaQuizSettings = {
   mode: "hiragana",
   count: 10,
@@ -1972,29 +1953,13 @@ function nextKanaQuizSheetQuestion() {
   resetQuizSessionTimer("kana", handleKanaQuizTimeout);
 }
 
-const kanaStudyDecks = {
-  hiragana: buildKanaDeck("hiragana"),
-  katakana: buildKanaDeck("katakana")
-};
-
-basicPracticeSets.hiragana = {
-  label: "히라가나",
-  heading: "히라가나 한눈에 보기",
-  items: buildKanaPracticeItems("hiragana")
-};
-
-basicPracticeSets.katakana = {
-  label: "카타카나",
-  heading: "카타카나 한눈에 보기",
-  items: buildKanaPracticeItems("katakana")
-};
-
-delete basicPracticeSets.kana;
-
-basicPracticeSets.hiragana.label = "히라가나";
-basicPracticeSets.hiragana.heading = "히라가나 한눈에 보기";
-basicPracticeSets.katakana.label = "카타카나";
-basicPracticeSets.katakana.heading = "카타카나 한눈에 보기";
+// kana.json이 바뀌면 문자표, 문자 퀴즈, 따라쓰기 풀이도 같은 원본으로 다시 맞춘다.
+function refreshWritingPracticePools() {
+  writingPracticePools = {
+    hiragana: buildWritingPracticePool("hiragana"),
+    katakana: buildWritingPracticePool("katakana")
+  };
+}
 
 const dynamicKanjiItems = buildKanjiPracticeItemsFromData();
 if (dynamicKanjiItems.length) {
@@ -2257,10 +2222,8 @@ function buildWritingPracticePool(script) {
   );
 }
 
-const writingPracticePools = {
-  hiragana: buildWritingPracticePool("hiragana"),
-  katakana: buildWritingPracticePool("katakana")
-};
+kanaDerivedCollectionsReady = true;
+refreshWritingPracticePools();
 
 function buildWritingPracticeSession(mode = writingPracticeSettings.mode, order = writingPracticeSettings.order) {
   const nextOrder = getWritingPracticeOrder(order);
@@ -8874,20 +8837,13 @@ function getGrammarCollectionCounts(items = getGrammarLevelItems()) {
   };
 }
 
-function getGrammarPracticeSetsByLevel(level = state?.grammarPracticeLevel) {
-  return grammarPracticeSets[getGrammarPracticeLevel(level)] || [];
+function getGrammarPracticeEntriesByLevel(level = state?.grammarPracticeLevel) {
+  const activeLevel = getGrammarPracticeLevel(level);
+  return grammarPracticeEntriesByLevel[activeLevel] || [];
 }
 
 function getGrammarPracticeSetGrammarId(set) {
-  const explicitId = normalizeQuizText(set?.grammarId);
-
-  if (explicitId) {
-    return explicitId;
-  }
-
-  // 오래된 캐시나 수동 편집 데이터에도 대응하려고 grammarId가 없으면 문제 id에서 보조 키를 추론한다.
-  const legacyMatch = normalizeQuizText(set?.id).match(/g(\d+)$/i);
-  return legacyMatch ? `g${legacyMatch[1]}` : "";
+  return resolveGrammarPracticeSetGrammarId(set);
 }
 
 function getGrammarPracticeSetLevel(set, fallbackLevel = state?.grammarPracticeLevel) {
@@ -8902,8 +8858,23 @@ function getGrammarPracticeSetLevel(set, fallbackLevel = state?.grammarPracticeL
   return activeLevel === allLevelValue ? "전체" : activeLevel;
 }
 
+function getGrammarPracticeQuestionLimit(
+  level = state?.grammarPracticeLevel,
+  filter = state?.grammarFilter,
+  count = state?.grammarPracticeCount
+) {
+  const availableCount = getVisibleGrammarPracticeSets(level, filter).length;
+
+  if (!availableCount) {
+    return 0;
+  }
+
+  // 필터 결과가 적을 때 같은 문제를 반복하지 않도록 실제 문제 수를 상한으로 맞춘다.
+  return Math.min(getGrammarPracticeCount(count), availableCount);
+}
+
 function getVisibleGrammarPracticeSets(level = state?.grammarPracticeLevel, filter = state?.grammarFilter) {
-  const sets = getGrammarPracticeSetsByLevel(level);
+  const sets = getGrammarPracticeEntriesByLevel(level);
   const activeFilter = getGrammarFilter(filter);
 
   if (activeFilter === "all") {
@@ -8926,7 +8897,7 @@ function getVisibleGrammarPracticeSets(level = state?.grammarPracticeLevel, filt
 }
 
 function getGrammarPracticeCollectionCounts(level = state?.grammarPracticeLevel) {
-  const sets = getGrammarPracticeSetsByLevel(level);
+  const sets = getGrammarPracticeEntriesByLevel(level);
 
   return {
     all: sets.length,
@@ -8945,18 +8916,18 @@ function getGrammarEmptyMessage(filter = state?.grammarFilter, level = state?.gr
   const levelLabel = activeLevel === allLevelValue ? "전체" : activeLevel;
 
   if (activeFilter === "review") {
-    return `${levelLabel} 다시 볼래요 문형이 아직 없어요.`;
+    return `${levelLabel} 다시 볼래요 문법이 아직 없어요.`;
   }
 
   if (activeFilter === "mastered") {
-    return `${levelLabel} 익혔어요 문형이 아직 없어요.`;
+    return `${levelLabel} 익혔어요 문법이 아직 없어요.`;
   }
 
   if (activeFilter === "unmarked") {
-    return `${levelLabel} 미분류 문형이 아직 없어요.`;
+    return `${levelLabel} 미분류 문법이 아직 없어요.`;
   }
 
-  return `${levelLabel} 문형을 준비하고 있어요.`;
+  return `${levelLabel} 문법을 준비하고 있어요.`;
 }
 
 function getGrammarSummaryText(count, level = state?.grammarLevel, filter = state?.grammarFilter) {
@@ -8964,10 +8935,10 @@ function getGrammarSummaryText(count, level = state?.grammarLevel, filter = stat
   const levelLabel = activeLevel === allLevelValue ? "전체" : activeLevel;
 
   if (getGrammarFilter(filter) === "all") {
-    return `${levelLabel} 문형 ${count}개를 보고 있어요`;
+    return `${levelLabel} 문법 ${count}개를 보고 있어요`;
   }
 
-  return `${levelLabel} ${getGrammarFilterSummaryLabel(filter)} 문형 ${count}개를 보고 있어요`;
+  return `${levelLabel} ${getGrammarFilterSummaryLabel(filter)} 문법 ${count}개를 보고 있어요`;
 }
 
 function getVisibleGrammarCards() {
@@ -9074,7 +9045,7 @@ function getGrammarFlashcardPlaceholder() {
     id: "grammar-empty",
     level: getGrammarLevelLabel(),
     pattern: getGrammarEmptyMessage(),
-    description: "필터를 바꾸거나 저장 상태를 조정하면 다른 문형을 바로 이어서 볼 수 있어요."
+    description: "필터를 바꾸거나 저장 상태를 조정하면 다른 문법을 바로 이어서 볼 수 있어요."
   };
 }
 
@@ -9117,12 +9088,12 @@ function renderGrammarFlashcard() {
   const hintText = hasCards
     ? isRevealed
       ? review
-        ? "다시 볼래요에 담긴 문형이에요"
+        ? "다시 볼래요에 담긴 문법이에요"
         : mastered
-          ? "익혔어요에 담긴 문형이에요"
-          : "이 문형도 바로 저장 상태를 바꿀 수 있어요"
+          ? "익혔어요에 담긴 문법이에요"
+          : "이 문법도 바로 저장 상태를 바꿀 수 있어요"
       : "눌러서 설명을 확인해볼까요?"
-    : "필터를 바꾸면 다른 문형을 바로 이어서 볼 수 있어요";
+    : "필터를 바꾸면 다른 문법을 바로 이어서 볼 수 있어요";
 
   renderStudyFlashcardComponent({
     flashcard,
@@ -9144,7 +9115,7 @@ function renderGrammarFlashcard() {
     hideReading: true,
     toggleOpenLabel: "설명을 다시 접을까요?",
     toggleClosedLabel: "설명을 확인해볼까요?",
-    toggleEmptyLabel: "지금 볼 수 있는 문형이 없어요",
+    toggleEmptyLabel: "지금 볼 수 있는 문법이 없어요",
     prevDisabled: cards.length <= 1,
     nextDisabled: cards.length <= 1,
     actionButtons: [
@@ -9284,7 +9255,7 @@ function getGrammarPracticeOptionsSummaryText() {
   return [
     getLevelSummaryLabel(getGrammarPracticeLevel()),
     getGrammarFilterSummaryLabel(),
-    formatQuestionCountLabel(getGrammarPracticeCount()),
+    formatQuestionCountLabel(getGrammarPracticeQuestionLimit()),
     getDurationLabel(getGrammarPracticeDuration())
   ].join(" · ");
 }
@@ -9424,7 +9395,7 @@ function renderGrammarPractice() {
   const activeDuration = getGrammarPracticeDuration(state.grammarPracticeDuration);
   const sets = getVisibleGrammarPracticeSets(activeLevel);
   const current = getCurrentGrammarPracticeSet();
-  const activeCount = getGrammarPracticeCount(state.grammarPracticeCount);
+  const activeCount = getGrammarPracticeQuestionLimit(activeLevel, state.grammarFilter, state.grammarPracticeCount);
   const currentSessionIndex = Number.isFinite(Number(state.grammarPracticeSessionQuestionIndex))
     ? Number(state.grammarPracticeSessionQuestionIndex)
     : 0;
@@ -9513,7 +9484,7 @@ function handleGrammarPracticeAnswer(index) {
   const options = document.querySelectorAll(".grammar-practice-option");
   const alreadyAnswered = hasAnsweredChoiceOptions(options);
   const nextButton = document.getElementById("grammar-practice-next");
-  const activeCount = getGrammarPracticeCount(state.grammarPracticeCount);
+  const activeCount = getGrammarPracticeQuestionLimit(state.grammarPracticeLevel, state.grammarFilter, state.grammarPracticeCount);
   const isLastQuestion = state.grammarPracticeSessionQuestionIndex >= activeCount - 1;
 
   if (alreadyAnswered || quizSessions.grammar.isPaused) {
@@ -9554,7 +9525,7 @@ function handleGrammarPracticeTimeout() {
   const options = document.querySelectorAll(".grammar-practice-option");
   const alreadyAnswered = hasAnsweredChoiceOptions(options);
   const nextButton = document.getElementById("grammar-practice-next");
-  const activeCount = getGrammarPracticeCount(state.grammarPracticeCount);
+  const activeCount = getGrammarPracticeQuestionLimit(state.grammarPracticeLevel, state.grammarFilter, state.grammarPracticeCount);
   const isLastQuestion = state.grammarPracticeSessionQuestionIndex >= activeCount - 1;
 
   if (alreadyAnswered) {
@@ -9588,7 +9559,7 @@ function nextGrammarPracticeSet() {
   const nextButton = document.getElementById("grammar-practice-next");
   const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
   const sets = getVisibleGrammarPracticeSets(activeLevel);
-  const questionLimit = getGrammarPracticeCount(state.grammarPracticeCount);
+  const questionLimit = getGrammarPracticeQuestionLimit(activeLevel, state.grammarFilter, state.grammarPracticeCount);
   const currentSessionIndex = Number.isFinite(Number(state.grammarPracticeSessionQuestionIndex))
     ? Number(state.grammarPracticeSessionQuestionIndex)
     : 0;

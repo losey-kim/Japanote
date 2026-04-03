@@ -22,14 +22,6 @@ const defaultMatchPreferences = {
   optionsOpen: false
 };
 
-const fallbackMatchPool = [
-  { id: "match-fallback-1", level: "N5", reading: "たべる", meaning: "먹다" },
-  { id: "match-fallback-2", level: "N5", reading: "いく", meaning: "가다" },
-  { id: "match-fallback-3", level: "N5", reading: "みる", meaning: "보다" },
-  { id: "match-fallback-4", level: "N5", reading: "がっこう", meaning: "학교" },
-  { id: "match-fallback-5", level: "N5", reading: "ともだち", meaning: "친구" }
-];
-
 const matchResultFilterLabels = matchCopy.resultFilterLabels || {
   all: "전체",
   correct: "정답",
@@ -198,20 +190,11 @@ function getMatchStudyBuckets() {
 }
 
 function getMatchLevelSource(level) {
-  const vocabRegistry = globalThis.japanoteContent?.vocab || {};
-  let source = [];
-
-  if (Array.isArray(vocabRegistry[level]) && vocabRegistry[level].length) {
-    source = vocabRegistry[level];
-  } else {
-    const legacyKey = `jlpt${level}`;
-
-    if (Array.isArray(vocabRegistry[legacyKey]) && vocabRegistry[legacyKey].length) {
-      source = vocabRegistry[legacyKey];
-    } else if (level === "N5" && Array.isArray(globalThis.jlptN5Vocab) && globalThis.jlptN5Vocab.length) {
-      source = globalThis.jlptN5Vocab;
-    }
-  }
+  const vocabStore = globalThis.japanoteVocabStore;
+  const source =
+    vocabStore && typeof vocabStore.getLevelItems === "function"
+      ? vocabStore.getLevelItems(level)
+      : [];
 
   return source.map((item) => ({
     ...item,

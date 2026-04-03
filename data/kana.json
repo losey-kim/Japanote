@@ -1,0 +1,5270 @@
+{
+  "library": {
+    "hiragana": [
+      {
+        "title": "기본음",
+        "items": [
+          {
+            "reading": "a",
+            "char": "あ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "i",
+            "char": "い",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "u",
+            "char": "う",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "e",
+            "char": "え",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "o",
+            "char": "お",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ka",
+            "char": "か",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ki",
+            "char": "き",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ku",
+            "char": "く",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ke",
+            "char": "け",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ko",
+            "char": "こ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "sa",
+            "char": "さ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "shi",
+            "char": "し",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "su",
+            "char": "す",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "se",
+            "char": "せ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "so",
+            "char": "そ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ta",
+            "char": "た",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "chi",
+            "char": "ち",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "tsu",
+            "char": "つ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "te",
+            "char": "て",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "to",
+            "char": "と",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "na",
+            "char": "な",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ni",
+            "char": "に",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "nu",
+            "char": "ぬ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ne",
+            "char": "ね",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "no",
+            "char": "の",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ha",
+            "char": "は",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "hi",
+            "char": "ひ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "fu",
+            "char": "ふ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "he",
+            "char": "へ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ho",
+            "char": "ほ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ma",
+            "char": "ま",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "mi",
+            "char": "み",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "mu",
+            "char": "む",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "me",
+            "char": "め",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "mo",
+            "char": "も",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ya",
+            "char": "や",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "yu",
+            "char": "ゆ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "yo",
+            "char": "よ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ra",
+            "char": "ら",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ri",
+            "char": "り",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ru",
+            "char": "る",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "re",
+            "char": "れ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ro",
+            "char": "ろ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "wa",
+            "char": "わ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "wo",
+            "char": "を",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "n",
+            "char": "ん",
+            "quiz": true,
+            "group": "기본음"
+          }
+        ]
+      },
+      {
+        "title": "탁음 / 반탁음",
+        "items": [
+          {
+            "reading": "ga",
+            "char": "が",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "gi",
+            "char": "ぎ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "gu",
+            "char": "ぐ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ge",
+            "char": "げ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "go",
+            "char": "ご",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "za",
+            "char": "ざ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ji",
+            "char": "じ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "zu",
+            "char": "ず",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ze",
+            "char": "ぜ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "zo",
+            "char": "ぞ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "da",
+            "char": "だ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ji",
+            "char": "ぢ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "zu",
+            "char": "づ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "de",
+            "char": "で",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "do",
+            "char": "ど",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ba",
+            "char": "ば",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "bi",
+            "char": "び",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "bu",
+            "char": "ぶ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "be",
+            "char": "べ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "bo",
+            "char": "ぼ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pa",
+            "char": "ぱ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pi",
+            "char": "ぴ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pu",
+            "char": "ぷ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pe",
+            "char": "ぺ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "po",
+            "char": "ぽ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          }
+        ]
+      },
+      {
+        "title": "요음",
+        "items": [
+          {
+            "reading": "kya",
+            "char": "きゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "kyu",
+            "char": "きゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "kyo",
+            "char": "きょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "sha",
+            "char": "しゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "shu",
+            "char": "しゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "sho",
+            "char": "しょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "cha",
+            "char": "ちゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "chu",
+            "char": "ちゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "cho",
+            "char": "ちょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "nya",
+            "char": "にゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "nyu",
+            "char": "にゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "nyo",
+            "char": "にょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "hya",
+            "char": "ひゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "hyu",
+            "char": "ひゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "hyo",
+            "char": "ひょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "mya",
+            "char": "みゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "myu",
+            "char": "みゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "myo",
+            "char": "みょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "rya",
+            "char": "りゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ryu",
+            "char": "りゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ryo",
+            "char": "りょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "gya",
+            "char": "ぎゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "gyu",
+            "char": "ぎゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "gyo",
+            "char": "ぎょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ja",
+            "char": "じゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ju",
+            "char": "じゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "jo",
+            "char": "じょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "bya",
+            "char": "びゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "byu",
+            "char": "びゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "byo",
+            "char": "びょ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "pya",
+            "char": "ぴゃ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "pyu",
+            "char": "ぴゅ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "pyo",
+            "char": "ぴょ",
+            "quiz": true,
+            "group": "요음"
+          }
+        ]
+      },
+      {
+        "title": "소문자 / 기타",
+        "items": [
+          {
+            "reading": "xa",
+            "char": "ぁ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xi",
+            "char": "ぃ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xu",
+            "char": "ぅ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xe",
+            "char": "ぇ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xo",
+            "char": "ぉ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xtu",
+            "char": "っ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xya",
+            "char": "ゃ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xyu",
+            "char": "ゅ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xyo",
+            "char": "ょ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xwa",
+            "char": "ゎ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "vu",
+            "char": "ゔ",
+            "quiz": true,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "wi",
+            "char": "ゐ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "we",
+            "char": "ゑ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "la",
+            "char": "ゕ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "le",
+            "char": "ゖ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          }
+        ]
+      }
+    ],
+    "katakana": [
+      {
+        "title": "기본음",
+        "items": [
+          {
+            "reading": "a",
+            "char": "ア",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "i",
+            "char": "イ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "u",
+            "char": "ウ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "e",
+            "char": "エ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "o",
+            "char": "オ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ka",
+            "char": "カ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ki",
+            "char": "キ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ku",
+            "char": "ク",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ke",
+            "char": "ケ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ko",
+            "char": "コ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "sa",
+            "char": "サ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "shi",
+            "char": "シ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "su",
+            "char": "ス",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "se",
+            "char": "セ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "so",
+            "char": "ソ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ta",
+            "char": "タ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "chi",
+            "char": "チ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "tsu",
+            "char": "ツ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "te",
+            "char": "テ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "to",
+            "char": "ト",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "na",
+            "char": "ナ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ni",
+            "char": "ニ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "nu",
+            "char": "ヌ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ne",
+            "char": "ネ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "no",
+            "char": "ノ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ha",
+            "char": "ハ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "hi",
+            "char": "ヒ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "fu",
+            "char": "フ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "he",
+            "char": "ヘ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ho",
+            "char": "ホ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ma",
+            "char": "マ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "mi",
+            "char": "ミ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "mu",
+            "char": "ム",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "me",
+            "char": "メ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "mo",
+            "char": "モ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ya",
+            "char": "ヤ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "yu",
+            "char": "ユ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "yo",
+            "char": "ヨ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ra",
+            "char": "ラ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ri",
+            "char": "リ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ru",
+            "char": "ル",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "re",
+            "char": "レ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "ro",
+            "char": "ロ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "wa",
+            "char": "ワ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "wo",
+            "char": "ヲ",
+            "quiz": true,
+            "group": "기본음"
+          },
+          {
+            "reading": "n",
+            "char": "ン",
+            "quiz": true,
+            "group": "기본음"
+          }
+        ]
+      },
+      {
+        "title": "탁음 / 반탁음",
+        "items": [
+          {
+            "reading": "ga",
+            "char": "ガ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "gi",
+            "char": "ギ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "gu",
+            "char": "グ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ge",
+            "char": "ゲ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "go",
+            "char": "ゴ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "za",
+            "char": "ザ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ji",
+            "char": "ジ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "zu",
+            "char": "ズ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ze",
+            "char": "ゼ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "zo",
+            "char": "ゾ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "da",
+            "char": "ダ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ji",
+            "char": "ヂ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "zu",
+            "char": "ヅ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "de",
+            "char": "デ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "do",
+            "char": "ド",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "ba",
+            "char": "バ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "bi",
+            "char": "ビ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "bu",
+            "char": "ブ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "be",
+            "char": "ベ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "bo",
+            "char": "ボ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pa",
+            "char": "パ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pi",
+            "char": "ピ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pu",
+            "char": "プ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "pe",
+            "char": "ペ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          },
+          {
+            "reading": "po",
+            "char": "ポ",
+            "quiz": true,
+            "group": "탁음 / 반탁음"
+          }
+        ]
+      },
+      {
+        "title": "요음",
+        "items": [
+          {
+            "reading": "kya",
+            "char": "キャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "kyu",
+            "char": "キュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "kyo",
+            "char": "キョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "sha",
+            "char": "シャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "shu",
+            "char": "シュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "sho",
+            "char": "ショ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "cha",
+            "char": "チャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "chu",
+            "char": "チュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "cho",
+            "char": "チョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "nya",
+            "char": "ニャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "nyu",
+            "char": "ニュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "nyo",
+            "char": "ニョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "hya",
+            "char": "ヒャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "hyu",
+            "char": "ヒュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "hyo",
+            "char": "ヒョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "mya",
+            "char": "ミャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "myu",
+            "char": "ミュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "myo",
+            "char": "ミョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "rya",
+            "char": "リャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ryu",
+            "char": "リュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ryo",
+            "char": "リョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "gya",
+            "char": "ギャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "gyu",
+            "char": "ギュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "gyo",
+            "char": "ギョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ja",
+            "char": "ジャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "ju",
+            "char": "ジュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "jo",
+            "char": "ジョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "bya",
+            "char": "ビャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "byu",
+            "char": "ビュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "byo",
+            "char": "ビョ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "pya",
+            "char": "ピャ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "pyu",
+            "char": "ピュ",
+            "quiz": true,
+            "group": "요음"
+          },
+          {
+            "reading": "pyo",
+            "char": "ピョ",
+            "quiz": true,
+            "group": "요음"
+          }
+        ]
+      },
+      {
+        "title": "소문자 / 기타",
+        "items": [
+          {
+            "reading": "xa",
+            "char": "ァ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xi",
+            "char": "ィ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xu",
+            "char": "ゥ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xe",
+            "char": "ェ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xo",
+            "char": "ォ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xtu",
+            "char": "ッ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xya",
+            "char": "ャ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xyu",
+            "char": "ュ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xyo",
+            "char": "ョ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "xwa",
+            "char": "ヮ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "vu",
+            "char": "ヴ",
+            "quiz": true,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "wi",
+            "char": "ヰ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "we",
+            "char": "ヱ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "la",
+            "char": "ヵ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          },
+          {
+            "reading": "le",
+            "char": "ヶ",
+            "quiz": false,
+            "group": "소문자 / 기타"
+          }
+        ]
+      }
+    ]
+  },
+  "tracks": {
+    "hiragana": {
+      "label": "????",
+      "heading": "???? ??? ??",
+      "items": [
+        {
+          "id": "bp-hiragana-0",
+          "source": "???? 1",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "あ",
+          "displaySub": "기본음",
+          "options": [
+            "pe",
+            "cha",
+            "nyu",
+            "a"
+          ],
+          "answer": 3,
+          "explanation": "あ? a? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-1",
+          "source": "???? 2",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "い",
+          "displaySub": "기본음",
+          "options": [
+            "ge",
+            "i",
+            "a",
+            "bya"
+          ],
+          "answer": 1,
+          "explanation": "い? i? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-2",
+          "source": "???? 3",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "う",
+          "displaySub": "기본음",
+          "options": [
+            "ku",
+            "so",
+            "tsu",
+            "u"
+          ],
+          "answer": 3,
+          "explanation": "う? u? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-3",
+          "source": "???? 4",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "え",
+          "displaySub": "기본음",
+          "options": [
+            "zu",
+            "e",
+            "hyo",
+            "ri"
+          ],
+          "answer": 1,
+          "explanation": "え? e? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-4",
+          "source": "???? 5",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "お",
+          "displaySub": "기본음",
+          "options": [
+            "tsu",
+            "se",
+            "wa",
+            "o"
+          ],
+          "answer": 3,
+          "explanation": "お? o? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-5",
+          "source": "???? 6",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "か",
+          "displaySub": "기본음",
+          "options": [
+            "ka",
+            "tsu",
+            "yo",
+            "cho"
+          ],
+          "answer": 0,
+          "explanation": "か? ka? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-6",
+          "source": "???? 7",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "き",
+          "displaySub": "기본음",
+          "options": [
+            "ki",
+            "sha",
+            "cha",
+            "ha"
+          ],
+          "answer": 0,
+          "explanation": "き? ki? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-7",
+          "source": "???? 8",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "く",
+          "displaySub": "기본음",
+          "options": [
+            "ku",
+            "ri",
+            "za",
+            "shi"
+          ],
+          "answer": 0,
+          "explanation": "く? ku? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-8",
+          "source": "???? 9",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "け",
+          "displaySub": "기본음",
+          "options": [
+            "ke",
+            "se",
+            "a",
+            "cho"
+          ],
+          "answer": 0,
+          "explanation": "け? ke? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-9",
+          "source": "???? 10",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "こ",
+          "displaySub": "기본음",
+          "options": [
+            "mi",
+            "a",
+            "ko",
+            "ji"
+          ],
+          "answer": 2,
+          "explanation": "こ? ko? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-10",
+          "source": "???? 11",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "さ",
+          "displaySub": "기본음",
+          "options": [
+            "sa",
+            "u",
+            "mi",
+            "ni"
+          ],
+          "answer": 0,
+          "explanation": "さ? sa? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-11",
+          "source": "???? 12",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "し",
+          "displaySub": "기본음",
+          "options": [
+            "shi",
+            "tsu",
+            "cho",
+            "wa"
+          ],
+          "answer": 0,
+          "explanation": "し? shi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-12",
+          "source": "???? 13",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "す",
+          "displaySub": "기본음",
+          "options": [
+            "su",
+            "pi",
+            "ra",
+            "hya"
+          ],
+          "answer": 0,
+          "explanation": "す? su? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-13",
+          "source": "???? 14",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "せ",
+          "displaySub": "기본음",
+          "options": [
+            "se",
+            "o",
+            "nyu",
+            "ke"
+          ],
+          "answer": 0,
+          "explanation": "せ? se? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-14",
+          "source": "???? 15",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "そ",
+          "displaySub": "기본음",
+          "options": [
+            "ri",
+            "ke",
+            "so",
+            "n"
+          ],
+          "answer": 2,
+          "explanation": "そ? so? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-15",
+          "source": "???? 16",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "た",
+          "displaySub": "기본음",
+          "options": [
+            "ta",
+            "mo",
+            "bo",
+            "se"
+          ],
+          "answer": 0,
+          "explanation": "た? ta? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-16",
+          "source": "???? 17",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ち",
+          "displaySub": "기본음",
+          "options": [
+            "chi",
+            "pe",
+            "tsu",
+            "bu"
+          ],
+          "answer": 0,
+          "explanation": "ち? chi? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-17",
+          "source": "???? 18",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "つ",
+          "displaySub": "기본음",
+          "options": [
+            "pya",
+            "re",
+            "tsu",
+            "jo"
+          ],
+          "answer": 2,
+          "explanation": "つ? tsu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-18",
+          "source": "???? 19",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "て",
+          "displaySub": "기본음",
+          "options": [
+            "ni",
+            "ha",
+            "cho",
+            "te"
+          ],
+          "answer": 3,
+          "explanation": "て? te? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-19",
+          "source": "???? 20",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "と",
+          "displaySub": "기본음",
+          "options": [
+            "ri",
+            "to",
+            "ge",
+            "gi"
+          ],
+          "answer": 1,
+          "explanation": "と? to? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-20",
+          "source": "???? 21",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "な",
+          "displaySub": "기본음",
+          "options": [
+            "nyu",
+            "u",
+            "cha",
+            "na"
+          ],
+          "answer": 3,
+          "explanation": "な? na? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-21",
+          "source": "???? 22",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "に",
+          "displaySub": "기본음",
+          "options": [
+            "ni",
+            "tsu",
+            "ji",
+            "pi"
+          ],
+          "answer": 0,
+          "explanation": "に? ni? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-22",
+          "source": "???? 23",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぬ",
+          "displaySub": "기본음",
+          "options": [
+            "o",
+            "nu",
+            "ji",
+            "chi"
+          ],
+          "answer": 1,
+          "explanation": "ぬ? nu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-23",
+          "source": "???? 24",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ね",
+          "displaySub": "기본음",
+          "options": [
+            "pya",
+            "de",
+            "ne",
+            "ka"
+          ],
+          "answer": 2,
+          "explanation": "ね? ne? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-24",
+          "source": "???? 25",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "の",
+          "displaySub": "기본음",
+          "options": [
+            "kyo",
+            "u",
+            "a",
+            "no"
+          ],
+          "answer": 3,
+          "explanation": "の? no? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-25",
+          "source": "???? 26",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "は",
+          "displaySub": "기본음",
+          "options": [
+            "ha",
+            "e",
+            "hyu",
+            "cho"
+          ],
+          "answer": 0,
+          "explanation": "は? ha? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-26",
+          "source": "???? 27",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ひ",
+          "displaySub": "기본음",
+          "options": [
+            "pya",
+            "ho",
+            "me",
+            "hi"
+          ],
+          "answer": 3,
+          "explanation": "ひ? hi? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-27",
+          "source": "???? 28",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ふ",
+          "displaySub": "기본음",
+          "options": [
+            "fu",
+            "yu",
+            "bo",
+            "ja"
+          ],
+          "answer": 0,
+          "explanation": "ふ? fu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-28",
+          "source": "???? 29",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "へ",
+          "displaySub": "기본음",
+          "options": [
+            "jo",
+            "he",
+            "te",
+            "o"
+          ],
+          "answer": 1,
+          "explanation": "へ? he? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-29",
+          "source": "???? 30",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ほ",
+          "displaySub": "기본음",
+          "options": [
+            "ka",
+            "da",
+            "ho",
+            "ji"
+          ],
+          "answer": 2,
+          "explanation": "ほ? ho? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-30",
+          "source": "???? 31",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ま",
+          "displaySub": "기본음",
+          "options": [
+            "be",
+            "e",
+            "se",
+            "ma"
+          ],
+          "answer": 3,
+          "explanation": "ま? ma? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-31",
+          "source": "???? 32",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "み",
+          "displaySub": "기본음",
+          "options": [
+            "mi",
+            "o",
+            "u",
+            "chi"
+          ],
+          "answer": 0,
+          "explanation": "み? mi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-32",
+          "source": "???? 33",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "む",
+          "displaySub": "기본음",
+          "options": [
+            "ji",
+            "mu",
+            "se",
+            "a"
+          ],
+          "answer": 1,
+          "explanation": "む? mu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-33",
+          "source": "???? 34",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "め",
+          "displaySub": "기본음",
+          "options": [
+            "re",
+            "zo",
+            "me",
+            "ryo"
+          ],
+          "answer": 2,
+          "explanation": "め? me? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-34",
+          "source": "???? 35",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "も",
+          "displaySub": "기본음",
+          "options": [
+            "gyo",
+            "zo",
+            "su",
+            "mo"
+          ],
+          "answer": 3,
+          "explanation": "も? mo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-35",
+          "source": "???? 36",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "や",
+          "displaySub": "기본음",
+          "options": [
+            "e",
+            "i",
+            "ya",
+            "gu"
+          ],
+          "answer": 2,
+          "explanation": "や? ya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-36",
+          "source": "???? 37",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ゆ",
+          "displaySub": "기본음",
+          "options": [
+            "hi",
+            "shi",
+            "ro",
+            "yu"
+          ],
+          "answer": 3,
+          "explanation": "ゆ? yu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-37",
+          "source": "???? 38",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "よ",
+          "displaySub": "기본음",
+          "options": [
+            "gyo",
+            "e",
+            "yo",
+            "gya"
+          ],
+          "answer": 2,
+          "explanation": "よ? yo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-38",
+          "source": "???? 39",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ら",
+          "displaySub": "기본음",
+          "options": [
+            "ra",
+            "wa",
+            "chu",
+            "ka"
+          ],
+          "answer": 0,
+          "explanation": "ら? ra? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-39",
+          "source": "???? 40",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "り",
+          "displaySub": "기본음",
+          "options": [
+            "n",
+            "nu",
+            "yu",
+            "ri"
+          ],
+          "answer": 3,
+          "explanation": "り? ri? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-40",
+          "source": "???? 41",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "る",
+          "displaySub": "기본음",
+          "options": [
+            "gyo",
+            "fu",
+            "ru",
+            "su"
+          ],
+          "answer": 2,
+          "explanation": "る? ru? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-41",
+          "source": "???? 42",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "れ",
+          "displaySub": "기본음",
+          "options": [
+            "u",
+            "re",
+            "a",
+            "shu"
+          ],
+          "answer": 1,
+          "explanation": "れ? re? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-42",
+          "source": "???? 43",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ろ",
+          "displaySub": "기본음",
+          "options": [
+            "ro",
+            "na",
+            "wo",
+            "gu"
+          ],
+          "answer": 0,
+          "explanation": "ろ? ro? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-43",
+          "source": "???? 44",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "わ",
+          "displaySub": "기본음",
+          "options": [
+            "wa",
+            "u",
+            "go",
+            "ro"
+          ],
+          "answer": 0,
+          "explanation": "わ? wa? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-44",
+          "source": "???? 45",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "を",
+          "displaySub": "기본음",
+          "options": [
+            "ji",
+            "ze",
+            "be",
+            "wo"
+          ],
+          "answer": 3,
+          "explanation": "を? wo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-45",
+          "source": "???? 46",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ん",
+          "displaySub": "기본음",
+          "options": [
+            "n",
+            "ro",
+            "zu",
+            "ra"
+          ],
+          "answer": 0,
+          "explanation": "ん? n? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-46",
+          "source": "???? 47",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "が",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ni",
+            "shi",
+            "ga",
+            "ta"
+          ],
+          "answer": 2,
+          "explanation": "が? ga? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-47",
+          "source": "???? 48",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぎ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ja",
+            "wo",
+            "chi",
+            "gi"
+          ],
+          "answer": 3,
+          "explanation": "ぎ? gi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-48",
+          "source": "???? 49",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぐ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ta",
+            "sho",
+            "gu",
+            "pya"
+          ],
+          "answer": 2,
+          "explanation": "ぐ? gu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-49",
+          "source": "???? 50",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "げ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "hyu",
+            "cha",
+            "gu",
+            "ge"
+          ],
+          "answer": 3,
+          "explanation": "げ? ge? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-50",
+          "source": "???? 51",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ご",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "e",
+            "go",
+            "ku",
+            "se"
+          ],
+          "answer": 1,
+          "explanation": "ご? go? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-51",
+          "source": "???? 52",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ざ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "hya",
+            "ru",
+            "a",
+            "za"
+          ],
+          "answer": 3,
+          "explanation": "ざ? za? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-52",
+          "source": "???? 53",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "じ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "u",
+            "ji",
+            "gyu",
+            "chi"
+          ],
+          "answer": 1,
+          "explanation": "じ? ji? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-53",
+          "source": "???? 54",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ず",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "te",
+            "mu",
+            "sa",
+            "zu"
+          ],
+          "answer": 3,
+          "explanation": "ず? zu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-54",
+          "source": "???? 55",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぜ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "so",
+            "ze",
+            "kya",
+            "ru"
+          ],
+          "answer": 1,
+          "explanation": "ぜ? ze? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-55",
+          "source": "???? 56",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぞ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "sho",
+            "u",
+            "mo",
+            "zo"
+          ],
+          "answer": 3,
+          "explanation": "ぞ? zo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-56",
+          "source": "???? 57",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "だ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "nu",
+            "ze",
+            "da",
+            "ke"
+          ],
+          "answer": 2,
+          "explanation": "だ? da? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-57",
+          "source": "???? 58",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぢ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ji",
+            "te",
+            "su",
+            "ji"
+          ],
+          "answer": 0,
+          "explanation": "ぢ? ji? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-58",
+          "source": "???? 59",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "づ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "zu",
+            "wo",
+            "po",
+            "re"
+          ],
+          "answer": 0,
+          "explanation": "づ? zu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-59",
+          "source": "???? 60",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "で",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "fu",
+            "tsu",
+            "de",
+            "ma"
+          ],
+          "answer": 2,
+          "explanation": "で? de? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-60",
+          "source": "???? 61",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ど",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "do",
+            "ro",
+            "byu",
+            "e"
+          ],
+          "answer": 0,
+          "explanation": "ど? do? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-61",
+          "source": "???? 62",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ば",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "shu",
+            "ba",
+            "o",
+            "hya"
+          ],
+          "answer": 1,
+          "explanation": "ば? ba? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-62",
+          "source": "???? 63",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "び",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "bi",
+            "pyu",
+            "bo",
+            "i"
+          ],
+          "answer": 0,
+          "explanation": "び? bi? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-63",
+          "source": "???? 64",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぶ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "su",
+            "na",
+            "ki",
+            "bu"
+          ],
+          "answer": 3,
+          "explanation": "ぶ? bu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-64",
+          "source": "???? 65",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "べ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "be",
+            "sa",
+            "chu",
+            "mi"
+          ],
+          "answer": 0,
+          "explanation": "べ? be? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-65",
+          "source": "???? 66",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぼ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ke",
+            "bo",
+            "a",
+            "jo"
+          ],
+          "answer": 1,
+          "explanation": "ぼ? bo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-66",
+          "source": "???? 67",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぱ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "nu",
+            "i",
+            "pa",
+            "sha"
+          ],
+          "answer": 2,
+          "explanation": "ぱ? pa? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-67",
+          "source": "???? 68",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぴ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "shu",
+            "u",
+            "pi",
+            "mo"
+          ],
+          "answer": 2,
+          "explanation": "ぴ? pi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-68",
+          "source": "???? 69",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぷ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "gyu",
+            "e",
+            "pu",
+            "te"
+          ],
+          "answer": 2,
+          "explanation": "ぷ? pu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-69",
+          "source": "???? 70",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぺ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ja",
+            "pya",
+            "hi",
+            "pe"
+          ],
+          "answer": 3,
+          "explanation": "ぺ? pe? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-70",
+          "source": "???? 71",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぽ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "po",
+            "i",
+            "ryu",
+            "hi"
+          ],
+          "answer": 0,
+          "explanation": "ぽ? po? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-71",
+          "source": "???? 72",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "きゃ",
+          "displaySub": "요음",
+          "options": [
+            "u",
+            "kya",
+            "cho",
+            "ke"
+          ],
+          "answer": 1,
+          "explanation": "きゃ? kya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-72",
+          "source": "???? 73",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "きゅ",
+          "displaySub": "요음",
+          "options": [
+            "bi",
+            "u",
+            "ra",
+            "kyu"
+          ],
+          "answer": 3,
+          "explanation": "きゅ? kyu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-73",
+          "source": "???? 74",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "きょ",
+          "displaySub": "요음",
+          "options": [
+            "go",
+            "kyo",
+            "mo",
+            "rya"
+          ],
+          "answer": 1,
+          "explanation": "きょ? kyo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-74",
+          "source": "???? 75",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "しゃ",
+          "displaySub": "요음",
+          "options": [
+            "e",
+            "ni",
+            "na",
+            "sha"
+          ],
+          "answer": 3,
+          "explanation": "しゃ? sha? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-75",
+          "source": "???? 76",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "しゅ",
+          "displaySub": "요음",
+          "options": [
+            "ne",
+            "shu",
+            "me",
+            "te"
+          ],
+          "answer": 1,
+          "explanation": "しゅ? shu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-76",
+          "source": "???? 77",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "しょ",
+          "displaySub": "요음",
+          "options": [
+            "ji",
+            "i",
+            "ko",
+            "sho"
+          ],
+          "answer": 3,
+          "explanation": "しょ? sho? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-77",
+          "source": "???? 78",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ちゃ",
+          "displaySub": "요음",
+          "options": [
+            "ku",
+            "ma",
+            "cha",
+            "so"
+          ],
+          "answer": 2,
+          "explanation": "ちゃ? cha? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-78",
+          "source": "???? 79",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ちゅ",
+          "displaySub": "요음",
+          "options": [
+            "shi",
+            "tsu",
+            "yo",
+            "chu"
+          ],
+          "answer": 3,
+          "explanation": "ちゅ? chu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-79",
+          "source": "???? 80",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ちょ",
+          "displaySub": "요음",
+          "options": [
+            "ko",
+            "cho",
+            "pyo",
+            "e"
+          ],
+          "answer": 1,
+          "explanation": "ちょ? cho? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-80",
+          "source": "???? 81",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "にゃ",
+          "displaySub": "요음",
+          "options": [
+            "ho",
+            "ryo",
+            "ke",
+            "nya"
+          ],
+          "answer": 3,
+          "explanation": "にゃ? nya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-81",
+          "source": "???? 82",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "にゅ",
+          "displaySub": "요음",
+          "options": [
+            "ko",
+            "nyu",
+            "wa",
+            "shi"
+          ],
+          "answer": 1,
+          "explanation": "にゅ? nyu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-82",
+          "source": "???? 83",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "にょ",
+          "displaySub": "요음",
+          "options": [
+            "nyu",
+            "za",
+            "su",
+            "nyo"
+          ],
+          "answer": 3,
+          "explanation": "にょ? nyo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-83",
+          "source": "???? 84",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ひゃ",
+          "displaySub": "요음",
+          "options": [
+            "rya",
+            "ji",
+            "hya",
+            "ma"
+          ],
+          "answer": 2,
+          "explanation": "ひゃ? hya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-84",
+          "source": "???? 85",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ひゅ",
+          "displaySub": "요음",
+          "options": [
+            "hyu",
+            "chu",
+            "a",
+            "ki"
+          ],
+          "answer": 0,
+          "explanation": "ひゅ? hyu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-85",
+          "source": "???? 86",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ひょ",
+          "displaySub": "요음",
+          "options": [
+            "be",
+            "byu",
+            "hyo",
+            "ru"
+          ],
+          "answer": 2,
+          "explanation": "ひょ? hyo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-86",
+          "source": "???? 87",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "みゃ",
+          "displaySub": "요음",
+          "options": [
+            "a",
+            "ke",
+            "su",
+            "mya"
+          ],
+          "answer": 3,
+          "explanation": "みゃ? mya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-87",
+          "source": "???? 88",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "みゅ",
+          "displaySub": "요음",
+          "options": [
+            "ki",
+            "myu",
+            "gu",
+            "gyu"
+          ],
+          "answer": 1,
+          "explanation": "みゅ? myu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-88",
+          "source": "???? 89",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "みょ",
+          "displaySub": "요음",
+          "options": [
+            "chi",
+            "no",
+            "su",
+            "myo"
+          ],
+          "answer": 3,
+          "explanation": "みょ? myo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-89",
+          "source": "???? 90",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "りゃ",
+          "displaySub": "요음",
+          "options": [
+            "rya",
+            "bi",
+            "no",
+            "pa"
+          ],
+          "answer": 0,
+          "explanation": "りゃ? rya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-90",
+          "source": "???? 91",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "りゅ",
+          "displaySub": "요음",
+          "options": [
+            "ryo",
+            "zu",
+            "ryu",
+            "ja"
+          ],
+          "answer": 2,
+          "explanation": "りゅ? ryu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-91",
+          "source": "???? 92",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "りょ",
+          "displaySub": "요음",
+          "options": [
+            "ryo",
+            "chi",
+            "o",
+            "a"
+          ],
+          "answer": 0,
+          "explanation": "りょ? ryo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-92",
+          "source": "???? 93",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぎゃ",
+          "displaySub": "요음",
+          "options": [
+            "gya",
+            "na",
+            "rya",
+            "cho"
+          ],
+          "answer": 0,
+          "explanation": "ぎゃ? gya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-93",
+          "source": "???? 94",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぎゅ",
+          "displaySub": "요음",
+          "options": [
+            "gyu",
+            "gyo",
+            "ryu",
+            "tsu"
+          ],
+          "answer": 0,
+          "explanation": "ぎゅ? gyu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-94",
+          "source": "???? 95",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぎょ",
+          "displaySub": "요음",
+          "options": [
+            "gyo",
+            "i",
+            "me",
+            "ji"
+          ],
+          "answer": 0,
+          "explanation": "ぎょ? gyo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-95",
+          "source": "???? 96",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "じゃ",
+          "displaySub": "요음",
+          "options": [
+            "ja",
+            "po",
+            "nyu",
+            "re"
+          ],
+          "answer": 0,
+          "explanation": "じゃ? ja? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-96",
+          "source": "???? 97",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "じゅ",
+          "displaySub": "요음",
+          "options": [
+            "ju",
+            "pa",
+            "he",
+            "i"
+          ],
+          "answer": 0,
+          "explanation": "じゅ? ju? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-97",
+          "source": "???? 98",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "じょ",
+          "displaySub": "요음",
+          "options": [
+            "jo",
+            "i",
+            "ji",
+            "e"
+          ],
+          "answer": 0,
+          "explanation": "じょ? jo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-98",
+          "source": "???? 99",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "びゃ",
+          "displaySub": "요음",
+          "options": [
+            "wa",
+            "ne",
+            "byo",
+            "bya"
+          ],
+          "answer": 3,
+          "explanation": "びゃ? bya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-99",
+          "source": "???? 100",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "びゅ",
+          "displaySub": "요음",
+          "options": [
+            "mu",
+            "chi",
+            "byu",
+            "re"
+          ],
+          "answer": 2,
+          "explanation": "びゅ? byu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-100",
+          "source": "???? 101",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "びょ",
+          "displaySub": "요음",
+          "options": [
+            "e",
+            "yu",
+            "yo",
+            "byo"
+          ],
+          "answer": 3,
+          "explanation": "びょ? byo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-101",
+          "source": "???? 102",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぴゃ",
+          "displaySub": "요음",
+          "options": [
+            "pya",
+            "a",
+            "wo",
+            "za"
+          ],
+          "answer": 0,
+          "explanation": "ぴゃ? pya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-102",
+          "source": "???? 103",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぴゅ",
+          "displaySub": "요음",
+          "options": [
+            "pyu",
+            "hyu",
+            "wo",
+            "ru"
+          ],
+          "answer": 0,
+          "explanation": "ぴゅ? pyu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-hiragana-103",
+          "source": "???? 104",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ぴょ",
+          "displaySub": "요음",
+          "options": [
+            "gu",
+            "u",
+            "pyo",
+            "te"
+          ],
+          "answer": 2,
+          "explanation": "ぴょ? pyo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-hiragana-104",
+          "source": "???? 105",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ゔ",
+          "displaySub": "소문자 / 기타",
+          "options": [
+            "gu",
+            "vu",
+            "nya",
+            "wa"
+          ],
+          "answer": 1,
+          "explanation": "ゔ? vu? ???.",
+          "tone": "tone-coral"
+        }
+      ]
+    },
+    "katakana": {
+      "label": "????",
+      "heading": "???? ??? ??",
+      "items": [
+        {
+          "id": "bp-katakana-0",
+          "source": "???? 1",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ア",
+          "displaySub": "기본음",
+          "options": [
+            "a",
+            "ki",
+            "o",
+            "cho"
+          ],
+          "answer": 0,
+          "explanation": "ア? a? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-1",
+          "source": "???? 2",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "イ",
+          "displaySub": "기본음",
+          "options": [
+            "shi",
+            "nu",
+            "i",
+            "hyo"
+          ],
+          "answer": 2,
+          "explanation": "イ? i? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-2",
+          "source": "???? 3",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ウ",
+          "displaySub": "기본음",
+          "options": [
+            "u",
+            "ke",
+            "wo",
+            "nu"
+          ],
+          "answer": 0,
+          "explanation": "ウ? u? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-3",
+          "source": "???? 4",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "エ",
+          "displaySub": "기본음",
+          "options": [
+            "e",
+            "ja",
+            "po",
+            "pyo"
+          ],
+          "answer": 0,
+          "explanation": "エ? e? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-4",
+          "source": "???? 5",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "オ",
+          "displaySub": "기본음",
+          "options": [
+            "ja",
+            "za",
+            "o",
+            "kyo"
+          ],
+          "answer": 2,
+          "explanation": "オ? o? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-5",
+          "source": "???? 6",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "カ",
+          "displaySub": "기본음",
+          "options": [
+            "ba",
+            "ke",
+            "no",
+            "ka"
+          ],
+          "answer": 3,
+          "explanation": "カ? ka? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-6",
+          "source": "???? 7",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "キ",
+          "displaySub": "기본음",
+          "options": [
+            "mi",
+            "ki",
+            "ru",
+            "ya"
+          ],
+          "answer": 1,
+          "explanation": "キ? ki? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-7",
+          "source": "???? 8",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ク",
+          "displaySub": "기본음",
+          "options": [
+            "pa",
+            "i",
+            "hi",
+            "ku"
+          ],
+          "answer": 3,
+          "explanation": "ク? ku? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-8",
+          "source": "???? 9",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ケ",
+          "displaySub": "기본음",
+          "options": [
+            "chu",
+            "nu",
+            "ke",
+            "ku"
+          ],
+          "answer": 2,
+          "explanation": "ケ? ke? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-9",
+          "source": "???? 10",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "コ",
+          "displaySub": "기본음",
+          "options": [
+            "de",
+            "byu",
+            "e",
+            "ko"
+          ],
+          "answer": 3,
+          "explanation": "コ? ko? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-10",
+          "source": "???? 11",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "サ",
+          "displaySub": "기본음",
+          "options": [
+            "pi",
+            "sa",
+            "i",
+            "cho"
+          ],
+          "answer": 1,
+          "explanation": "サ? sa? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-11",
+          "source": "???? 12",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "シ",
+          "displaySub": "기본음",
+          "options": [
+            "mo",
+            "na",
+            "cha",
+            "shi"
+          ],
+          "answer": 3,
+          "explanation": "シ? shi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-12",
+          "source": "???? 13",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ス",
+          "displaySub": "기본음",
+          "options": [
+            "pe",
+            "su",
+            "kyo",
+            "yu"
+          ],
+          "answer": 1,
+          "explanation": "ス? su? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-13",
+          "source": "???? 14",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "セ",
+          "displaySub": "기본음",
+          "options": [
+            "mu",
+            "te",
+            "shu",
+            "se"
+          ],
+          "answer": 3,
+          "explanation": "セ? se? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-14",
+          "source": "???? 15",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ソ",
+          "displaySub": "기본음",
+          "options": [
+            "i",
+            "so",
+            "ni",
+            "ra"
+          ],
+          "answer": 1,
+          "explanation": "ソ? so? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-15",
+          "source": "???? 16",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "タ",
+          "displaySub": "기본음",
+          "options": [
+            "ki",
+            "de",
+            "pe",
+            "ta"
+          ],
+          "answer": 3,
+          "explanation": "タ? ta? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-16",
+          "source": "???? 17",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "チ",
+          "displaySub": "기본음",
+          "options": [
+            "i",
+            "e",
+            "chi",
+            "ge"
+          ],
+          "answer": 2,
+          "explanation": "チ? chi? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-17",
+          "source": "???? 18",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ツ",
+          "displaySub": "기본음",
+          "options": [
+            "tsu",
+            "ba",
+            "u",
+            "sa"
+          ],
+          "answer": 0,
+          "explanation": "ツ? tsu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-18",
+          "source": "???? 19",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "テ",
+          "displaySub": "기본음",
+          "options": [
+            "te",
+            "pi",
+            "nyo",
+            "ji"
+          ],
+          "answer": 0,
+          "explanation": "テ? te? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-19",
+          "source": "???? 20",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ト",
+          "displaySub": "기본음",
+          "options": [
+            "ma",
+            "hi",
+            "to",
+            "yu"
+          ],
+          "answer": 2,
+          "explanation": "ト? to? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-20",
+          "source": "???? 21",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ナ",
+          "displaySub": "기본음",
+          "options": [
+            "na",
+            "to",
+            "po",
+            "ryo"
+          ],
+          "answer": 0,
+          "explanation": "ナ? na? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-21",
+          "source": "???? 22",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ニ",
+          "displaySub": "기본음",
+          "options": [
+            "rya",
+            "chi",
+            "na",
+            "ni"
+          ],
+          "answer": 3,
+          "explanation": "ニ? ni? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-22",
+          "source": "???? 23",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヌ",
+          "displaySub": "기본음",
+          "options": [
+            "nu",
+            "rya",
+            "pyo",
+            "cha"
+          ],
+          "answer": 0,
+          "explanation": "ヌ? nu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-23",
+          "source": "???? 24",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ネ",
+          "displaySub": "기본음",
+          "options": [
+            "o",
+            "ne",
+            "fu",
+            "te"
+          ],
+          "answer": 1,
+          "explanation": "ネ? ne? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-24",
+          "source": "???? 25",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ノ",
+          "displaySub": "기본음",
+          "options": [
+            "no",
+            "pya",
+            "ko",
+            "e"
+          ],
+          "answer": 0,
+          "explanation": "ノ? no? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-25",
+          "source": "???? 26",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ハ",
+          "displaySub": "기본음",
+          "options": [
+            "pe",
+            "hyo",
+            "ki",
+            "ha"
+          ],
+          "answer": 3,
+          "explanation": "ハ? ha? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-26",
+          "source": "???? 27",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヒ",
+          "displaySub": "기본음",
+          "options": [
+            "kyo",
+            "yu",
+            "hi",
+            "se"
+          ],
+          "answer": 2,
+          "explanation": "ヒ? hi? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-27",
+          "source": "???? 28",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "フ",
+          "displaySub": "기본음",
+          "options": [
+            "ho",
+            "yu",
+            "fu",
+            "hi"
+          ],
+          "answer": 2,
+          "explanation": "フ? fu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-28",
+          "source": "???? 29",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヘ",
+          "displaySub": "기본음",
+          "options": [
+            "chu",
+            "ri",
+            "he",
+            "byu"
+          ],
+          "answer": 2,
+          "explanation": "ヘ? he? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-29",
+          "source": "???? 30",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ホ",
+          "displaySub": "기본음",
+          "options": [
+            "bu",
+            "po",
+            "myu",
+            "ho"
+          ],
+          "answer": 3,
+          "explanation": "ホ? ho? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-30",
+          "source": "???? 31",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "マ",
+          "displaySub": "기본음",
+          "options": [
+            "ma",
+            "a",
+            "ya",
+            "ryu"
+          ],
+          "answer": 0,
+          "explanation": "マ? ma? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-31",
+          "source": "???? 32",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ミ",
+          "displaySub": "기본음",
+          "options": [
+            "zo",
+            "e",
+            "mo",
+            "mi"
+          ],
+          "answer": 3,
+          "explanation": "ミ? mi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-32",
+          "source": "???? 33",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ム",
+          "displaySub": "기본음",
+          "options": [
+            "mu",
+            "ge",
+            "su",
+            "pe"
+          ],
+          "answer": 0,
+          "explanation": "ム? mu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-33",
+          "source": "???? 34",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "メ",
+          "displaySub": "기본음",
+          "options": [
+            "tsu",
+            "me",
+            "e",
+            "yu"
+          ],
+          "answer": 1,
+          "explanation": "メ? me? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-34",
+          "source": "???? 35",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "モ",
+          "displaySub": "기본음",
+          "options": [
+            "yo",
+            "myu",
+            "mo",
+            "wa"
+          ],
+          "answer": 2,
+          "explanation": "モ? mo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-35",
+          "source": "???? 36",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヤ",
+          "displaySub": "기본음",
+          "options": [
+            "ya",
+            "u",
+            "ri",
+            "myu"
+          ],
+          "answer": 0,
+          "explanation": "ヤ? ya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-36",
+          "source": "???? 37",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ユ",
+          "displaySub": "기본음",
+          "options": [
+            "he",
+            "za",
+            "yu",
+            "o"
+          ],
+          "answer": 2,
+          "explanation": "ユ? yu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-37",
+          "source": "???? 38",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヨ",
+          "displaySub": "기본음",
+          "options": [
+            "yo",
+            "u",
+            "ke",
+            "o"
+          ],
+          "answer": 0,
+          "explanation": "ヨ? yo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-38",
+          "source": "???? 39",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ラ",
+          "displaySub": "기본음",
+          "options": [
+            "na",
+            "za",
+            "ra",
+            "su"
+          ],
+          "answer": 2,
+          "explanation": "ラ? ra? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-39",
+          "source": "???? 40",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "リ",
+          "displaySub": "기본음",
+          "options": [
+            "ri",
+            "sa",
+            "nyo",
+            "pu"
+          ],
+          "answer": 0,
+          "explanation": "リ? ri? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-40",
+          "source": "???? 41",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ル",
+          "displaySub": "기본음",
+          "options": [
+            "hya",
+            "su",
+            "o",
+            "ru"
+          ],
+          "answer": 3,
+          "explanation": "ル? ru? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-41",
+          "source": "???? 42",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "レ",
+          "displaySub": "기본음",
+          "options": [
+            "o",
+            "to",
+            "re",
+            "so"
+          ],
+          "answer": 2,
+          "explanation": "レ? re? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-42",
+          "source": "???? 43",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ロ",
+          "displaySub": "기본음",
+          "options": [
+            "ki",
+            "ro",
+            "mu",
+            "ba"
+          ],
+          "answer": 1,
+          "explanation": "ロ? ro? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-43",
+          "source": "???? 44",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ワ",
+          "displaySub": "기본음",
+          "options": [
+            "hya",
+            "nyu",
+            "pa",
+            "wa"
+          ],
+          "answer": 3,
+          "explanation": "ワ? wa? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-44",
+          "source": "???? 45",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヲ",
+          "displaySub": "기본음",
+          "options": [
+            "wo",
+            "u",
+            "cho",
+            "su"
+          ],
+          "answer": 0,
+          "explanation": "ヲ? wo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-45",
+          "source": "???? 46",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ン",
+          "displaySub": "기본음",
+          "options": [
+            "hya",
+            "ha",
+            "ku",
+            "n"
+          ],
+          "answer": 3,
+          "explanation": "ン? n? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-46",
+          "source": "???? 47",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ガ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ga",
+            "cha",
+            "mu",
+            "he"
+          ],
+          "answer": 0,
+          "explanation": "ガ? ga? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-47",
+          "source": "???? 48",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ギ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ke",
+            "a",
+            "gi",
+            "u"
+          ],
+          "answer": 2,
+          "explanation": "ギ? gi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-48",
+          "source": "???? 49",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "グ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "gu",
+            "hi",
+            "he",
+            "gyu"
+          ],
+          "answer": 0,
+          "explanation": "グ? gu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-49",
+          "source": "???? 50",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ゲ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ge",
+            "ga",
+            "ryo",
+            "pyo"
+          ],
+          "answer": 0,
+          "explanation": "ゲ? ge? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-50",
+          "source": "???? 51",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ゴ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "te",
+            "u",
+            "go",
+            "a"
+          ],
+          "answer": 2,
+          "explanation": "ゴ? go? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-51",
+          "source": "???? 52",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ザ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "za",
+            "i",
+            "rya",
+            "pa"
+          ],
+          "answer": 0,
+          "explanation": "ザ? za? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-52",
+          "source": "???? 53",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ジ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "to",
+            "gu",
+            "ji",
+            "yu"
+          ],
+          "answer": 2,
+          "explanation": "ジ? ji? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-53",
+          "source": "???? 54",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ズ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "zu",
+            "tsu",
+            "rya",
+            "ha"
+          ],
+          "answer": 0,
+          "explanation": "ズ? zu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-54",
+          "source": "???? 55",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ゼ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ze",
+            "nyu",
+            "ra",
+            "ji"
+          ],
+          "answer": 0,
+          "explanation": "ゼ? ze? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-55",
+          "source": "???? 56",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ゾ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ni",
+            "mya",
+            "zo",
+            "shu"
+          ],
+          "answer": 2,
+          "explanation": "ゾ? zo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-56",
+          "source": "???? 57",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ダ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "da",
+            "se",
+            "ka",
+            "to"
+          ],
+          "answer": 0,
+          "explanation": "ダ? da? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-57",
+          "source": "???? 58",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヂ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ji",
+            "ki",
+            "ta",
+            "e"
+          ],
+          "answer": 0,
+          "explanation": "ヂ? ji? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-58",
+          "source": "???? 59",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヅ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "te",
+            "o",
+            "zu",
+            "go"
+          ],
+          "answer": 2,
+          "explanation": "ヅ? zu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-59",
+          "source": "???? 60",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "デ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "no",
+            "ru",
+            "mo",
+            "de"
+          ],
+          "answer": 3,
+          "explanation": "デ? de? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-60",
+          "source": "???? 61",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ド",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ki",
+            "do",
+            "no",
+            "yu"
+          ],
+          "answer": 1,
+          "explanation": "ド? do? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-61",
+          "source": "???? 62",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "バ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "ba",
+            "gi",
+            "i",
+            "ru"
+          ],
+          "answer": 0,
+          "explanation": "バ? ba? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-62",
+          "source": "???? 63",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ビ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "hi",
+            "sa",
+            "ke",
+            "bi"
+          ],
+          "answer": 3,
+          "explanation": "ビ? bi? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-63",
+          "source": "???? 64",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ブ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "bu",
+            "hya",
+            "pa",
+            "wo"
+          ],
+          "answer": 0,
+          "explanation": "ブ? bu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-64",
+          "source": "???? 65",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ベ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "o",
+            "hi",
+            "be",
+            "ma"
+          ],
+          "answer": 2,
+          "explanation": "ベ? be? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-65",
+          "source": "???? 66",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ボ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "sho",
+            "nyu",
+            "bo",
+            "po"
+          ],
+          "answer": 2,
+          "explanation": "ボ? bo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-66",
+          "source": "???? 67",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "パ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "o",
+            "pa",
+            "ma",
+            "gyu"
+          ],
+          "answer": 1,
+          "explanation": "パ? pa? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-67",
+          "source": "???? 68",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ピ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "pi",
+            "te",
+            "be",
+            "jo"
+          ],
+          "answer": 0,
+          "explanation": "ピ? pi? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-68",
+          "source": "???? 69",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "プ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "u",
+            "ki",
+            "ku",
+            "pu"
+          ],
+          "answer": 3,
+          "explanation": "プ? pu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-69",
+          "source": "???? 70",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ペ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "pe",
+            "sha",
+            "nya",
+            "be"
+          ],
+          "answer": 0,
+          "explanation": "ペ? pe? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-70",
+          "source": "???? 71",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ポ",
+          "displaySub": "탁음 / 반탁음",
+          "options": [
+            "rya",
+            "po",
+            "mo",
+            "nyu"
+          ],
+          "answer": 1,
+          "explanation": "ポ? po? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-71",
+          "source": "???? 72",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "キャ",
+          "displaySub": "요음",
+          "options": [
+            "kya",
+            "e",
+            "be",
+            "ba"
+          ],
+          "answer": 0,
+          "explanation": "キャ? kya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-72",
+          "source": "???? 73",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "キュ",
+          "displaySub": "요음",
+          "options": [
+            "do",
+            "i",
+            "kyu",
+            "ge"
+          ],
+          "answer": 2,
+          "explanation": "キュ? kyu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-73",
+          "source": "???? 74",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "キョ",
+          "displaySub": "요음",
+          "options": [
+            "kyo",
+            "i",
+            "myu",
+            "ji"
+          ],
+          "answer": 0,
+          "explanation": "キョ? kyo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-74",
+          "source": "???? 75",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "シャ",
+          "displaySub": "요음",
+          "options": [
+            "sha",
+            "cho",
+            "chi",
+            "zu"
+          ],
+          "answer": 0,
+          "explanation": "シャ? sha? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-75",
+          "source": "???? 76",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "シュ",
+          "displaySub": "요음",
+          "options": [
+            "te",
+            "zu",
+            "shu",
+            "o"
+          ],
+          "answer": 2,
+          "explanation": "シュ? shu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-76",
+          "source": "???? 77",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ショ",
+          "displaySub": "요음",
+          "options": [
+            "sho",
+            "ki",
+            "ya",
+            "u"
+          ],
+          "answer": 0,
+          "explanation": "ショ? sho? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-77",
+          "source": "???? 78",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "チャ",
+          "displaySub": "요음",
+          "options": [
+            "cha",
+            "pa",
+            "hi",
+            "de"
+          ],
+          "answer": 0,
+          "explanation": "チャ? cha? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-78",
+          "source": "???? 79",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "チュ",
+          "displaySub": "요음",
+          "options": [
+            "ke",
+            "te",
+            "chu",
+            "ryo"
+          ],
+          "answer": 2,
+          "explanation": "チュ? chu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-79",
+          "source": "???? 80",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "チョ",
+          "displaySub": "요음",
+          "options": [
+            "cho",
+            "sa",
+            "myu",
+            "ji"
+          ],
+          "answer": 0,
+          "explanation": "チョ? cho? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-80",
+          "source": "???? 81",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ニャ",
+          "displaySub": "요음",
+          "options": [
+            "nya",
+            "ze",
+            "yu",
+            "pya"
+          ],
+          "answer": 0,
+          "explanation": "ニャ? nya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-81",
+          "source": "???? 82",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ニュ",
+          "displaySub": "요음",
+          "options": [
+            "do",
+            "wo",
+            "nyu",
+            "be"
+          ],
+          "answer": 2,
+          "explanation": "ニュ? nyu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-82",
+          "source": "???? 83",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ニョ",
+          "displaySub": "요음",
+          "options": [
+            "nyo",
+            "ki",
+            "o",
+            "a"
+          ],
+          "answer": 0,
+          "explanation": "ニョ? nyo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-83",
+          "source": "???? 84",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヒャ",
+          "displaySub": "요음",
+          "options": [
+            "hyo",
+            "na",
+            "hya",
+            "n"
+          ],
+          "answer": 2,
+          "explanation": "ヒャ? hya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-84",
+          "source": "???? 85",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヒュ",
+          "displaySub": "요음",
+          "options": [
+            "ka",
+            "zo",
+            "so",
+            "hyu"
+          ],
+          "answer": 3,
+          "explanation": "ヒュ? hyu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-85",
+          "source": "???? 86",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヒョ",
+          "displaySub": "요음",
+          "options": [
+            "ja",
+            "hyo",
+            "yo",
+            "ge"
+          ],
+          "answer": 1,
+          "explanation": "ヒョ? hyo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-86",
+          "source": "???? 87",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ミャ",
+          "displaySub": "요음",
+          "options": [
+            "mya",
+            "ju",
+            "zu",
+            "gyo"
+          ],
+          "answer": 0,
+          "explanation": "ミャ? mya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-87",
+          "source": "???? 88",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ミュ",
+          "displaySub": "요음",
+          "options": [
+            "ko",
+            "ku",
+            "myu",
+            "nu"
+          ],
+          "answer": 2,
+          "explanation": "ミュ? myu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-88",
+          "source": "???? 89",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ミョ",
+          "displaySub": "요음",
+          "options": [
+            "myo",
+            "tsu",
+            "ru",
+            "fu"
+          ],
+          "answer": 0,
+          "explanation": "ミョ? myo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-89",
+          "source": "???? 90",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "リャ",
+          "displaySub": "요음",
+          "options": [
+            "n",
+            "rya",
+            "o",
+            "mya"
+          ],
+          "answer": 1,
+          "explanation": "リャ? rya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-90",
+          "source": "???? 91",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "リュ",
+          "displaySub": "요음",
+          "options": [
+            "e",
+            "ne",
+            "tsu",
+            "ryu"
+          ],
+          "answer": 3,
+          "explanation": "リュ? ryu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-91",
+          "source": "???? 92",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "リョ",
+          "displaySub": "요음",
+          "options": [
+            "i",
+            "mya",
+            "ryo",
+            "ku"
+          ],
+          "answer": 2,
+          "explanation": "リョ? ryo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-92",
+          "source": "???? 93",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ギャ",
+          "displaySub": "요음",
+          "options": [
+            "nu",
+            "nyo",
+            "gya",
+            "sha"
+          ],
+          "answer": 2,
+          "explanation": "ギャ? gya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-93",
+          "source": "???? 94",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ギュ",
+          "displaySub": "요음",
+          "options": [
+            "u",
+            "ki",
+            "chu",
+            "gyu"
+          ],
+          "answer": 3,
+          "explanation": "ギュ? gyu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-94",
+          "source": "???? 95",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ギョ",
+          "displaySub": "요음",
+          "options": [
+            "yu",
+            "chu",
+            "gyo",
+            "pya"
+          ],
+          "answer": 2,
+          "explanation": "ギョ? gyo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-95",
+          "source": "???? 96",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ジャ",
+          "displaySub": "요음",
+          "options": [
+            "wo",
+            "pya",
+            "ga",
+            "ja"
+          ],
+          "answer": 3,
+          "explanation": "ジャ? ja? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-96",
+          "source": "???? 97",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ジュ",
+          "displaySub": "요음",
+          "options": [
+            "jo",
+            "ju",
+            "a",
+            "ru"
+          ],
+          "answer": 1,
+          "explanation": "ジュ? ju? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-97",
+          "source": "???? 98",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ジョ",
+          "displaySub": "요음",
+          "options": [
+            "su",
+            "pyo",
+            "wo",
+            "jo"
+          ],
+          "answer": 3,
+          "explanation": "ジョ? jo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-98",
+          "source": "???? 99",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ビャ",
+          "displaySub": "요음",
+          "options": [
+            "bya",
+            "ke",
+            "ru",
+            "da"
+          ],
+          "answer": 0,
+          "explanation": "ビャ? bya? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-99",
+          "source": "???? 100",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ビュ",
+          "displaySub": "요음",
+          "options": [
+            "nyo",
+            "a",
+            "byu",
+            "tsu"
+          ],
+          "answer": 2,
+          "explanation": "ビュ? byu? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-100",
+          "source": "???? 101",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ビョ",
+          "displaySub": "요음",
+          "options": [
+            "byo",
+            "a",
+            "da",
+            "na"
+          ],
+          "answer": 0,
+          "explanation": "ビョ? byo? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-101",
+          "source": "???? 102",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ピャ",
+          "displaySub": "요음",
+          "options": [
+            "kyo",
+            "fu",
+            "byu",
+            "pya"
+          ],
+          "answer": 3,
+          "explanation": "ピャ? pya? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-102",
+          "source": "???? 103",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ピュ",
+          "displaySub": "요음",
+          "options": [
+            "ra",
+            "pyu",
+            "gu",
+            "ga"
+          ],
+          "answer": 1,
+          "explanation": "ピュ? pyu? ???.",
+          "tone": "tone-coral"
+        },
+        {
+          "id": "bp-katakana-103",
+          "source": "???? 104",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ピョ",
+          "displaySub": "요음",
+          "options": [
+            "pyu",
+            "fu",
+            "myo",
+            "pyo"
+          ],
+          "answer": 3,
+          "explanation": "ピョ? pyo? ???.",
+          "tone": "tone-sky"
+        },
+        {
+          "id": "bp-katakana-104",
+          "source": "???? 105",
+          "title": "???? ??",
+          "note": "?? ? ?? ???? ????.",
+          "prompt": "? ??, ??? ?????",
+          "display": "ヴ",
+          "displaySub": "소문자 / 기타",
+          "options": [
+            "vu",
+            "po",
+            "tsu",
+            "ge"
+          ],
+          "answer": 0,
+          "explanation": "ヴ? vu? ???.",
+          "tone": "tone-coral"
+        }
+      ]
+    }
+  }
+}

@@ -78,7 +78,6 @@
       "assets/js/supabase-sync.js?v=20260330a",
       "assets/js/theme.js?v=20260330a",
       "assets/js/vocab-registry.js?v=20260330a",
-      "assets/js/kana-strokes.js?v=20260330a",
       "assets/js/app-study-view-helpers.js?v=20260330a",
       "assets/js/shared-timer.js?v=20260330a",
       "assets/js/app.js?v=20260330a"

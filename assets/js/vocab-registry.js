@@ -1,7 +1,4 @@
-globalThis.japanoteContent = globalThis.japanoteContent || {};
-globalThis.japanoteContent.vocab = globalThis.japanoteContent.vocab || {};
-
-const vocabRegistry = globalThis.japanoteContent.vocab;
+const vocabRegistry = {};
 const vocabLevels = ["N5", "N4", "N3"];
 const vocabLevelUrls = {
   N5: "data/jlpt_n5.json",
@@ -14,15 +11,9 @@ const vocabLevelStates = vocabLevels.reduce((states, level) => {
 }, {});
 const vocabLevelPromises = {};
 
-function getLegacyVocabRegistryKey(level) {
-  return `jlpt${level}`;
-}
-
 function setLevelItems(level, items) {
   const nextItems = Array.isArray(items) ? items : [];
   vocabRegistry[level] = nextItems;
-  vocabRegistry[getLegacyVocabRegistryKey(level)] = nextItems;
-  globalThis[`jlpt${level}Vocab`] = nextItems;
 }
 
 function dispatchVocabEvent(name, detail) {
