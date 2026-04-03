@@ -19,12 +19,6 @@
       "description": "상태가 바뀌거나 가능해진 일을 말할 때 써요."
     },
     {
-      "id": "g4",
-      "level": "N4",
-      "pattern": "〜ながら",
-      "description": "두 동작을 함께 할 때 써요."
-    },
-    {
       "id": "g5",
       "level": "N3",
       "pattern": "〜わけではない",
@@ -107,6 +101,1074 @@
       "level": "N3",
       "pattern": "〜てもよさそうだ",
       "description": "상태를 보고 허용 가능성을 판단할 때 쓰는 표현이에요."
+    },
+    {
+      "id": "g19",
+      "level": "N5",
+      "pattern": "あげる",
+      "description": "주다"
+    },
+    {
+      "id": "g20",
+      "level": "N5",
+      "pattern": "あの",
+      "description": "저"
+    },
+    {
+      "id": "g21",
+      "level": "N5",
+      "pattern": "あまり",
+      "description": "그다지, 별로"
+    },
+    {
+      "id": "g22",
+      "level": "N5",
+      "pattern": "いつですか",
+      "description": "언제입니까"
+    },
+    {
+      "id": "g23",
+      "level": "N5",
+      "pattern": "〜か",
+      "description": "인지, 나"
+    },
+    {
+      "id": "g24",
+      "level": "N5",
+      "pattern": "〜が",
+      "description": "이, 가"
+    },
+    {
+      "id": "g25",
+      "level": "N5",
+      "pattern": "〜がほしい",
+      "description": "을 갖고 싶다"
+    },
+    {
+      "id": "g26",
+      "level": "N5",
+      "pattern": "〜から",
+      "description": "때문에"
+    },
+    {
+      "id": "g27",
+      "level": "N5",
+      "pattern": "〜くて",
+      "description": "하고, ~해서"
+    },
+    {
+      "id": "g28",
+      "level": "N5",
+      "pattern": "くれる",
+      "description": "주다"
+    },
+    {
+      "id": "g29",
+      "level": "N5",
+      "pattern": "ここ",
+      "description": "여기, 이곳"
+    },
+    {
+      "id": "g30",
+      "level": "N5",
+      "pattern": "すぐ",
+      "description": "바로, 즉시, 금방"
+    },
+    {
+      "id": "g31",
+      "level": "N5",
+      "pattern": "その",
+      "description": "그"
+    },
+    {
+      "id": "g32",
+      "level": "N5",
+      "pattern": "それから",
+      "description": "그러고 나서, 그리고"
+    },
+    {
+      "id": "g33",
+      "level": "N5",
+      "pattern": "〜たあとで",
+      "description": "후에"
+    },
+    {
+      "id": "g34",
+      "level": "N5",
+      "pattern": "〜たいです",
+      "description": "하고 싶습니다"
+    },
+    {
+      "id": "g35",
+      "level": "N5",
+      "pattern": "だから",
+      "description": "그러니까"
+    },
+    {
+      "id": "g36",
+      "level": "N5",
+      "pattern": "〜たりする",
+      "description": "하거나 하다"
+    },
+    {
+      "id": "g37",
+      "level": "N5",
+      "pattern": "誰か",
+      "description": "누군가"
+    },
+    {
+      "id": "g38",
+      "level": "N5",
+      "pattern": "〜中",
+      "description": "중"
+    },
+    {
+      "id": "g39",
+      "level": "N5",
+      "pattern": "〜で",
+      "description": "에서, 로"
+    },
+    {
+      "id": "g40",
+      "level": "N5",
+      "pattern": "〜ていますか",
+      "description": "하고 있습니까"
+    },
+    {
+      "id": "g41",
+      "level": "N5",
+      "pattern": "〜ている",
+      "description": "하고 있다"
+    },
+    {
+      "id": "g42",
+      "level": "N5",
+      "pattern": "〜ではない",
+      "description": "가 아니다"
+    },
+    {
+      "id": "g43",
+      "level": "N5",
+      "pattern": "でも",
+      "description": "하지만, 그래도"
+    },
+    {
+      "id": "g44",
+      "level": "N5",
+      "pattern": "〜と",
+      "description": "과, 와"
+    },
+    {
+      "id": "g45",
+      "level": "N5",
+      "pattern": "どう",
+      "description": "어떻게"
+    },
+    {
+      "id": "g46",
+      "level": "N5",
+      "pattern": "〜ときは",
+      "description": "때는"
+    },
+    {
+      "id": "g47",
+      "level": "N5",
+      "pattern": "どちら",
+      "description": "어느 쪽"
+    },
+    {
+      "id": "g48",
+      "level": "N5",
+      "pattern": "とても",
+      "description": "아주, 매우"
+    },
+    {
+      "id": "g49",
+      "level": "N5",
+      "pattern": "〜と〜と、どちらが",
+      "description": "랑 ~랑, 어느 쪽이"
+    },
+    {
+      "id": "g50",
+      "level": "N5",
+      "pattern": "〜ながら",
+      "description": "하면서"
+    },
+    {
+      "id": "g51",
+      "level": "N5",
+      "pattern": "〜など",
+      "description": "등"
+    },
+    {
+      "id": "g52",
+      "level": "N5",
+      "pattern": "〜に",
+      "description": "에, 에게"
+    },
+    {
+      "id": "g53",
+      "level": "N5",
+      "pattern": "〜に行きます",
+      "description": "하러 갑니다"
+    },
+    {
+      "id": "g54",
+      "level": "N5",
+      "pattern": "〜に来ます",
+      "description": "하러 옵니다"
+    },
+    {
+      "id": "g55",
+      "level": "N5",
+      "pattern": "〜にのる",
+      "description": "을 타다"
+    },
+    {
+      "id": "g56",
+      "level": "N5",
+      "pattern": "〜の",
+      "description": "의, 의 것"
+    },
+    {
+      "id": "g57",
+      "level": "N5",
+      "pattern": "〜のあとで",
+      "description": "후에"
+    },
+    {
+      "id": "g58",
+      "level": "N5",
+      "pattern": "〜のに",
+      "description": "한데"
+    },
+    {
+      "id": "g59",
+      "level": "N5",
+      "pattern": "〜のほうが",
+      "description": "쪽이"
+    },
+    {
+      "id": "g60",
+      "level": "N5",
+      "pattern": "〜は",
+      "description": "은, 는"
+    },
+    {
+      "id": "g61",
+      "level": "N5",
+      "pattern": "〜まえに",
+      "description": "전에"
+    },
+    {
+      "id": "g62",
+      "level": "N5",
+      "pattern": "〜ました",
+      "description": "했습니다"
+    },
+    {
+      "id": "g63",
+      "level": "N5",
+      "pattern": "〜ますか",
+      "description": "합니까"
+    },
+    {
+      "id": "g64",
+      "level": "N5",
+      "pattern": "〜ません",
+      "description": "하지 않습니다"
+    },
+    {
+      "id": "g65",
+      "level": "N5",
+      "pattern": "〜ませんか",
+      "description": "하지 않겠습니까"
+    },
+    {
+      "id": "g66",
+      "level": "N5",
+      "pattern": "まだ",
+      "description": "아직"
+    },
+    {
+      "id": "g67",
+      "level": "N5",
+      "pattern": "〜まで",
+      "description": "까지"
+    },
+    {
+      "id": "g68",
+      "level": "N5",
+      "pattern": "〜も",
+      "description": "도"
+    },
+    {
+      "id": "g69",
+      "level": "N5",
+      "pattern": "もう",
+      "description": "벌써, 이제, 이미"
+    },
+    {
+      "id": "g70",
+      "level": "N5",
+      "pattern": "もらう",
+      "description": "받다"
+    },
+    {
+      "id": "g71",
+      "level": "N5",
+      "pattern": "やる",
+      "description": "주다"
+    },
+    {
+      "id": "g72",
+      "level": "N5",
+      "pattern": "よく",
+      "description": "잘"
+    },
+    {
+      "id": "g73",
+      "level": "N5",
+      "pattern": "〜より",
+      "description": "보다"
+    },
+    {
+      "id": "g74",
+      "level": "N5",
+      "pattern": "〜を",
+      "description": "을, 를"
+    },
+    {
+      "id": "g75",
+      "level": "N4",
+      "pattern": "〜間に",
+      "description": "동안에, ~사이에"
+    },
+    {
+      "id": "g77",
+      "level": "N4",
+      "pattern": "いつか",
+      "description": "언젠가"
+    },
+    {
+      "id": "g80",
+      "level": "N4",
+      "pattern": "〜かどうか",
+      "description": "할지 어떨지"
+    },
+    {
+      "id": "g82",
+      "level": "N4",
+      "pattern": "〜からだ",
+      "description": "이기 때문이다"
+    },
+    {
+      "id": "g83",
+      "level": "N4",
+      "pattern": "〜ぐらい",
+      "description": "정도"
+    },
+    {
+      "id": "g84",
+      "level": "N4",
+      "pattern": "〜けれど",
+      "description": "지만"
+    },
+    {
+      "id": "g85",
+      "level": "N4",
+      "pattern": "〜ことができる",
+      "description": "할 수 있다"
+    },
+    {
+      "id": "g86",
+      "level": "N4",
+      "pattern": "〜ことにする",
+      "description": "하기로 하다"
+    },
+    {
+      "id": "g87",
+      "level": "N4",
+      "pattern": "〜ごろ",
+      "description": "무렵"
+    },
+    {
+      "id": "g88",
+      "level": "N4",
+      "pattern": "〜ずつ",
+      "description": "씩"
+    },
+    {
+      "id": "g89",
+      "level": "N4",
+      "pattern": "ずっと",
+      "description": "계속, 훨씬"
+    },
+    {
+      "id": "g90",
+      "level": "N4",
+      "pattern": "〜そうだ",
+      "description": "라고 한다"
+    },
+    {
+      "id": "g91",
+      "level": "N4",
+      "pattern": "そして",
+      "description": "그리고"
+    },
+    {
+      "id": "g92",
+      "level": "N4",
+      "pattern": "そっち",
+      "description": "그쪽"
+    },
+    {
+      "id": "g93",
+      "level": "N4",
+      "pattern": "それで",
+      "description": "그래서"
+    },
+    {
+      "id": "g95",
+      "level": "N4",
+      "pattern": "〜たことがある",
+      "description": "한 적이 있다"
+    },
+    {
+      "id": "g96",
+      "level": "N4",
+      "pattern": "〜たところだ",
+      "description": "막 ~한 참이다"
+    },
+    {
+      "id": "g97",
+      "level": "N4",
+      "pattern": "〜たほうがいい",
+      "description": "하는 편이 좋다"
+    },
+    {
+      "id": "g98",
+      "level": "N4",
+      "pattern": "〜たまま",
+      "description": "한 채, ~한 그대로"
+    },
+    {
+      "id": "g99",
+      "level": "N4",
+      "pattern": "〜ために",
+      "description": "위해서"
+    },
+    {
+      "id": "g100",
+      "level": "N4",
+      "pattern": "〜たら",
+      "description": "하면"
+    },
+    {
+      "id": "g101",
+      "level": "N4",
+      "pattern": "〜たり〜たりする",
+      "description": "하거나 ~하거나 하다"
+    },
+    {
+      "id": "g104",
+      "level": "N4",
+      "pattern": "〜てあげる",
+      "description": "해 주다"
+    },
+    {
+      "id": "g105",
+      "level": "N4",
+      "pattern": "〜てある",
+      "description": "해 있다"
+    },
+    {
+      "id": "g106",
+      "level": "N4",
+      "pattern": "〜ているところだ",
+      "description": "하고 있다, ~하는 중이다"
+    },
+    {
+      "id": "g107",
+      "level": "N4",
+      "pattern": "〜ておく",
+      "description": "해 두다"
+    },
+    {
+      "id": "g108",
+      "level": "N4",
+      "pattern": "〜てくれる",
+      "description": "해 주다"
+    },
+    {
+      "id": "g109",
+      "level": "N4",
+      "pattern": "〜てもいい",
+      "description": "해도 된다"
+    },
+    {
+      "id": "g110",
+      "level": "N4",
+      "pattern": "〜てもらう",
+      "description": "해 주다"
+    },
+    {
+      "id": "g112",
+      "level": "N4",
+      "pattern": "どういう",
+      "description": "어떤"
+    },
+    {
+      "id": "g113",
+      "level": "N4",
+      "pattern": "どうやって",
+      "description": "어떻게"
+    },
+    {
+      "id": "g114",
+      "level": "N4",
+      "pattern": "〜と思う",
+      "description": "라고 생각하다"
+    },
+    {
+      "id": "g115",
+      "level": "N4",
+      "pattern": "〜と違って",
+      "description": "와 다르게"
+    },
+    {
+      "id": "g116",
+      "level": "N4",
+      "pattern": "〜ないで",
+      "description": "하지 않고"
+    },
+    {
+      "id": "g117",
+      "level": "N4",
+      "pattern": "〜ないといけない",
+      "description": "하지 않으면 안 된다"
+    },
+    {
+      "id": "g118",
+      "level": "N4",
+      "pattern": "〜なら",
+      "description": "라면"
+    },
+    {
+      "id": "g119",
+      "level": "N4",
+      "pattern": "〜なる",
+      "description": "되다"
+    },
+    {
+      "id": "g121",
+      "level": "N4",
+      "pattern": "〜にくい",
+      "description": "하기 어렵다"
+    },
+    {
+      "id": "g122",
+      "level": "N4",
+      "pattern": "〜には",
+      "description": "에는"
+    },
+    {
+      "id": "g123",
+      "level": "N4",
+      "pattern": "〜にも",
+      "description": "에도"
+    },
+    {
+      "id": "g124",
+      "level": "N4",
+      "pattern": "〜によると",
+      "description": "에 따르면"
+    },
+    {
+      "id": "g126",
+      "level": "N4",
+      "pattern": "〜のは",
+      "description": "것은"
+    },
+    {
+      "id": "g127",
+      "level": "N4",
+      "pattern": "〜のも",
+      "description": "것도"
+    },
+    {
+      "id": "g129",
+      "level": "N4",
+      "pattern": "〜ましょう",
+      "description": "합시다"
+    },
+    {
+      "id": "g131",
+      "level": "N4",
+      "pattern": "〜やすい",
+      "description": "하기 쉽다"
+    },
+    {
+      "id": "g132",
+      "level": "N4",
+      "pattern": "〜ようだ",
+      "description": "것 같다"
+    },
+    {
+      "id": "g133",
+      "level": "N4",
+      "pattern": "〜ようと思う",
+      "description": "하려고 생각하다"
+    },
+    {
+      "id": "g135",
+      "level": "N3",
+      "pattern": "いつのまにか",
+      "description": "어느새"
+    },
+    {
+      "id": "g136",
+      "level": "N3",
+      "pattern": "〜一方で",
+      "description": "하는 한편"
+    },
+    {
+      "id": "g137",
+      "level": "N3",
+      "pattern": "〜おかげだ",
+      "description": "덕분이다"
+    },
+    {
+      "id": "g138",
+      "level": "N3",
+      "pattern": "〜かもしれない",
+      "description": "할지도 모른다"
+    },
+    {
+      "id": "g141",
+      "level": "N3",
+      "pattern": "〜ことから",
+      "description": "라서, ~이기 때문에"
+    },
+    {
+      "id": "g142",
+      "level": "N3",
+      "pattern": "〜ことだ",
+      "description": "해야 한다"
+    },
+    {
+      "id": "g143",
+      "level": "N3",
+      "pattern": "〜ことで",
+      "description": "로 인해, 해서"
+    },
+    {
+      "id": "g145",
+      "level": "N3",
+      "pattern": "〜しか",
+      "description": "밖에"
+    },
+    {
+      "id": "g146",
+      "level": "N3",
+      "pattern": "〜しか〜ない",
+      "description": "밖에 ~없다"
+    },
+    {
+      "id": "g147",
+      "level": "N3",
+      "pattern": "〜しちゃう",
+      "description": "해 버리다"
+    },
+    {
+      "id": "g148",
+      "level": "N3",
+      "pattern": "〜すぎる",
+      "description": "너무 ~하다"
+    },
+    {
+      "id": "g149",
+      "level": "N3",
+      "pattern": "〜ずに",
+      "description": "하지 않고"
+    },
+    {
+      "id": "g150",
+      "level": "N3",
+      "pattern": "〜せいで",
+      "description": "때문에, ~탓에"
+    },
+    {
+      "id": "g151",
+      "level": "N3",
+      "pattern": "そういう",
+      "description": "그러한"
+    },
+    {
+      "id": "g153",
+      "level": "N3",
+      "pattern": "〜そうにない",
+      "description": "할 것 같지 않다"
+    },
+    {
+      "id": "g154",
+      "level": "N3",
+      "pattern": "そのうえ",
+      "description": "더군다나"
+    },
+    {
+      "id": "g157",
+      "level": "N3",
+      "pattern": "〜たがる",
+      "description": "하고 싶어 하다"
+    },
+    {
+      "id": "g159",
+      "level": "N3",
+      "pattern": "〜たこともある",
+      "description": "한 적도 있다"
+    },
+    {
+      "id": "g160",
+      "level": "N3",
+      "pattern": "ただ",
+      "description": "그저, 단지"
+    },
+    {
+      "id": "g162",
+      "level": "N3",
+      "pattern": "〜たばかりだ",
+      "description": "한지 얼마 되지 않았다"
+    },
+    {
+      "id": "g163",
+      "level": "N3",
+      "pattern": "〜たびに",
+      "description": "때마다"
+    },
+    {
+      "id": "g168",
+      "level": "N3",
+      "pattern": "〜だろう",
+      "description": "일 것이다"
+    },
+    {
+      "id": "g169",
+      "level": "N3",
+      "pattern": "ついに",
+      "description": "마침내"
+    },
+    {
+      "id": "g170",
+      "level": "N3",
+      "pattern": "〜続ける",
+      "description": "계속 ~하다"
+    },
+    {
+      "id": "g171",
+      "level": "N3",
+      "pattern": "つまり",
+      "description": "즉, 결국"
+    },
+    {
+      "id": "g172",
+      "level": "N3",
+      "pattern": "〜つもりだ",
+      "description": "할 생각이다"
+    },
+    {
+      "id": "g175",
+      "level": "N3",
+      "pattern": "〜でいい",
+      "description": "면 된다"
+    },
+    {
+      "id": "g176",
+      "level": "N3",
+      "pattern": "〜ていく",
+      "description": "해 가다"
+    },
+    {
+      "id": "g177",
+      "level": "N3",
+      "pattern": "〜ていただく",
+      "description": "해 주시다"
+    },
+    {
+      "id": "g181",
+      "level": "N3",
+      "pattern": "〜てくる",
+      "description": "해 오다, ~하기 시작하다"
+    },
+    {
+      "id": "g183",
+      "level": "N3",
+      "pattern": "〜てしまう",
+      "description": "해 버리다"
+    },
+    {
+      "id": "g184",
+      "level": "N3",
+      "pattern": "〜てはいけない",
+      "description": "해서는 안 된다"
+    },
+    {
+      "id": "g185",
+      "level": "N3",
+      "pattern": "〜てほしい",
+      "description": "하길 바라다"
+    },
+    {
+      "id": "g186",
+      "level": "N3",
+      "pattern": "〜てみる",
+      "description": "해 보다"
+    },
+    {
+      "id": "g187",
+      "level": "N3",
+      "pattern": "〜でも",
+      "description": "라도, ~일지라도"
+    },
+    {
+      "id": "g190",
+      "level": "N3",
+      "pattern": "〜てもかまわない",
+      "description": "해도 상관없다"
+    },
+    {
+      "id": "g191",
+      "level": "N3",
+      "pattern": "〜ても〜ではない",
+      "description": "해도 ~는 아니다"
+    },
+    {
+      "id": "g194",
+      "level": "N3",
+      "pattern": "〜といい",
+      "description": "하면 좋다"
+    },
+    {
+      "id": "g195",
+      "level": "N3",
+      "pattern": "〜という〜",
+      "description": "라는 ~"
+    },
+    {
+      "id": "g197",
+      "level": "N3",
+      "pattern": "〜ところだ",
+      "description": "막 ~한 참이다"
+    },
+    {
+      "id": "g198",
+      "level": "N3",
+      "pattern": "〜としたら",
+      "description": "라고 한다면"
+    },
+    {
+      "id": "g199",
+      "level": "N3",
+      "pattern": "〜としても",
+      "description": "라고 할지라도"
+    },
+    {
+      "id": "g200",
+      "level": "N3",
+      "pattern": "どちらが",
+      "description": "어느 쪽이"
+    },
+    {
+      "id": "g201",
+      "level": "N3",
+      "pattern": "どれだけ",
+      "description": "얼마나"
+    },
+    {
+      "id": "g202",
+      "level": "N3",
+      "pattern": "〜ないうちに",
+      "description": "하기 전에"
+    },
+    {
+      "id": "g203",
+      "level": "N3",
+      "pattern": "〜ないように",
+      "description": "하지 않도록"
+    },
+    {
+      "id": "g204",
+      "level": "N3",
+      "pattern": "〜ないようにする",
+      "description": "하지 않도록 하다"
+    },
+    {
+      "id": "g205",
+      "level": "N3",
+      "pattern": "〜なくてはいけない",
+      "description": "하지 않으면 안 된다"
+    },
+    {
+      "id": "g206",
+      "level": "N3",
+      "pattern": "〜なければならない",
+      "description": "하지 않으면 안 된다"
+    },
+    {
+      "id": "g208",
+      "level": "N3",
+      "pattern": "なんて",
+      "description": "얼마나"
+    },
+    {
+      "id": "g209",
+      "level": "N3",
+      "pattern": "〜に行く",
+      "description": "하러 가다"
+    },
+    {
+      "id": "g210",
+      "level": "N3",
+      "pattern": "〜において",
+      "description": "에 있어서, ~에서"
+    },
+    {
+      "id": "g211",
+      "level": "N3",
+      "pattern": "〜に比べて",
+      "description": "에 비해서"
+    },
+    {
+      "id": "g212",
+      "level": "N3",
+      "pattern": "〜にしたがって",
+      "description": "에 따라"
+    },
+    {
+      "id": "g213",
+      "level": "N3",
+      "pattern": "〜に対して",
+      "description": "에 대하여"
+    },
+    {
+      "id": "g214",
+      "level": "N3",
+      "pattern": "〜に違いない",
+      "description": "임에 틀림없다"
+    },
+    {
+      "id": "g215",
+      "level": "N3",
+      "pattern": "〜について",
+      "description": "에 대해"
+    },
+    {
+      "id": "g216",
+      "level": "N3",
+      "pattern": "〜にとって",
+      "description": "에게"
+    },
+    {
+      "id": "g218",
+      "level": "N3",
+      "pattern": "〜による",
+      "description": "에 의한, ~에 따른"
+    },
+    {
+      "id": "g219",
+      "level": "N3",
+      "pattern": "〜のが",
+      "description": "것이"
+    },
+    {
+      "id": "g220",
+      "level": "N3",
+      "pattern": "〜ば",
+      "description": "하면"
+    },
+    {
+      "id": "g221",
+      "level": "N3",
+      "pattern": "〜ばかり",
+      "description": "뿐, 만"
+    },
+    {
+      "id": "g222",
+      "level": "N3",
+      "pattern": "〜はずがない",
+      "description": "할 리가 없다"
+    },
+    {
+      "id": "g223",
+      "level": "N3",
+      "pattern": "〜はずだ",
+      "description": "할 것이다"
+    },
+    {
+      "id": "g224",
+      "level": "N3",
+      "pattern": "〜ば〜ほど",
+      "description": "하면 ~할수록"
+    },
+    {
+      "id": "g225",
+      "level": "N3",
+      "pattern": "〜ほかに",
+      "description": "외에"
+    },
+    {
+      "id": "g226",
+      "level": "N3",
+      "pattern": "〜ほど",
+      "description": "정도"
+    },
+    {
+      "id": "g227",
+      "level": "N3",
+      "pattern": "〜ほど〜はない",
+      "description": "만큼 ~는 없다"
+    },
+    {
+      "id": "g228",
+      "level": "N3",
+      "pattern": "〜前に",
+      "description": "전에"
+    },
+    {
+      "id": "g229",
+      "level": "N3",
+      "pattern": "〜みたいだ",
+      "description": "같다, ~것 같다"
+    },
+    {
+      "id": "g232",
+      "level": "N3",
+      "pattern": "〜ようとする",
+      "description": "하려고 하다"
+    },
+    {
+      "id": "g233",
+      "level": "N3",
+      "pattern": "〜ように",
+      "description": "하도록"
+    },
+    {
+      "id": "g234",
+      "level": "N3",
+      "pattern": "〜ようにする",
+      "description": "하도록 하다"
+    },
+    {
+      "id": "g236",
+      "level": "N3",
+      "pattern": "〜らしい",
+      "description": "라고 한다"
+    },
+    {
+      "id": "g238",
+      "level": "N3",
+      "pattern": "〜を中心に",
+      "description": "을 중심으로"
     }
   ],
   "practiceSets": {
