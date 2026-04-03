@@ -1043,10 +1043,26 @@ button {
   gap: 18px;
 }
 
+.characters-page-copy {
+  max-width: 62ch;
+}
+
+.characters-page-copy h2 {
+  margin: 0;
+  font-family: "Space Grotesk", sans-serif;
+  letter-spacing: -0.03em;
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+}
+
+.characters-page-copy p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
 .characters-library-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  display: grid;
+  align-items: flex-start;
   gap: 18px;
 }
 
@@ -1067,10 +1083,15 @@ button {
   line-height: 1.75;
 }
 
-.characters-tab-list,
-.characters-library-switcher {
+.characters-tab-list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.characters-library-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1109,6 +1130,7 @@ button {
 }
 
 .characters-quiz-panel .kana-setup-shell,
+.characters-quiz-panel .study-options-shell,
 .characters-tab-panel .writing-practice-shell {
   margin: 0;
 }
@@ -1292,6 +1314,21 @@ button {
   grid-column: 1 / -1;
 }
 
+.study-options-button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.study-options-button-grid-triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.study-options-button-grid > * {
+  width: 100%;
+  min-width: 0;
+}
+
 .kana-setup-buttons {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1317,21 +1354,6 @@ button {
     linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 247, 240, 0.88)),
     linear-gradient(135deg, rgba(93, 133, 207, 0.08), rgba(222, 107, 72, 0.08));
   box-shadow: var(--shadow);
-}
-
-.kana-table-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.kana-table-head h3 {
-  margin: 10px 0 0;
-  font-family: "Space Grotesk", sans-serif;
-  letter-spacing: -0.03em;
-  font-size: clamp(1.45rem, 2.4vw, 2rem);
 }
 
 .kana-quiz-link {
@@ -1432,7 +1454,6 @@ button {
   margin-top: 24px;
 }
 
-.writing-practice-copy,
 .writing-practice-card {
   position: relative;
   overflow: hidden;
@@ -1468,7 +1489,7 @@ button {
 }
 
 .writing-setup-shell {
-  margin-top: 22px;
+  margin-top: 0;
   margin-bottom: 0;
 }
 
@@ -1875,12 +1896,6 @@ button {
 }
 
 @media (max-width: 1100px) {
-  .characters-library-head {
-    align-items: stretch;
-    justify-content: flex-start;
-    flex-direction: column;
-  }
-
   .characters-tab-list,
   .characters-library-switcher {
     width: 100%;
@@ -1900,7 +1915,6 @@ button {
     width: 100%;
   }
 
-  .writing-practice-copy,
   .writing-practice-card {
     padding: 18px;
   }
@@ -1934,6 +1948,7 @@ button {
 @media (max-width: 540px) {
   .grammar-tab-list,
   .characters-library-switcher,
+  .study-options-button-grid,
   .kana-setup-buttons,
   .writing-practice-order-switcher {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1949,7 +1964,6 @@ button {
     font-size: 1.05rem;
   }
 
-  .writing-practice-copy,
   .writing-practice-card {
     padding: 14px;
     border-radius: 18px;
@@ -5234,11 +5248,6 @@ body::after {
     grid-template-columns: 1fr;
   }
 
-  .kana-table-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
   .kana-quiz-link {
     width: 100%;
   }
@@ -5406,14 +5415,6 @@ body::after {
 
   .kana-table-card {
     padding: 20px;
-  }
-
-  .kana-table-head {
-    margin-bottom: 14px;
-  }
-
-  .kana-table-head h3 {
-    font-size: 1.3rem;
   }
 
   .kana-grid {
@@ -6280,7 +6281,6 @@ html[data-theme="dark"] .reading-feedback {
   html:not([data-theme="light"]) .brand-name,
   html:not([data-theme="light"]) .flashcard-word,
   html:not([data-theme="light"]) .kana-table-card,
-  html:not([data-theme="light"]) .kana-table-head h3,
   html:not([data-theme="light"]) .kana-group h4,
   html:not([data-theme="light"]) .kana-tile,
   html:not([data-theme="light"]) .kana-tile strong,
@@ -6292,7 +6292,6 @@ html[data-theme="dark"] .reading-feedback {
   html[data-theme="dark"] .brand-name,
   html[data-theme="dark"] .flashcard-word,
   html[data-theme="dark"] .kana-table-card,
-  html[data-theme="dark"] .kana-table-head h3,
   html[data-theme="dark"] .kana-group h4,
   html[data-theme="dark"] .kana-tile,
   html[data-theme="dark"] .kana-tile strong,

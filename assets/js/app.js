@@ -1492,7 +1492,7 @@ const quizHeadingCopy = {
 
 const matchHeadingCopy = {
   title: "단어 짝맞추기, 바로 감각 올려봐요",
-  description: "읽기와 뜻을 빠르게 묶으면서 오늘 볼 단어를 가볍게 몸에 붙여봐요."
+  description: ""
 };
 
 function getVocabItemPart(item) {
@@ -1663,48 +1663,62 @@ function renderKanaQuizResults() {
 }
 
 function renderKanaQuizSetup() {
+  const setupShell = document.getElementById("kana-setup-shell");
   const setupToggle = document.getElementById("kana-setup-toggle");
   const setupPanel = document.getElementById("kana-setup-panel");
   const setupSummary = document.getElementById("kana-setup-summary");
+  const startButton = document.getElementById("kana-setup-start");
+  const startLabel = document.getElementById("kana-setup-start-label");
   const countSpinner = document.querySelector('[data-spinner-id="kana-quiz-count"]');
   const timeSpinner = document.querySelector('[data-spinner-id="kana-quiz-time"]');
   const isOpen = state.kanaSetupOpen === true;
   const modeButtons = document.querySelectorAll("[data-kana-mode]");
   const isSettingsLocked = kanaQuizSheetState.open && !kanaQuizSheetState.finished;
+  const canStart = getKanaQuizPool(kanaQuizSettings.mode).length > 0;
   const summaryText = [
     getKanaQuizModeLabel(kanaQuizSettings.mode),
     getKanaQuizCountLabel(kanaQuizSettings.count),
     getKanaQuizDurationLabel(kanaQuizSettings.duration)
   ].join(" · ");
 
-  renderCollapsibleSettingsSection({
+  syncSelectionButtonState(modeButtons, (button) => button.dataset.kanaMode, kanaQuizSettings.mode);
+  modeButtons.forEach((button) => {
+    button.disabled = isSettingsLocked;
+  });
+  if (getCharactersTab(state.charactersTab) === "quiz") {
+    renderCharactersPageHeader("quiz");
+  }
+  renderStudyOptionsControls({
+    shell: setupShell,
     toggle: setupToggle,
     panel: setupPanel,
     summary: setupSummary,
     summaryText,
     isLocked: isSettingsLocked,
-    shouldShowPanel: !isSettingsLocked && isOpen
-  });
-  syncSelectionButtonState(modeButtons, (button) => button.dataset.kanaMode, kanaQuizSettings.mode);
-  modeButtons.forEach((button) => {
-    button.disabled = isSettingsLocked;
-  });
-  renderSpinnerControls([
-    {
-      spinner: countSpinner,
-      options: kanaQuizCountOptions,
-      activeValue: kanaQuizSettings.count,
-      formatValue: getKanaQuizCountLabel,
-      disabled: isSettingsLocked
-    },
-    {
-      spinner: timeSpinner,
-      options: kanaQuizDurationOptions,
-      activeValue: kanaQuizSettings.duration,
-      formatValue: getKanaQuizDurationLabel,
-      disabled: isSettingsLocked
+    isOpen,
+    spinnerConfigs: [
+      {
+        spinner: countSpinner,
+        options: kanaQuizCountOptions,
+        activeValue: kanaQuizSettings.count,
+        formatValue: getKanaQuizCountLabel,
+        disabled: isSettingsLocked
+      },
+      {
+        spinner: timeSpinner,
+        options: kanaQuizDurationOptions,
+        activeValue: kanaQuizSettings.duration,
+        formatValue: getKanaQuizDurationLabel,
+        disabled: isSettingsLocked
+      }
+    ],
+    actionButton: {
+      button: startButton,
+      label: startLabel,
+      isStarted: kanaQuizSheetState.open,
+      canStart
     }
-  ]);
+  });
 }
 
 function startKanaQuizSession(mode = kanaQuizSettings.mode) {
@@ -1743,6 +1757,7 @@ function openKanaQuizSheet(mode) {
 function closeKanaQuizSheet() {
   kanaQuizSheetState.open = false;
   stopQuizSessionTimer("kana");
+  renderKanaQuizSetup();
   renderKanaQuizSheet();
 }
 
@@ -1755,9 +1770,6 @@ function renderKanaQuizSheet() {
   const card = document.getElementById("kana-quiz-card");
   const empty = document.getElementById("kana-quiz-empty");
   const resultView = document.getElementById("kana-quiz-result-view");
-  const label = document.getElementById("kana-quiz-sheet-label");
-  const title = document.getElementById("kana-quiz-sheet-title");
-  const desc = document.getElementById("kana-quiz-sheet-desc");
   const source = document.getElementById("kana-quiz-sheet-source");
   const progress = document.getElementById("kana-quiz-sheet-progress");
   const promptBox = document.getElementById("kana-quiz-sheet-copy");
@@ -1770,7 +1782,7 @@ function renderKanaQuizSheet() {
   const explanation = document.getElementById("kana-quiz-explanation");
   const next = document.getElementById("kana-quiz-next");
 
-  if (!practiceView || !card || !empty || !resultView || !label || !title || !desc || !source || !progress || !promptBox || !note || !prompt || !display || !displaySub || !options || !feedback || !explanation || !next) {
+  if (!practiceView || !card || !empty || !resultView || !source || !progress || !promptBox || !note || !prompt || !display || !displaySub || !options || !feedback || !explanation || !next) {
     return;
   }
 
@@ -1796,9 +1808,6 @@ function renderKanaQuizSheet() {
   }
 
   if (!current) {
-    label.textContent = "KANA QUIZ";
-    title.textContent = "문자 퀴즈, 풀어볼까요?";
-    desc.textContent = "퀴즈를 아직 불러오지 못했어요.";
     source.textContent = "-";
     progress.textContent = "-";
     promptBox.hidden = true;
@@ -1816,10 +1825,6 @@ function renderKanaQuizSheet() {
     return;
   }
 
-  const modeLabel = getKanaQuizModeLabel(kanaQuizSheetState.mode);
-  label.textContent = `${modeLabel.toUpperCase()} QUIZ`;
-  title.textContent = `${modeLabel} 퀴즈, 풀어볼까요?`;
-  desc.textContent = "문자를 보고 읽기를 골라봐요.";
   source.textContent = formatQuizLineBreaks(current.item.source);
   progress.textContent = `${current.index + 1} / ${current.total}`;
   promptBox.hidden = true;
@@ -2013,15 +2018,11 @@ function renderKanaLibrary() {
   const sections = [
     {
       targetId: "hiragana-table",
-      track: "hiragana",
-      title: "히라가나 한눈에 보기",
-      description: "기본음부터 요음까지 한 번에 쭉 살펴봐요."
+      track: "hiragana"
     },
     {
       targetId: "katakana-table",
-      track: "katakana",
-      title: "카타카나 한눈에 보기",
-      description: "자주 보는 카타카나를 한눈에 익혀봐요."
+      track: "katakana"
     }
   ];
 
@@ -2055,22 +2056,6 @@ function renderKanaLibrary() {
       .join("");
   });
 
-  document.querySelectorAll("[data-kana-track]").forEach((button) => {
-    if (button.dataset.kanaBound === "true") {
-      return;
-    }
-
-    button.dataset.kanaBound = "true";
-    button.addEventListener("click", () => {
-      const track = button.getAttribute("data-kana-track");
-      if (!track || !basicPracticeSets[track]) {
-        return;
-      }
-
-      openKanaQuizSheet(track);
-    });
-  });
-
   document.querySelectorAll("[data-writing-char]").forEach((button) => {
     if (button.dataset.writingBound === "true") {
       return;
@@ -2083,9 +2068,40 @@ function renderKanaLibrary() {
   });
 }
 
+function getCharactersPageHeading(tab = getCharactersTab(state.charactersTab)) {
+  if (tab === "writing") {
+    return {
+      title: "문자를 직접 따라쓰며 손에 익혀봐요",
+      description: ""
+    };
+  }
+
+  if (tab === "quiz") {
+    return {
+      title: `${getKanaQuizModeLabel(kanaQuizSettings.mode)} 퀴즈, 풀어볼까요?`,
+      description: ""
+    };
+  }
+
+  return {
+    title: "히라가나랑 카타카나를 한눈에 봐요",
+    description: "문자를 누르면 바로 따라쓰기로 이어져요."
+  };
+}
+
+function renderCharactersPageHeader(tab = getCharactersTab(state.charactersTab)) {
+  applyPageHeading(
+    document.getElementById("characters-page-title"),
+    document.getElementById("characters-page-copy"),
+    getCharactersPageHeading(tab)
+  );
+}
+
 function renderCharactersPageLayout() {
   const activeTab = getCharactersTab(state.charactersTab);
   const libraryTab = getCharactersLibraryTab(state.charactersLibraryTab);
+
+  renderCharactersPageHeader(activeTab);
 
   document.querySelectorAll("[data-characters-tab]").forEach((button) => {
     const isActive = button.dataset.charactersTab === activeTab;
@@ -2182,6 +2198,7 @@ function getWritingPracticeOrderLabel(order = writingPracticeSettings.order) {
 }
 
 function renderWritingPracticeSetup() {
+  const setupShell = document.getElementById("writing-setup-shell");
   const setupToggle = document.getElementById("writing-setup-toggle");
   const setupPanel = document.getElementById("writing-setup-panel");
   const setupSummary = document.getElementById("writing-setup-summary");
@@ -2192,6 +2209,7 @@ function renderWritingPracticeSetup() {
   ].join(" · ");
 
   renderOpenableSettingsSection({
+    shell: setupShell,
     toggle: setupToggle,
     panel: setupPanel,
     summary: setupSummary,
@@ -2781,7 +2799,6 @@ function updateWritingPracticeControls() {
 
 function updateWritingPracticePanel() {
   const current = getCurrentWritingPracticeItem();
-  const title = document.getElementById("writing-practice-title");
   const source = document.getElementById("writing-practice-source");
   const progress = document.getElementById("writing-practice-progress");
   const strokes = document.getElementById("writing-practice-strokes");
@@ -2806,9 +2823,6 @@ function updateWritingPracticePanel() {
   renderWritingPracticeSetup();
 
   if (!current) {
-    if (title) {
-      title.textContent = "문자 따라쓰기";
-    }
     if (source) {
       source.textContent = "-";
     }
@@ -2843,16 +2857,7 @@ function updateWritingPracticePanel() {
   }
 
   const total = writingPracticeState.sessionItems.length;
-  const modeLabel =
-    writingPracticeSettings.mode === "random"
-      ? "랜덤"
-      : current.script === "katakana"
-        ? "카타카나"
-        : "히라가나";
 
-  if (title) {
-    title.textContent = `${modeLabel} 따라쓰기`;
-  }
   if (source) {
     source.textContent = current.source;
   }
@@ -6121,8 +6126,9 @@ function renderCollapsibleSettingsSection({
   }
 }
 
-function renderOpenableSettingsSection({ toggle, panel, summary, summaryText, isOpen }) {
+function renderOpenableSettingsSection({ shell, toggle, panel, summary, summaryText, isOpen }) {
   renderCollapsibleSettingsSection({
+    shell,
     toggle,
     panel,
     summary,
@@ -9694,6 +9700,7 @@ function renderQuizControls() {
   }
 
   renderOpenableSettingsSection({
+    shell: optionsShell,
     toggle: optionsToggle,
     panel: optionsPanel,
     summary: optionsSummary,
@@ -11177,6 +11184,11 @@ function attachEventListeners() {
     render: renderKanaQuizSetup
   });
   attachClickListener(kanaSetupStart, () => {
+    if (kanaQuizSheetState.open) {
+      closeKanaQuizSheet();
+      return;
+    }
+
     startKanaQuizSession(kanaQuizSettings.mode);
   });
   attachClickListener(kanaQuizRestart, () => {

@@ -32,8 +32,9 @@
     </header>
     <main>
       <section class="content-section characters-page">
-        <div class="section-heading kana-library-heading characters-page-heading">
-          <h2>문자를 직접 따라쓰며 손에 익혀봐요</h2>
+        <div class="characters-page-copy">
+          <h2 id="characters-page-title">히라가나랑 카타카나를 한눈에 봐요</h2>
+          <p id="characters-page-copy">문자를 누르면 바로 따라쓰기로 이어져요.</p>
         </div>
         <div class="characters-tab-list" role="tablist" aria-label="문자 학습 탭">
           <button class="level-button characters-tab-button is-active" type="button" data-characters-tab="library" id="characters-tab-library" role="tab" aria-selected="true" aria-controls="characters-tab-panel-library">
@@ -53,11 +54,6 @@
         <div class="characters-tab-panels">
           <section class="characters-tab-panel characters-library-shell" id="characters-tab-panel-library" data-characters-tab-panel="library" role="tabpanel" aria-labelledby="characters-tab-library">
             <div class="characters-library-head">
-              <div class="characters-library-copy">
-                <span class="eyebrow">KANA LIBRARY</span>
-                <h3 id="characters-library-title">히라가나랑 카타카나를 한눈에 봐요</h3>
-                <p>문자를 누르면 바로 따라쓰기로 이어져요.</p>
-              </div>
               <div class="characters-library-switcher" role="tablist" aria-label="문자표 탭">
                 <button class="level-button is-active" type="button" data-characters-library-tab="hiragana" id="characters-library-tab-hiragana" role="tab" aria-selected="true" aria-controls="characters-library-panel-hiragana">히라가나</button>
                 <button class="level-button" type="button" data-characters-library-tab="katakana" id="characters-library-tab-katakana" role="tab" aria-selected="false" aria-controls="characters-library-panel-katakana" tabindex="-1">카타카나</button>
@@ -65,12 +61,10 @@
             </div>
 
             <article class="kana-table-card characters-library-panel" id="characters-library-panel-hiragana" data-characters-library-panel="hiragana" role="tabpanel" aria-labelledby="characters-library-tab-hiragana">
-              <div class="kana-table-head"><div><span class="eyebrow">HIRAGANA</span><h3>히라가나 한눈에 보기</h3></div></div>
               <div class="kana-table-body" id="hiragana-table"></div>
             </article>
 
             <article class="kana-table-card characters-library-panel" id="characters-library-panel-katakana" data-characters-library-panel="katakana" role="tabpanel" aria-labelledby="characters-library-tab-katakana" hidden aria-hidden="true">
-              <div class="kana-table-head"><div><span class="eyebrow">KATAKANA</span><h3>카타카나 한눈에 보기</h3></div></div>
               <div class="kana-table-body" id="katakana-table"></div>
             </article>
           </section>
@@ -78,20 +72,19 @@
           <section class="characters-tab-panel characters-quiz-panel" id="characters-tab-panel-quiz" data-characters-tab-panel="quiz" role="tabpanel" aria-labelledby="characters-tab-quiz" hidden aria-hidden="true">
             <div class="match-shell kana-quiz-shell">
               <aside class="match-sidebar">
-                <div class="match-sidebar-head"><span class="eyebrow">QUIZ HUD</span><h3>문자 퀴즈</h3></div>
-                <div class="kana-setup-shell" id="kana-setup-shell">
-                  <button class="kana-setup-toggle" id="kana-setup-toggle" type="button" aria-expanded="false" aria-controls="kana-setup-panel">
-                    <div class="kana-setup-toggle-copy"><span class="eyebrow">QUIZ SETUP</span><strong>퀴즈 설정, 어떻게 할까요?</strong><span class="kana-setup-toggle-summary" id="kana-setup-summary">히라가나 · 10문제 · 5초</span></div>
+                <div class="study-options-shell match-options-shell" id="kana-setup-shell">
+                  <button class="study-options-toggle" id="kana-setup-toggle" type="button" aria-expanded="false" aria-controls="kana-setup-panel">
+                    <div class="study-options-toggle-copy"><span class="eyebrow">QUIZ SETUP</span><strong>퀴즈 설정, 어떻게 할까요?</strong><p class="study-options-toggle-summary" id="kana-setup-summary">히라가나 · 10문제 · 5초</p></div>
                     <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
                   </button>
-                  <div class="kana-setup-panel" id="kana-setup-panel" hidden aria-hidden="true">
-                    <div class="kana-setup-group"><span>어떤 문자로 할까요?</span><div class="kana-setup-buttons"><button class="level-button is-active" type="button" data-kana-mode="hiragana">히라가나</button><button class="level-button" type="button" data-kana-mode="katakana">카타카나</button><button class="level-button" type="button" data-kana-mode="random">랜덤</button></div></div>
-                    <div class="kana-setup-group"><span>몇 문제 풀까요?</span><div class="study-spinner" data-spinner-id="kana-quiz-count" role="group" aria-label="문자 퀴즈 문제 수 고르기">
+                  <div class="study-options-panel study-options-panel-compact" id="kana-setup-panel" hidden aria-hidden="true">
+                    <div class="study-options-group"><span>어떤 문자로 할까요?</span><div class="study-options-button-grid study-options-button-grid-triple"><button class="level-button is-active" type="button" data-kana-mode="hiragana">히라가나</button><button class="level-button" type="button" data-kana-mode="katakana">카타카나</button><button class="level-button" type="button" data-kana-mode="random">랜덤</button></div></div>
+                    <div class="study-options-group"><span>몇 문제 풀까요?</span><div class="study-spinner" data-spinner-id="kana-quiz-count" role="group" aria-label="문자 퀴즈 문제 수 고르기">
                         <button class="study-spinner-button" type="button" data-spinner-direction="-1" aria-label="문자 퀴즈 문제 수 감소"><span class="material-symbols-rounded" aria-hidden="true">remove</span></button>
                         <output class="study-spinner-value" data-spinner-value aria-live="polite">10문제</output>
                         <button class="study-spinner-button" type="button" data-spinner-direction="1" aria-label="문자 퀴즈 문제 수 증가"><span class="material-symbols-rounded" aria-hidden="true">add</span></button>
                       </div></div>
-                    <div class="kana-setup-group"><span>시간은 어떻게 할까요?</span><div class="study-spinner" data-spinner-id="kana-quiz-time" role="group" aria-label="문자 퀴즈 시간 고르기">
+                    <div class="study-options-group"><span>시간은 어떻게 할까요?</span><div class="study-spinner" data-spinner-id="kana-quiz-time" role="group" aria-label="문자 퀴즈 시간 고르기">
                         <button class="study-spinner-button" type="button" data-spinner-direction="-1" aria-label="문자 퀴즈 시간 감소"><span class="material-symbols-rounded" aria-hidden="true">remove</span></button>
                         <output class="study-spinner-value" data-spinner-value aria-live="polite">5초</output>
                         <button class="study-spinner-button" type="button" data-spinner-direction="1" aria-label="문자 퀴즈 시간 증가"><span class="material-symbols-rounded" aria-hidden="true">add</span></button>
@@ -99,7 +92,7 @@
                   </div>
                 </div>
                 <div class="match-actions">
-                  <button class="primary-btn button-with-icon kana-setup-start" id="kana-setup-start" type="button"><span class="material-symbols-rounded" aria-hidden="true">play_arrow</span><span>시작해볼까요?</span></button>
+                  <button class="primary-btn button-with-icon kana-setup-start" id="kana-setup-start" type="button"><span class="material-symbols-rounded" aria-hidden="true">play_arrow</span><span id="kana-setup-start-label">시작해볼까요?</span></button>
                 </div>
               </aside>
               <div class="match-board kana-quiz-board">
@@ -132,7 +125,6 @@
                         </button>
                       </div>
                     </div>
-                    <div class="basic-practice-header"><div><span class="eyebrow" id="kana-quiz-sheet-label">KANA QUIZ</span><h3 id="kana-quiz-sheet-title">문자 퀴즈, 풀어볼까요?</h3></div><p class="basic-practice-note" id="kana-quiz-sheet-desc">문자를 보고 읽기를 골라봐요.</p></div>
                     <div class="basic-practice-prompt-box" id="kana-quiz-sheet-copy" hidden><span class="eyebrow">QUESTION</span><p id="kana-quiz-sheet-prompt">문제를 불러오고 있어요.</p></div>
                     <div class="basic-practice-display-box"><strong id="kana-quiz-sheet-display">-</strong><p id="kana-quiz-sheet-display-sub"></p></div>
                     <p class="basic-practice-note" id="kana-quiz-sheet-note" hidden></p>
@@ -171,24 +163,20 @@
 
           <section class="characters-tab-panel" id="characters-tab-panel-writing" data-characters-tab-panel="writing" role="tabpanel" aria-labelledby="characters-tab-writing" hidden aria-hidden="true">
             <div class="writing-practice-shell" id="writing-practice-shell">
-              <article class="writing-practice-copy">
-                <div class="kana-setup-shell writing-setup-shell" id="writing-setup-shell">
-                  <button class="kana-setup-toggle" id="writing-setup-toggle" type="button" aria-expanded="false" aria-controls="writing-setup-panel">
-                    <div class="kana-setup-toggle-copy"><span class="eyebrow">WRITING SETUP</span><strong>따라쓰기 설정, 어떻게 할까요?</strong><span class="kana-setup-toggle-summary" id="writing-setup-summary">히라가나 · 순서대로</span></div>
+              <article class="match-sidebar writing-practice-copy">
+                <div class="study-options-shell match-options-shell writing-setup-shell" id="writing-setup-shell">
+                  <button class="study-options-toggle" id="writing-setup-toggle" type="button" aria-expanded="false" aria-controls="writing-setup-panel">
+                    <div class="study-options-toggle-copy"><span class="eyebrow">WRITING SETUP</span><strong>따라쓰기 설정, 어떻게 할까요?</strong><p class="study-options-toggle-summary" id="writing-setup-summary">히라가나 · 순서대로</p></div>
                     <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
                   </button>
-                  <div class="kana-setup-panel writing-setup-panel" id="writing-setup-panel" hidden aria-hidden="true">
-                    <div class="kana-setup-group"><span>문자 선택</span><div class="writing-practice-switcher" id="writing-practice-switcher" aria-label="따라쓰기 문자 고르기"><button class="level-button is-active" type="button" data-writing-mode="hiragana">히라가나</button><button class="level-button" type="button" data-writing-mode="katakana">카타카나</button><button class="level-button" type="button" data-writing-mode="random">랜덤</button></div></div>
-                    <div class="kana-setup-group"><span>순서</span><div class="writing-practice-order-switcher" aria-label="따라쓰기 순서 선택"><button class="level-button is-active" type="button" data-writing-order="sequence">순서대로</button><button class="level-button" type="button" data-writing-order="random">랜덤</button></div></div>
+                  <div class="study-options-panel writing-setup-panel" id="writing-setup-panel" hidden aria-hidden="true">
+                    <div class="study-options-group"><span>순서</span><div class="study-options-button-grid" aria-label="따라쓰기 순서 선택"><button class="level-button is-active" type="button" data-writing-order="sequence">순서대로</button><button class="level-button" type="button" data-writing-order="random">랜덤</button></div></div>
                   </div>
                 </div>
                 
                 <p class="writing-practice-feedback" id="writing-practice-feedback" hidden></p>
               </article>
               <article class="writing-practice-card">
-                <div class="writing-practice-card-head">
-                  <div><span class="eyebrow">WRITING STAGE</span><h3 id="writing-practice-title">문자 따라쓰기</h3></div>
-                </div>
                 <div class="writing-practice-meta">
                   <span id="writing-practice-source">히라가나 · 기본음</span>
                   <span id="writing-practice-progress">1 / 1</span>
