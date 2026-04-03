@@ -2,6 +2,8 @@
   "name": "japanote",
   "private": true,
   "scripts": {
+    "build:data:kana": "node scripts/build-kana-data.mjs",
+    "build:data": "npm run build:data:kana",
     "dev": "npx --yes serve@14 -l 8080 .",
     "start": "npm run dev"
   }

@@ -21,6 +21,15 @@ JLPT 시험 공부를 위한 정적 학습 사이트입니다.
 
 4. 또는 VS Code **Live Server** 등으로 같은 폴더를 띄워도 됩니다.
 
+## 가나 데이터 수정
+
+- 가나 정본은 `data-source/kana-source.json`만 수정합니다.
+- 수정 후 아래 명령으로 런타임용 `data/kana.json`을 다시 생성합니다.
+
+  ```text
+  npm run build:data:kana
+  ```
+
 ## 로컬에서 Supabase(클라우드 로그인) 테스트
 
 매직 링크는 **지금 브라우저 주소창에 보이는 그 URL(포트 포함)**으로 돌아오게 요청합니다. Supabase는 **Redirect URLs에 없는 주소**로는 보내 주지 않고, **Site URL(예: GitHub Pages)**로 바꿔 버립니다. 그래서 로컬에서 보냈는데 배포 주소로 열리면 **허용 목록에 로컬 주소가 없는 것**이에요.

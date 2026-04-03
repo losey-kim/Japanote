@@ -1,0 +1,542 @@
+{
+  "groups": [
+    {
+      "id": "basic",
+      "title": "기본음",
+      "items": [
+        {
+          "reading": "a",
+          "hiragana": "あ"
+        },
+        {
+          "reading": "i",
+          "hiragana": "い"
+        },
+        {
+          "reading": "u",
+          "hiragana": "う"
+        },
+        {
+          "reading": "e",
+          "hiragana": "え"
+        },
+        {
+          "reading": "o",
+          "hiragana": "お"
+        },
+        {
+          "reading": "ka",
+          "hiragana": "か"
+        },
+        {
+          "reading": "ki",
+          "hiragana": "き"
+        },
+        {
+          "reading": "ku",
+          "hiragana": "く"
+        },
+        {
+          "reading": "ke",
+          "hiragana": "け"
+        },
+        {
+          "reading": "ko",
+          "hiragana": "こ"
+        },
+        {
+          "reading": "sa",
+          "hiragana": "さ"
+        },
+        {
+          "reading": "shi",
+          "hiragana": "し"
+        },
+        {
+          "reading": "su",
+          "hiragana": "す"
+        },
+        {
+          "reading": "se",
+          "hiragana": "せ"
+        },
+        {
+          "reading": "so",
+          "hiragana": "そ"
+        },
+        {
+          "reading": "ta",
+          "hiragana": "た"
+        },
+        {
+          "reading": "chi",
+          "hiragana": "ち"
+        },
+        {
+          "reading": "tsu",
+          "hiragana": "つ"
+        },
+        {
+          "reading": "te",
+          "hiragana": "て"
+        },
+        {
+          "reading": "to",
+          "hiragana": "と"
+        },
+        {
+          "reading": "na",
+          "hiragana": "な"
+        },
+        {
+          "reading": "ni",
+          "hiragana": "に"
+        },
+        {
+          "reading": "nu",
+          "hiragana": "ぬ"
+        },
+        {
+          "reading": "ne",
+          "hiragana": "ね"
+        },
+        {
+          "reading": "no",
+          "hiragana": "の"
+        },
+        {
+          "reading": "ha",
+          "hiragana": "は"
+        },
+        {
+          "reading": "hi",
+          "hiragana": "ひ"
+        },
+        {
+          "reading": "fu",
+          "hiragana": "ふ"
+        },
+        {
+          "reading": "he",
+          "hiragana": "へ"
+        },
+        {
+          "reading": "ho",
+          "hiragana": "ほ"
+        },
+        {
+          "reading": "ma",
+          "hiragana": "ま"
+        },
+        {
+          "reading": "mi",
+          "hiragana": "み"
+        },
+        {
+          "reading": "mu",
+          "hiragana": "む"
+        },
+        {
+          "reading": "me",
+          "hiragana": "め"
+        },
+        {
+          "reading": "mo",
+          "hiragana": "も"
+        },
+        {
+          "reading": "ya",
+          "hiragana": "や"
+        },
+        {
+          "reading": "yu",
+          "hiragana": "ゆ"
+        },
+        {
+          "reading": "yo",
+          "hiragana": "よ"
+        },
+        {
+          "reading": "ra",
+          "hiragana": "ら"
+        },
+        {
+          "reading": "ri",
+          "hiragana": "り"
+        },
+        {
+          "reading": "ru",
+          "hiragana": "る"
+        },
+        {
+          "reading": "re",
+          "hiragana": "れ"
+        },
+        {
+          "reading": "ro",
+          "hiragana": "ろ"
+        },
+        {
+          "reading": "wa",
+          "hiragana": "わ"
+        },
+        {
+          "reading": "wo",
+          "hiragana": "を"
+        },
+        {
+          "reading": "n",
+          "hiragana": "ん"
+        }
+      ]
+    },
+    {
+      "id": "voiced",
+      "title": "탁음 / 반탁음",
+      "items": [
+        {
+          "reading": "ga",
+          "hiragana": "が"
+        },
+        {
+          "reading": "gi",
+          "hiragana": "ぎ"
+        },
+        {
+          "reading": "gu",
+          "hiragana": "ぐ"
+        },
+        {
+          "reading": "ge",
+          "hiragana": "げ"
+        },
+        {
+          "reading": "go",
+          "hiragana": "ご"
+        },
+        {
+          "reading": "za",
+          "hiragana": "ざ"
+        },
+        {
+          "reading": "ji",
+          "hiragana": "じ"
+        },
+        {
+          "reading": "zu",
+          "hiragana": "ず"
+        },
+        {
+          "reading": "ze",
+          "hiragana": "ぜ"
+        },
+        {
+          "reading": "zo",
+          "hiragana": "ぞ"
+        },
+        {
+          "reading": "da",
+          "hiragana": "だ"
+        },
+        {
+          "reading": "ji",
+          "hiragana": "ぢ"
+        },
+        {
+          "reading": "zu",
+          "hiragana": "づ"
+        },
+        {
+          "reading": "de",
+          "hiragana": "で"
+        },
+        {
+          "reading": "do",
+          "hiragana": "ど"
+        },
+        {
+          "reading": "ba",
+          "hiragana": "ば"
+        },
+        {
+          "reading": "bi",
+          "hiragana": "び"
+        },
+        {
+          "reading": "bu",
+          "hiragana": "ぶ"
+        },
+        {
+          "reading": "be",
+          "hiragana": "べ"
+        },
+        {
+          "reading": "bo",
+          "hiragana": "ぼ"
+        },
+        {
+          "reading": "pa",
+          "hiragana": "ぱ"
+        },
+        {
+          "reading": "pi",
+          "hiragana": "ぴ"
+        },
+        {
+          "reading": "pu",
+          "hiragana": "ぷ"
+        },
+        {
+          "reading": "pe",
+          "hiragana": "ぺ"
+        },
+        {
+          "reading": "po",
+          "hiragana": "ぽ"
+        }
+      ]
+    },
+    {
+      "id": "contracted",
+      "title": "요음",
+      "items": [
+        {
+          "reading": "kya",
+          "hiragana": "きゃ"
+        },
+        {
+          "reading": "kyu",
+          "hiragana": "きゅ"
+        },
+        {
+          "reading": "kyo",
+          "hiragana": "きょ"
+        },
+        {
+          "reading": "sha",
+          "hiragana": "しゃ"
+        },
+        {
+          "reading": "shu",
+          "hiragana": "しゅ"
+        },
+        {
+          "reading": "sho",
+          "hiragana": "しょ"
+        },
+        {
+          "reading": "cha",
+          "hiragana": "ちゃ"
+        },
+        {
+          "reading": "chu",
+          "hiragana": "ちゅ"
+        },
+        {
+          "reading": "cho",
+          "hiragana": "ちょ"
+        },
+        {
+          "reading": "nya",
+          "hiragana": "にゃ"
+        },
+        {
+          "reading": "nyu",
+          "hiragana": "にゅ"
+        },
+        {
+          "reading": "nyo",
+          "hiragana": "にょ"
+        },
+        {
+          "reading": "hya",
+          "hiragana": "ひゃ"
+        },
+        {
+          "reading": "hyu",
+          "hiragana": "ひゅ"
+        },
+        {
+          "reading": "hyo",
+          "hiragana": "ひょ"
+        },
+        {
+          "reading": "mya",
+          "hiragana": "みゃ"
+        },
+        {
+          "reading": "myu",
+          "hiragana": "みゅ"
+        },
+        {
+          "reading": "myo",
+          "hiragana": "みょ"
+        },
+        {
+          "reading": "rya",
+          "hiragana": "りゃ"
+        },
+        {
+          "reading": "ryu",
+          "hiragana": "りゅ"
+        },
+        {
+          "reading": "ryo",
+          "hiragana": "りょ"
+        },
+        {
+          "reading": "gya",
+          "hiragana": "ぎゃ"
+        },
+        {
+          "reading": "gyu",
+          "hiragana": "ぎゅ"
+        },
+        {
+          "reading": "gyo",
+          "hiragana": "ぎょ"
+        },
+        {
+          "reading": "ja",
+          "hiragana": "じゃ"
+        },
+        {
+          "reading": "ju",
+          "hiragana": "じゅ"
+        },
+        {
+          "reading": "jo",
+          "hiragana": "じょ"
+        },
+        {
+          "reading": "bya",
+          "hiragana": "びゃ"
+        },
+        {
+          "reading": "byu",
+          "hiragana": "びゅ"
+        },
+        {
+          "reading": "byo",
+          "hiragana": "びょ"
+        },
+        {
+          "reading": "pya",
+          "hiragana": "ぴゃ"
+        },
+        {
+          "reading": "pyu",
+          "hiragana": "ぴゅ"
+        },
+        {
+          "reading": "pyo",
+          "hiragana": "ぴょ"
+        }
+      ]
+    },
+    {
+      "id": "small",
+      "title": "소문자 / 기타",
+      "items": [
+        {
+          "reading": "xa",
+          "hiragana": "ぁ",
+          "quiz": false
+        },
+        {
+          "reading": "xi",
+          "hiragana": "ぃ",
+          "quiz": false
+        },
+        {
+          "reading": "xu",
+          "hiragana": "ぅ",
+          "quiz": false
+        },
+        {
+          "reading": "xe",
+          "hiragana": "ぇ",
+          "quiz": false
+        },
+        {
+          "reading": "xo",
+          "hiragana": "ぉ",
+          "quiz": false
+        },
+        {
+          "reading": "xtu",
+          "hiragana": "っ",
+          "quiz": false
+        },
+        {
+          "reading": "xya",
+          "hiragana": "ゃ",
+          "quiz": false
+        },
+        {
+          "reading": "xyu",
+          "hiragana": "ゅ",
+          "quiz": false
+        },
+        {
+          "reading": "xyo",
+          "hiragana": "ょ",
+          "quiz": false
+        },
+        {
+          "reading": "xwa",
+          "hiragana": "ゎ",
+          "quiz": false
+        },
+        {
+          "reading": "vu",
+          "hiragana": "ゔ"
+        },
+        {
+          "reading": "wi",
+          "hiragana": "ゐ",
+          "quiz": false
+        },
+        {
+          "reading": "we",
+          "hiragana": "ゑ",
+          "quiz": false
+        },
+        {
+          "reading": "la",
+          "hiragana": "ゕ",
+          "quiz": false
+        },
+        {
+          "reading": "le",
+          "hiragana": "ゖ",
+          "quiz": false
+        }
+      ]
+    }
+  ],
+  "practiceTemplates": {
+    "hiragana": {
+      "label": "????",
+      "heading": "???? ??? ??",
+      "sourcePrefix": "????",
+      "title": "???? ??",
+      "note": "?? ? ?? ???? ????.",
+      "prompt": "? ??, ??? ?????",
+      "explanationTemplate": "{{char}}? {{reading}}? ???."
+    },
+    "katakana": {
+      "label": "????",
+      "heading": "???? ??? ??",
+      "sourcePrefix": "????",
+      "title": "???? ??",
+      "note": "?? ? ?? ???? ????.",
+      "prompt": "? ??, ??? ?????",
+      "explanationTemplate": "{{char}}? {{reading}}? ???."
+    }
+  },
+  "toneCycle": [
+    "tone-coral",
+    "tone-sky"
+  ]
+}

@@ -1663,7 +1663,6 @@ function renderKanaQuizResults() {
 }
 
 function renderKanaQuizSetup() {
-  const setupShell = document.getElementById("kana-setup-shell");
   const setupToggle = document.getElementById("kana-setup-toggle");
   const setupPanel = document.getElementById("kana-setup-panel");
   const setupSummary = document.getElementById("kana-setup-summary");
@@ -1679,7 +1678,6 @@ function renderKanaQuizSetup() {
   ].join(" · ");
 
   renderCollapsibleSettingsSection({
-    shell: setupShell,
     toggle: setupToggle,
     panel: setupPanel,
     summary: setupSummary,
@@ -2184,7 +2182,6 @@ function getWritingPracticeOrderLabel(order = writingPracticeSettings.order) {
 }
 
 function renderWritingPracticeSetup() {
-  const setupShell = document.getElementById("writing-setup-shell");
   const setupToggle = document.getElementById("writing-setup-toggle");
   const setupPanel = document.getElementById("writing-setup-panel");
   const setupSummary = document.getElementById("writing-setup-summary");
@@ -2195,7 +2192,6 @@ function renderWritingPracticeSetup() {
   ].join(" · ");
 
   renderOpenableSettingsSection({
-    shell: setupShell,
     toggle: setupToggle,
     panel: setupPanel,
     summary: setupSummary,
@@ -3899,9 +3895,10 @@ const defaultState = {
   kanjiReviewIds: [],
   kanjiMasteredIds: [],
   starterDoneIds: [],
-  basicPracticeTrack: "kana",
+  basicPracticeTrack: "hiragana",
   basicPracticeIndexes: {
-    kana: 0,
+    hiragana: 0,
+    katakana: 0,
     words: 0,
     particles: 0,
     kanji: 0,
@@ -4003,6 +4000,7 @@ function normalizeBasicPracticeState(inputState) {
     nextState.basicPracticeTrack = "hiragana";
   }
 
+  // 기존 starter의 단일 kana 트랙을 히라가나/카타카나 분리 구조로 읽을 때만 옮긴다.
   nextState.basicPracticeIndexes = {
     ...defaultState.basicPracticeIndexes,
     ...savedIndexes,
@@ -6123,9 +6121,8 @@ function renderCollapsibleSettingsSection({
   }
 }
 
-function renderOpenableSettingsSection({ shell, toggle, panel, summary, summaryText, isOpen }) {
+function renderOpenableSettingsSection({ toggle, panel, summary, summaryText, isOpen }) {
   renderCollapsibleSettingsSection({
-    shell,
     toggle,
     panel,
     summary,
@@ -9697,7 +9694,6 @@ function renderQuizControls() {
   }
 
   renderOpenableSettingsSection({
-    shell: optionsShell,
     toggle: optionsToggle,
     panel: optionsPanel,
     summary: optionsSummary,
