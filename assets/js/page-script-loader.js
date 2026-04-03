@@ -14,16 +14,6 @@
       "assets/js/shared-timer.js",
       "assets/js/app.js"
     ],
-    "starter.html": [
-      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-      "assets/js/supabase-config.js",
-      "assets/js/supabase-sync.js",
-      "assets/js/theme.js",
-      "assets/js/vocab-registry.js",
-      "assets/js/app-study-view-helpers.js",
-      "assets/js/shared-timer.js",
-      "assets/js/app.js"
-    ],
     "grammar.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
       "assets/js/supabase-config.js",

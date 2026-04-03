@@ -1,98 +1,19 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="문자부터 퀴즈까지, 오늘도 가볍게 일본어 해봐요.">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Japanote">
-  <meta property="og:title" content="Japanote">
-  <meta property="og:description" content="문자부터 퀴즈까지, 오늘도 가볍게 일본어 해봐요.">
-  <meta property="og:url" content="https://losey-kim.github.io/Japanote/starter.html">
-  <meta property="og:image" content="https://losey-kim.github.io/Japanote/assets/images/social-preview.png">
-  <meta property="og:image:alt" content="Japanote 로고">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Japanote">
-  <meta name="twitter:description" content="문자부터 퀴즈까지, 오늘도 가볍게 일본어 해봐요.">
-  <meta name="twitter:image" content="https://losey-kim.github.io/Japanote/assets/images/social-preview.png">
-  <title>Japanote - 첫걸음</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0,0" rel="stylesheet">
-  <link rel="icon" type="image/png" href="assets/images/favicon.png">
-  <link rel="stylesheet" href="assets/css/styles.css?v=20260402i">
+  <title>Japanote</title>
+  <meta http-equiv="refresh" content="0; url=characters.html">
+  <link rel="canonical" href="https://losey-kim.github.io/Japanote/characters.html">
 </head>
 <body>
-  <div class="page-shell">
-    <header class="topbar">
-      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/images/favicon.png" alt=""></span><div><p class="brand-name">Japanote</p><p class="brand-sub">오늘도 가볍게 일본어 해봐요</p></div></a>
-      <nav class="nav-links">
-        <a href="index.html">홈</a><a href="characters.html">문자</a><a href="kanji.html">한자</a><a href="vocab.html">단어</a><a href="grammar.html">문법</a><a href="reading.html">독해</a>
-      </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="테마 바꿔볼까요?" title="테마 바꿔볼까요?"></button>
-    </header>
-    <main>
-      <section id="starter-path" class="content-section">
-        <div class="section-heading"><span>START HERE</span><h2>N5 기초, 차근차근 같이 가봐요</h2><p class="section-copy">체크하고 바로 연습까지 이어가봐요.</p></div>
-        <div class="starter-shell">
-          <article class="starter-overview">
-            <span class="eyebrow">N5 FIRST</span><h3>처음엔 이 순서면 충분해요.</h3>
-            <ul class="starter-priority">
-              <li><strong>1</strong><div><span>히라가나랑 카타카나 익혀보기</span><p>문자만 익혀도 단어랑 문법이 훨씬 편해져요.</p></div></li>
-              <li><strong>2</strong><div><span>N5 단어 자주 보기</span><p>많이 보기보다 자주 보는 쪽이 더 잘 남아요.</p></div></li>
-              <li><strong>3</strong><div><span>조사와 기본 문법 익히기</span><p>は, が, を, に, で부터 가볍게 익혀봐요.</p></div></li>
-              <li><strong>4</strong><div><span>짧은 문장 읽어보기</span><p>메모나 공지처럼 짧은 글부터 천천히 읽어보세요.</p></div></li>
-            </ul>
-            <div class="starter-callout"><span>작은 팁</span><strong>하루 5분씩 자주 보면 오래 남아요.</strong></div>
-          </article>
-          <article class="starter-checklist-card">
-            <div class="starter-checklist-head"><div><span class="eyebrow">BEGINNER CHECKLIST</span><h3>먼저 해보면 좋은 6가지</h3></div><strong id="starter-progress">0 / 6</strong></div>
-            <div class="starter-grid" id="starter-grid"></div>
-          </article>
-        </div>
-        <div class="basic-practice-shell" id="basic-drill">
-          <div class="basic-practice-copy"><span class="eyebrow">BASIC DRILL</span><h3>기초부터 바로 시작해봐요</h3><p>단어, 조사, 짧은 문장부터 가볍게 풀어봐요. 한자는 따로 모아뒀어요.</p><div class="basic-practice-switcher" id="basic-practice-switcher" data-basic-tracks="words,particles,sentences" role="tablist" aria-label="연습 종류 고르기"></div></div>
-          <article class="basic-practice-card">
-            <div class="basic-practice-meta"><span id="basic-practice-track">단어</span><span id="basic-practice-source">N5 단어 1</span></div>
-            <div class="quiz-hud has-timer">
-              <div class="quiz-hud-top">
-                <div class="quiz-hud-stats">
-                  <div class="quiz-hud-progress">
-                    <div class="quiz-hud-item quiz-hud-progress-item is-progress" data-hud-kind="progress">
-                      <div class="quiz-hud-item-copy"><span>진행</span><strong id="basic-practice-progress">1 / 5</strong></div>
-                    </div>
-                  </div>
-                  <div class="quiz-hud-item is-correct" data-hud-kind="correct"><div class="quiz-hud-item-copy"><span>정답</span><strong id="basic-correct">0</strong></div></div>
-                  <span class="quiz-hud-summary-divider" aria-hidden="true"></span>
-                  <div class="quiz-hud-item is-wrong" data-hud-kind="wrong"><div class="quiz-hud-item-copy"><span>오답</span><strong id="basic-wrong">0</strong></div></div>
-                </div>
-              </div>
-              <div class="quiz-hud-bottom">
-                <div class="quiz-hud-track-slot"><div class="quiz-hud-track" aria-hidden="true"><span class="quiz-hud-track-fill"></span></div></div>
-                <div class="quiz-hud-timer">
-                  <div class="quiz-hud-item is-timer" data-hud-kind="timer">
-                    <div class="quiz-hud-item-copy"><span>남은 시간</span><strong id="basic-timer">00:18</strong></div>
-                  </div>
-                </div>
-                <button class="quiz-hud-pause" id="basic-pause" type="button" aria-label="일시정지" title="일시정지">
-                  <span class="quiz-hud-pause-glyph" aria-hidden="true"></span>
-                </button>
-              </div>
-            </div>
-            <div class="basic-practice-header"><div><span class="eyebrow">PRACTICE</span><h3 id="basic-practice-title">기초 연습</h3></div><p class="basic-practice-note" id="basic-practice-note"></p></div>
-            <div class="basic-practice-prompt-box"><span class="eyebrow">QUESTION</span><p id="basic-practice-prompt">문제를 불러오고 있어요.</p></div>
-            <div class="basic-practice-display-box"><strong id="basic-practice-display">-</strong><p id="basic-practice-display-sub"></p></div>
-            <div class="basic-practice-options" id="basic-practice-options"></div>
-            <p class="basic-practice-feedback" id="basic-practice-feedback"></p>
-            <p class="basic-practice-explanation" id="basic-practice-explanation"></p>
-            <div class="quiz-actions"><button class="primary-btn" id="basic-practice-next" type="button">다음 문제도 볼까요?</button></div>
-          </article>
-        </div>
-      </section>
-    </main>
-  </div>
-<script src="assets/js/page-script-loader.js?v=20260402e"></script>
+  <main>
+    <p>문자 페이지로 이동합니다.</p>
+    <p><a href="characters.html">이동하기</a></p>
+  </main>
+  <script>
+    window.location.replace("characters.html");
+  </script>
 </body>
 </html>
-
