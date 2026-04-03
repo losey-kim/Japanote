@@ -899,9 +899,15 @@
     nextButtonId,
     nextButtonLabel
   }) {
-    const metaMarkup = metaItems
-      .map((item) => `<span${item.id ? ` id="${escapeHtml(item.id)}"` : ""}>${escapeHtml(item.text)}</span>`)
-      .join("");
+    const metaMarkup = metaItems.length
+      ? `
+        <div class="basic-practice-meta">
+          ${metaItems
+            .map((item) => `<span${item.id ? ` id="${escapeHtml(item.id)}"` : ""}>${escapeHtml(item.text)}</span>`)
+            .join("")}
+        </div>
+      `
+      : "";
     const hudMarkup = createQuizHudMarkup(hudItems, "", { pauseButtonId });
     const headerMarkup = header
       ? `
@@ -935,7 +941,7 @@
 
     return `
       <article class="${escapeHtml(className)}" id="${escapeHtml(articleId)}">
-        <div class="basic-practice-meta">${metaMarkup}</div>
+        ${metaMarkup}
         ${hudMarkup}
         ${headerMarkup}
         ${promptMarkup}
@@ -1228,7 +1234,7 @@
     ];
 
     return createChoiceQuizLayout({
-      sidebarHead: "<div class=\"match-sidebar-head\"><span class=\"eyebrow\">QUIZ HUD</span><h3>한자 퀴즈</h3></div>",
+      sidebarHead: "",
       optionsShellConfig: {
         shellId: "starter-kanji-options-shell",
         shellClassName: "match-options-shell kanji-options-shell",
@@ -1281,10 +1287,6 @@
       choiceQuizCardConfig: {
         articleId: "starter-kanji-card",
         className: "basic-practice-card tone-gold kanji-practice-card",
-        metaItems: [
-          { text: "한자" },
-          { id: "starter-kanji-source", text: "한자 1" }
-        ],
         hudItems: [
           { kind: "progress", label: "진행", valueId: "starter-kanji-progress", value: "1 / 5" },
           { kind: "timer", label: "남은 시간", valueId: "starter-kanji-timer", value: "00:15" },
@@ -1414,7 +1416,7 @@
 
   function createKanjiMatchLayout() {
     return createMatchRoundLayout({
-      sidebarHead: "<div class=\"match-sidebar-head\"><span class=\"eyebrow\">ROUND HUD</span><h3>한자 짝맞추기</h3></div>",
+      sidebarHead: "",
       shellId: "kanji-match-options-shell",
       shellClassName: "match-options-shell",
       toggleId: "kanji-match-options-toggle",
@@ -1446,8 +1448,8 @@
         progressId: "kanji-match-progress",
         timerId: "kanji-match-timer",
         feedbackId: "kanji-match-feedback",
-        leftColumnTitle: "한자 보기",
-        rightColumnTitle: "의미 보기",
+        leftColumnTitle: "한자",
+        rightColumnTitle: "의미",
         leftListId: "kanji-match-left-list",
         rightListId: "kanji-match-right-list"
       },

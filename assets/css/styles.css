@@ -2065,6 +2065,10 @@ button {
   margin-inline: auto;
 }
 
+.kanji-page-heading {
+  margin-bottom: 24px;
+}
+
 .kanji-tab-panel {
   min-width: 0;
 }

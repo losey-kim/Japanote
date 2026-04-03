@@ -6981,7 +6981,6 @@ function renderStarterKanjiPractice() {
   const card = document.getElementById("starter-kanji-card");
   const nextButton = document.getElementById("starter-kanji-next");
   const optionsContainer = document.getElementById("starter-kanji-options");
-  const source = document.getElementById("starter-kanji-source");
   const progress = document.getElementById("starter-kanji-progress");
   const display = document.getElementById("starter-kanji-display");
   const displaySub = document.getElementById("starter-kanji-display-sub");
@@ -6989,7 +6988,7 @@ function renderStarterKanjiPractice() {
   const questionCount = getStarterKanjiQuestionCount();
   const current = getCurrentStarterKanjiPracticeSet();
 
-  if (!card || !nextButton || !optionsContainer || !source || !progress || !display || !displaySub) {
+  if (!card || !nextButton || !optionsContainer || !progress || !display || !displaySub) {
     return;
   }
 
@@ -7000,7 +6999,6 @@ function renderStarterKanjiPractice() {
     return;
   }
 
-  source.textContent = formatQuizLineBreaks(current.gradeLabel || current.source || "한자");
   progress.textContent = `${state.basicPracticeIndexes.kanji + 1} / ${questionCount}`;
   display.textContent = formatQuizLineBreaks(current.display);
   displaySub.textContent = formatQuizLineBreaks(current.displaySub || "");
@@ -7081,6 +7079,35 @@ function getKanjiFlashcardPlaceholder() {
           ? "아직 익힌 한자가 없어요."
           : "학년별 한자를 차근차근 익혀볼 수 있어요."
   };
+}
+
+function getKanjiPageHeading(tab = getKanjiTab(state.kanjiTab)) {
+  if (tab === "practice") {
+    return {
+      title: "한자 퀴즈",
+      description: ""
+    };
+  }
+
+  if (tab === "match") {
+    return {
+      title: "한자 짝맞추기",
+      description: ""
+    };
+  }
+
+  return {
+    title: "기초 한자, 카드와 목록으로 익혀봐요",
+    description: "학년별 한자를 차근차근 익혀볼 수 있어요."
+  };
+}
+
+function renderKanjiPageHeader(tab = getKanjiTab(state.kanjiTab)) {
+  applyPageHeading(
+    document.getElementById("kanji-heading-title"),
+    document.getElementById("kanji-heading-copy"),
+    getKanjiPageHeading(tab)
+  );
 }
 
 function renderKanjiStudyControls() {
@@ -7244,6 +7271,7 @@ function renderKanjiPageLayout() {
   const practiceView = document.getElementById("starter-kanji-practice-view");
   const resultView = document.getElementById("starter-kanji-result-view");
 
+  renderKanjiPageHeader(activeTab);
   renderStarterKanjiControls();
   renderKanjiStudyControls();
 
