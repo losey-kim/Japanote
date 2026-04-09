@@ -5355,7 +5355,7 @@ function getStudyListStatusShortLabel(status) {
 }
 
 function saveKanjiToReviewList(id) {
-  ensureReviewList("kanji", id);
+  setStudyListStatus("kanji", id, "review");
 }
 
 function removeKanjiFromReviewList(id) {
@@ -5363,7 +5363,7 @@ function removeKanjiFromReviewList(id) {
 }
 
 function saveKanjiToMasteredList(id) {
-  ensureMasteredList("kanji", id);
+  setStudyListStatus("kanji", id, "mastered");
 }
 
 function removeKanjiFromMasteredList(id) {
@@ -5387,7 +5387,7 @@ function setKanjiListStatus(id, status) {
 }
 
 function saveGrammarToReviewList(id) {
-  ensureReviewList("grammar", id);
+  setStudyListStatus("grammar", id, "review");
 }
 
 function removeGrammarFromReviewList(id) {
@@ -5395,7 +5395,7 @@ function removeGrammarFromReviewList(id) {
 }
 
 function saveGrammarToMasteredList(id) {
-  ensureMasteredList("grammar", id);
+  setStudyListStatus("grammar", id, "mastered");
 }
 
 function removeGrammarFromMasteredList(id) {
@@ -5785,8 +5785,54 @@ function renderKanjiPracticeResultFilterOptions(counts) {
   });
 }
 
+function renderKanjiPracticeBulkActionButtons(results) {
+  const reviewActionButton = document.getElementById("kanji-practice-result-bulk-action");
+  const reviewActionLabel = document.getElementById("kanji-practice-result-bulk-label");
+  const reviewActionIcon = reviewActionButton?.querySelector(".material-symbols-rounded");
+  const masteredActionButton = document.getElementById("kanji-practice-result-mastered-action");
+  const masteredActionLabel = document.getElementById("kanji-practice-result-mastered-label");
+  const masteredActionIcon = masteredActionButton?.querySelector(".material-symbols-rounded");
+
+  renderResultBulkActionButton({
+    button: reviewActionButton,
+    label: reviewActionLabel,
+    icon: reviewActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isKanjiSavedToReviewList,
+    datasetKey: "kanjiPracticeBulkAction",
+    saveActionValue: "save-review",
+    removeActionValue: "remove-review",
+    saveLabel: "전체 다시 볼래요",
+    removeLabel: "전체 빼기",
+    emptyTitle: "지금 다시 볼래요에 담을 한자가 없어요.",
+    saveTitle: "지금 보이는 한자를 다시 볼래요 목록에 모두 담아요.",
+    removeTitle: "지금 보이는 한자를 다시 볼래요 목록에서 모두 빼요."
+  });
+  renderResultBulkActionButton({
+    button: masteredActionButton,
+    label: masteredActionLabel,
+    icon: masteredActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isKanjiSavedToMasteredList,
+    datasetKey: "kanjiPracticeMasteredBulkAction",
+    saveActionValue: "save-mastered",
+    removeActionValue: "remove-mastered",
+    saveLabel: "전체 익혔어요",
+    removeLabel: "전체 해제",
+    emptyTitle: "지금 익혔어요로 옮길 한자가 없어요.",
+    saveTitle: "지금 보이는 한자를 익혔어요 목록으로 모두 옮겨요.",
+    removeTitle: "지금 보이는 한자를 익혔어요 목록에서 모두 빼요.",
+    saveIcon: "check_circle",
+    removeIcon: "remove_done"
+  });
+}
+
 function renderKanjiPracticeBulkActionButton(results) {
-  const bulkActionButton = document.getElementById("kanji-practice-result-bulk-action");
+  return renderKanjiPracticeBulkActionButtons(results);
+  const reviewActionButton = document.getElementById("kanji-practice-result-bulk-action");
+  const masteredActionButton = document.getElementById("kanji-practice-result-mastered-action");
   const bulkActionLabel = document.getElementById("kanji-practice-result-bulk-label");
   const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
 
@@ -6584,7 +6630,9 @@ function renderResultBulkActionButton({
   removeLabel,
   emptyTitle,
   saveTitle,
-  removeTitle
+  removeTitle,
+  saveIcon = "bookmark_add",
+  removeIcon = "delete_sweep"
 }) {
   if (!button || !label || !icon) {
     return;
@@ -6604,7 +6652,7 @@ function renderResultBulkActionButton({
   button.setAttribute("aria-label", actionTitle);
   button.title = actionTitle;
   label.textContent = allSaved ? removeLabel : saveLabel;
-  icon.textContent = allSaved ? "delete_sweep" : "bookmark_add";
+  icon.textContent = allSaved ? removeIcon : saveIcon;
 }
 
 function renderStudyResultSection({
@@ -6635,25 +6683,28 @@ function renderStudyResultSection({
   return true;
 }
 
-function createQuizResultSaveButton({
+function createQuizResultActionButton({
   id,
-  saved,
+  selected,
   actionLabel,
-  datasetKey
+  datasetKey,
+  defaultIcon = "bookmark_add",
+  selectedIcon = "delete",
+  selectedClassName = "is-saved"
 }) {
   const actionButton = document.createElement("button");
   const actionIcon = document.createElement("span");
 
-  actionButton.className = `secondary-btn match-save-btn icon-only-btn${saved ? " is-saved" : ""}`;
+  actionButton.className = `secondary-btn match-save-btn icon-only-btn${selected ? ` ${selectedClassName}` : ""}`;
   actionButton.type = "button";
   actionButton.dataset[datasetKey] = id;
   actionButton.setAttribute("aria-label", actionLabel);
-  actionButton.setAttribute("aria-pressed", saved ? "true" : "false");
+  actionButton.setAttribute("aria-pressed", selected ? "true" : "false");
   actionButton.title = actionLabel;
 
   actionIcon.className = "material-symbols-rounded";
   actionIcon.setAttribute("aria-hidden", "true");
-  actionIcon.textContent = saved ? "delete" : "bookmark_add";
+  actionIcon.textContent = selected ? selectedIcon : defaultIcon;
 
   actionButton.appendChild(actionIcon);
   return actionButton;
@@ -6665,14 +6716,12 @@ function appendQuizResultItem({
   levelText,
   titleText,
   descriptionText,
-  saved,
-  saveActionLabel,
-  saveDatasetKey,
-  saveId
+  actionButtons = []
 }) {
   const article = document.createElement("article");
   const head = document.createElement("div");
   const badges = document.createElement("div");
+  const actions = document.createElement("div");
   const statusBadge = document.createElement("span");
   const levelBadge = document.createElement("span");
   const main = document.createElement("div");
@@ -6683,6 +6732,7 @@ function appendQuizResultItem({
   article.className = `match-result-item is-${status}`;
   head.className = "match-result-item-head";
   badges.className = "match-result-item-badges";
+  actions.className = "match-result-item-actions";
   statusBadge.className = `match-result-badge is-${status}`;
   statusBadge.textContent = statusLabel;
   levelBadge.className = "match-result-level";
@@ -6692,15 +6742,10 @@ function appendQuizResultItem({
   description.textContent = descriptionText;
 
   badges.append(statusBadge, levelBadge);
-  head.append(
-    badges,
-    createQuizResultSaveButton({
-      id: saveId,
-      saved,
-      actionLabel: saveActionLabel,
-      datasetKey: saveDatasetKey
-    })
-  );
+  actionButtons.forEach((actionButtonConfig) => {
+    actions.appendChild(createQuizResultActionButton(actionButtonConfig));
+  });
+  head.append(badges, actions);
   main.append(title, description);
   article.append(head, main);
   container.appendChild(article);
@@ -6787,6 +6832,7 @@ function attachBulkResultActionListener({
 
 function attachToggleResultActionListener({
   list,
+  actions = [],
   selector,
   getId,
   isSelected,
@@ -6806,22 +6852,39 @@ function attachToggleResultActionListener({
 
   markBoundListener(list, "toggle-result-click");
   list.addEventListener("click", (event) => {
-    const button = event.target.closest(selector);
+    const actionConfigs = Array.isArray(actions) && actions.length
+      ? actions
+      : [
+        {
+          selector,
+          getId,
+          isSelected,
+          selectItem,
+          unselectItem
+        }
+      ];
+    const matchedAction = actionConfigs.find((config) => {
+      const candidate = event.target.closest(config.selector);
+      return candidate && list.contains(candidate);
+    });
 
-    if (!button) {
+    if (!matchedAction) {
       return;
     }
 
-    const id = getId(button);
+    const button = event.target.closest(matchedAction.selector);
+    const id = matchedAction.getId(button);
 
     if (!id) {
       return;
     }
 
-    if (isSelected(id)) {
-      unselectItem(id);
+    // 결과 화면 상태 버튼은 같은 항목의 학습 상태를 교체할 수 있어서
+    // 각 버튼이 자신이 담당하는 상태만 토글해도 최종 상태는 하나만 남도록 처리한다.
+    if (matchedAction.isSelected(id)) {
+      matchedAction.unselectItem(id);
     } else {
-      selectItem(id);
+      matchedAction.selectItem(id);
     }
 
     if (shouldUpdateStudyStreak) {
@@ -6843,16 +6906,17 @@ function renderKanjiPracticeResults() {
   const empty = document.getElementById("kanji-practice-result-empty");
   const list = document.getElementById("kanji-practice-result-list");
   const filterSelect = document.getElementById("kanji-practice-result-filter");
-  const bulkActionButton = document.getElementById("kanji-practice-result-bulk-action");
+  const reviewActionButton = document.getElementById("kanji-practice-result-bulk-action");
+  const masteredActionButton = document.getElementById("kanji-practice-result-mastered-action");
   const counts = getKanjiPracticeResultCounts();
   const filteredResults = getFilteredKanjiPracticeResults();
 
-  if (!total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
+  if (!total || !correct || !wrong || !empty || !list || !filterSelect || !reviewActionButton || !masteredActionButton) {
     return;
   }
 
   renderKanjiPracticeResultFilterOptions(counts);
-  renderKanjiPracticeBulkActionButton(filteredResults);
+  renderKanjiPracticeBulkActionButtons(filteredResults);
 
   const hasResults = renderStudyResultSection({
     total,
@@ -6866,7 +6930,8 @@ function renderKanjiPracticeResults() {
     renderItems: (results, container) => {
       results.forEach((item) => {
         const saved = isKanjiSavedToReviewList(item.id);
-        const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+        const reviewSelected = saved;
+        const masteredSelected = isKanjiSavedToMasteredList(item.id);
 
         appendQuizResultItem({
           container,
@@ -6874,10 +6939,26 @@ function renderKanjiPracticeResults() {
           levelText: item.source || "한자",
           titleText: item.reading ? `${item.char || "-"} · ${item.reading}` : item.char || "-",
           descriptionText: getKanjiPracticeResultDetail(item),
-          saved,
-          saveActionLabel: actionLabel,
-          saveDatasetKey: "kanjiResultSave",
-          saveId: item.id
+          actionButtons: [
+            {
+              id: item.id,
+              selected: reviewSelected,
+              actionLabel: reviewSelected ? "다시 볼래요에서 빼기" : "다시 볼래요로 넘기기",
+              datasetKey: "kanjiResultReview",
+              defaultIcon: "bookmark_add",
+              selectedIcon: "delete",
+              selectedClassName: "is-saved"
+            },
+            {
+              id: item.id,
+              selected: masteredSelected,
+              actionLabel: masteredSelected ? "익혔어요에서 빼기" : "익혔어요로 넘기기",
+              datasetKey: "kanjiResultMastered",
+              defaultIcon: "check_circle",
+              selectedIcon: "task_alt",
+              selectedClassName: "is-mastered"
+            }
+          ]
         });
       });
     }
@@ -7904,7 +7985,7 @@ function getVocabQuizEmptyText(items = getVocabQuizItems()) {
 }
 
 function saveWordToReviewList(id) {
-  ensureReviewList("vocab", id);
+  setStudyListStatus("vocab", id, "review");
 }
 
 function removeWordFromReviewList(id) {
@@ -7916,7 +7997,7 @@ function isWordSavedToReviewList(id) {
 }
 
 function saveWordToMasteredList(id) {
-  ensureMasteredList("vocab", id);
+  setStudyListStatus("vocab", id, "mastered");
 }
 
 function removeWordFromMasteredList(id) {
@@ -8044,8 +8125,52 @@ function renderVocabQuizResultFilterOptions(counts) {
   });
 }
 
+function renderVocabQuizBulkActionButtons(results) {
+  const reviewActionButton = document.getElementById("vocab-quiz-result-bulk-action");
+  const reviewActionLabel = document.getElementById("vocab-quiz-result-bulk-label");
+  const reviewActionIcon = reviewActionButton?.querySelector(".material-symbols-rounded");
+  const masteredActionButton = document.getElementById("vocab-quiz-result-mastered-action");
+  const masteredActionLabel = document.getElementById("vocab-quiz-result-mastered-label");
+  const masteredActionIcon = masteredActionButton?.querySelector(".material-symbols-rounded");
+
+  renderResultBulkActionButton({
+    button: reviewActionButton,
+    label: reviewActionLabel,
+    icon: reviewActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isWordSavedToReviewList,
+    datasetKey: "vocabQuizBulkAction",
+    saveLabel: "전체 담기",
+    removeLabel: "전체 빼기",
+    emptyTitle: "지금 담을 단어가 없어요.",
+    saveTitle: "지금 보이는 단어를 다시 볼래요 목록에 모두 담아요.",
+    removeTitle: "지금 보이는 단어를 다시 볼래요 목록에서 모두 빼요."
+  });
+  renderResultBulkActionButton({
+    button: masteredActionButton,
+    label: masteredActionLabel,
+    icon: masteredActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isWordSavedToMasteredList,
+    datasetKey: "vocabQuizMasteredBulkAction",
+    saveActionValue: "save-mastered",
+    removeActionValue: "remove-mastered",
+    saveLabel: "전체 익혔어요",
+    removeLabel: "전체 해제",
+    emptyTitle: "지금 익혔어요로 옮길 단어가 없어요.",
+    saveTitle: "지금 보이는 단어를 익혔어요 목록으로 모두 옮겨요.",
+    removeTitle: "지금 보이는 단어를 익혔어요 목록에서 모두 빼요.",
+    saveIcon: "check_circle",
+    removeIcon: "remove_done"
+  });
+}
+
 function renderVocabQuizBulkActionButton(results) {
-  const bulkActionButton = document.getElementById("vocab-quiz-result-bulk-action");
+  return renderVocabQuizBulkActionButtons(results);
+  const reviewActionButton = document.getElementById("vocab-quiz-result-bulk-action");
+  const masteredActionButton = document.getElementById("vocab-quiz-result-mastered-action");
   const bulkActionLabel = document.getElementById("vocab-quiz-result-bulk-label");
   const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
 
@@ -8092,16 +8217,17 @@ function renderVocabQuizResults() {
   const empty = document.getElementById("vocab-quiz-result-empty");
   const list = document.getElementById("vocab-quiz-result-list");
   const filterSelect = document.getElementById("vocab-quiz-result-filter");
-  const bulkActionButton = document.getElementById("vocab-quiz-result-bulk-action");
+  const reviewActionButton = document.getElementById("vocab-quiz-result-bulk-action");
+  const masteredActionButton = document.getElementById("vocab-quiz-result-mastered-action");
   const counts = getVocabQuizResultCounts();
   const filteredResults = getFilteredVocabQuizResults();
 
-  if (!total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
+  if (!total || !correct || !wrong || !empty || !list || !filterSelect || !reviewActionButton || !masteredActionButton) {
     return;
   }
 
   renderVocabQuizResultFilterOptions(counts);
-  renderVocabQuizBulkActionButton(filteredResults);
+  renderVocabQuizBulkActionButtons(filteredResults);
 
   const hasResults = renderStudyResultSection({
     total,
@@ -8115,7 +8241,8 @@ function renderVocabQuizResults() {
     renderItems: (results, container) => {
       results.forEach((item) => {
         const saved = isWordSavedToReviewList(item.id);
-        const actionLabel = saved ? "다시 볼래요에서 빼기" : "다시 볼래요에 담기";
+        const reviewSelected = saved;
+        const masteredSelected = isWordSavedToMasteredList(item.id);
 
         appendQuizResultItem({
           container,
@@ -8123,10 +8250,26 @@ function renderVocabQuizResults() {
           levelText: item.level || getVocabLevelLabel(),
           titleText: item.reading ? `${item.word} · ${item.reading}` : item.word,
           descriptionText: item.meaning,
-          saved,
-          saveActionLabel: actionLabel,
-          saveDatasetKey: "vocabQuizSave",
-          saveId: item.id
+          actionButtons: [
+            {
+              id: item.id,
+              selected: reviewSelected,
+              actionLabel: reviewSelected ? "다시 볼래요에서 빼기" : "다시 볼래요로 넘기기",
+              datasetKey: "vocabQuizReview",
+              defaultIcon: "bookmark_add",
+              selectedIcon: "delete",
+              selectedClassName: "is-saved"
+            },
+            {
+              id: item.id,
+              selected: masteredSelected,
+              actionLabel: masteredSelected ? "익혔어요에서 빼기" : "익혔어요로 넘기기",
+              datasetKey: "vocabQuizMastered",
+              defaultIcon: "check_circle",
+              selectedIcon: "task_alt",
+              selectedClassName: "is-mastered"
+            }
+          ]
         });
       });
     }
@@ -10791,6 +10934,7 @@ function attachEventListeners() {
   const vocabQuizPartSelect = document.getElementById("vocab-quiz-part-select");
   const vocabQuizResultFilter = document.getElementById("vocab-quiz-result-filter");
   const vocabQuizResultBulkAction = document.getElementById("vocab-quiz-result-bulk-action");
+  const vocabQuizResultMasteredAction = document.getElementById("vocab-quiz-result-mastered-action");
   const vocabQuizResultList = document.getElementById("vocab-quiz-result-list");
   const vocabQuizNext = document.getElementById("vocab-quiz-next");
   const vocabQuizRestart = document.getElementById("vocab-quiz-restart");
@@ -10850,6 +10994,7 @@ function attachEventListeners() {
   const kanjiPracticeNext = document.getElementById("kanji-practice-next");
   const kanjiPracticeRestart = document.getElementById("kanji-practice-restart");
   const kanjiPracticeResultBulkAction = document.getElementById("kanji-practice-result-bulk-action");
+  const kanjiPracticeResultMasteredAction = document.getElementById("kanji-practice-result-mastered-action");
   const kanjiPracticeResultFilter = document.getElementById("kanji-practice-result-filter");
   const kanjiPracticeResultList = document.getElementById("kanji-practice-result-list");
   const kanjiTabButtons = document.querySelectorAll("[data-kanji-tab]");
@@ -10950,13 +11095,33 @@ function attachEventListeners() {
     saveItem: saveWordToReviewList,
     render: renderVocabPage
   });
+  attachBulkResultActionListener({
+    button: vocabQuizResultMasteredAction,
+    getResults: getFilteredVocabQuizResults,
+    datasetKey: "vocabQuizMasteredBulkAction",
+    removeActionValue: "remove-mastered",
+    removeItem: removeWordFromMasteredList,
+    saveItem: saveWordToMasteredList,
+    render: renderVocabPage
+  });
   attachToggleResultActionListener({
     list: vocabQuizResultList,
-    selector: "[data-vocab-quiz-save]",
-    getId: (button) => button.dataset.vocabQuizSave,
-    isSelected: isWordSavedToReviewList,
-    selectItem: saveWordToReviewList,
-    unselectItem: removeWordFromReviewList,
+    actions: [
+      {
+        selector: "[data-vocab-quiz-review]",
+        getId: (button) => button.dataset.vocabQuizReview,
+        isSelected: isWordSavedToReviewList,
+        selectItem: saveWordToReviewList,
+        unselectItem: removeWordFromReviewList
+      },
+      {
+        selector: "[data-vocab-quiz-mastered]",
+        getId: (button) => button.dataset.vocabQuizMastered,
+        isSelected: isWordSavedToMasteredList,
+        selectItem: saveWordToMasteredList,
+        unselectItem: removeWordFromMasteredList
+      }
+    ],
     render: renderVocabPage
   });
   attachClickListener(vocabQuizNext, nextVocabQuizQuestion);
@@ -11135,6 +11300,15 @@ function attachEventListeners() {
     saveItem: saveKanjiToReviewList,
     render: renderKanjiPageLayout
   });
+  attachBulkResultActionListener({
+    button: kanjiPracticeResultMasteredAction,
+    getResults: getFilteredKanjiPracticeResults,
+    datasetKey: "kanjiPracticeMasteredBulkAction",
+    removeActionValue: "remove-mastered",
+    removeItem: removeKanjiFromMasteredList,
+    saveItem: saveKanjiToMasteredList,
+    render: renderKanjiPageLayout
+  });
   attachResultFilterSelectListener({
     select: kanjiPracticeResultFilter,
     getNextValue: getKanjiPracticeResultFilter,
@@ -11146,11 +11320,22 @@ function attachEventListeners() {
   });
   attachToggleResultActionListener({
     list: kanjiPracticeResultList,
-    selector: "[data-kanji-result-save]",
-    getId: (button) => button.dataset.kanjiResultSave,
-    isSelected: isKanjiSavedToReviewList,
-    selectItem: saveKanjiToReviewList,
-    unselectItem: removeKanjiFromReviewList,
+    actions: [
+      {
+        selector: "[data-kanji-result-review]",
+        getId: (button) => button.dataset.kanjiResultReview,
+        isSelected: isKanjiSavedToReviewList,
+        selectItem: saveKanjiToReviewList,
+        unselectItem: removeKanjiFromReviewList
+      },
+      {
+        selector: "[data-kanji-result-mastered]",
+        getId: (button) => button.dataset.kanjiResultMastered,
+        isSelected: isKanjiSavedToMasteredList,
+        selectItem: saveKanjiToMasteredList,
+        unselectItem: removeKanjiFromMasteredList
+      }
+    ],
     render: renderKanjiPageLayout
   });
   attachValueButtonListeners(kanjiTabButtons, (button) => button.dataset.kanjiTab, setKanjiTab);

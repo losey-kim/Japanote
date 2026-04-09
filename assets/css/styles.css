@@ -4170,7 +4170,7 @@ button {
   align-items: stretch;
   justify-content: flex-start;
   gap: 12px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .match-result-title {
@@ -4228,6 +4228,13 @@ button {
   align-self: stretch;
 }
 
+.match-result-bulk-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .match-result-bulk-btn:disabled {
   opacity: 0.62;
   cursor: default;
@@ -4268,7 +4275,14 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+}
+
+.match-result-item-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .match-result-item-badges {
@@ -4342,6 +4356,12 @@ button {
   color: #9b3a24;
   border-color: rgba(222, 107, 72, 0.24);
   background: rgba(255, 244, 240, 0.95);
+}
+
+.match-save-btn.is-mastered {
+  color: #256a50;
+  border-color: rgba(95, 174, 139, 0.24);
+  background: rgba(240, 251, 245, 0.95);
 }
 
 @keyframes match-card-wrong {
@@ -6761,6 +6781,13 @@ html[data-theme="dark"] .match-save-btn.is-saved {
   color: #fff0eb;
   border-color: rgba(211, 104, 76, 0.28);
   background: rgba(211, 104, 76, 0.18);
+}
+
+html:not([data-theme="light"]) .match-save-btn.is-mastered,
+html[data-theme="dark"] .match-save-btn.is-mastered {
+  color: #dcfff0;
+  border-color: rgba(95, 174, 139, 0.28);
+  background: rgba(95, 174, 139, 0.18);
 }
 
 @media (prefers-color-scheme: dark) {

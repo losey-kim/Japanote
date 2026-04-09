@@ -347,6 +347,8 @@
   const QUIZ_RESULT_ALL_ACTION_LABEL = "전체 담기";
   const QUIZ_RESULT_RETRY_ALL_ACTION_LABEL = "전체 다시 볼래요";
 
+  const QUIZ_RESULT_MASTERED_ACTION_LABEL = "전체 익혔어요";
+
   function createPracticeEmptyMessage({ id, text = QUIZ_EMPTY_MESSAGE }) {
     return `<p class="vocab-list-empty" id="${escapeHtml(id)}" hidden>${escapeHtml(text)}</p>`;
   }
@@ -992,6 +994,7 @@
     resultClassName = "match-result-view",
     resultFilterAriaLabel,
     resultBulkActionLabel = QUIZ_RESULT_ALL_ACTION_LABEL,
+    resultBulkActions = [],
     resultFooterHtml = ""
   }) {
     const viewClassAttribute = viewClassName ? ` class="${escapeHtml(viewClassName)}"` : "";
@@ -1014,6 +1017,7 @@
             className: resultClassName,
             filterAriaLabel: resultFilterAriaLabel,
             bulkActionLabel: resultBulkActionLabel,
+            bulkActions: resultBulkActions,
             footerHtml: resultFooterHtml
           })}
         </div>
@@ -1032,14 +1036,24 @@
     emptyText,
     listId,
     bulkAction,
+    bulkActions = [],
     footerHtml = ""
   }) {
-    const bulkActionMarkup = bulkAction
+    const resolvedBulkActions = Array.isArray(bulkActions) && bulkActions.length
+      ? bulkActions
+      : bulkAction
+        ? [bulkAction]
+        : [];
+    const bulkActionMarkup = resolvedBulkActions.length
       ? `
-        <button class="secondary-btn button-with-icon match-result-bulk-btn" id="${escapeHtml(bulkAction.id)}" type="button">
-          <span class="material-symbols-rounded" aria-hidden="true">${escapeHtml(bulkAction.icon || "bookmark_add")}</span>
-          <span id="${escapeHtml(bulkAction.labelId)}">${escapeHtml(bulkAction.label)}</span>
-        </button>
+        <div class="match-result-bulk-actions">
+          ${resolvedBulkActions.map((action) => `
+            <button class="secondary-btn button-with-icon match-result-bulk-btn" id="${escapeHtml(action.id)}" type="button">
+              <span class="material-symbols-rounded" aria-hidden="true">${escapeHtml(action.icon || "bookmark_add")}</span>
+              <span id="${escapeHtml(action.labelId)}">${escapeHtml(action.label)}</span>
+            </button>
+          `).join("")}
+        </div>
       `
       : "";
 
@@ -1077,8 +1091,19 @@
     filterAriaLabel,
     emptyText = QUIZ_RESULT_EMPTY_MESSAGE,
     bulkActionLabel = QUIZ_RESULT_ALL_ACTION_LABEL,
+    bulkActions = [],
     footerHtml = ""
   }) {
+    const resolvedBulkActions = Array.isArray(bulkActions) && bulkActions.length
+      ? bulkActions
+      : [
+        {
+          id: `${idPrefix}-result-bulk-action`,
+          labelId: `${idPrefix}-result-bulk-label`,
+          label: bulkActionLabel
+        }
+      ];
+
     return createResultView({
       viewId: `${idPrefix}-result-view`,
       className,
@@ -1090,11 +1115,7 @@
       emptyId: `${idPrefix}-result-empty`,
       emptyText,
       listId: `${idPrefix}-result-list`,
-      bulkAction: {
-        id: `${idPrefix}-result-bulk-action`,
-        labelId: `${idPrefix}-result-bulk-label`,
-        label: bulkActionLabel
-      },
+      bulkActions: resolvedBulkActions,
       footerHtml
     });
   }
@@ -1238,7 +1259,19 @@
       },
       resultPrefix: "vocab-quiz",
       resultFilterAriaLabel: "단어 퀴즈 결과 필터",
-      resultBulkActionLabel: QUIZ_RESULT_ALL_ACTION_LABEL
+      resultBulkActions: [
+        {
+          id: "vocab-quiz-result-bulk-action",
+          labelId: "vocab-quiz-result-bulk-label",
+          label: QUIZ_RESULT_ALL_ACTION_LABEL
+        },
+        {
+          id: "vocab-quiz-result-mastered-action",
+          labelId: "vocab-quiz-result-mastered-label",
+          label: QUIZ_RESULT_MASTERED_ACTION_LABEL,
+          icon: "check_circle"
+        }
+      ]
     });
   }
   function createKanjiPracticeLayout() {
@@ -1326,7 +1359,19 @@
       resultPrefix: "kanji-practice",
       resultClassName: "match-result-view kanji-result-view",
       resultFilterAriaLabel: "한자 퀴즈 결과 필터",
-      resultBulkActionLabel: QUIZ_RESULT_RETRY_ALL_ACTION_LABEL,
+      resultBulkActions: [
+        {
+          id: "kanji-practice-result-bulk-action",
+          labelId: "kanji-practice-result-bulk-label",
+          label: QUIZ_RESULT_RETRY_ALL_ACTION_LABEL
+        },
+        {
+          id: "kanji-practice-result-mastered-action",
+          labelId: "kanji-practice-result-mastered-label",
+          label: QUIZ_RESULT_MASTERED_ACTION_LABEL,
+          icon: "check_circle"
+        }
+      ],
       resultFooterHtml:
         '<div class="quiz-actions"><button class="primary-btn button-with-icon" id="kanji-practice-restart" type="button"><span class="material-symbols-rounded" aria-hidden="true">autorenew</span><span>다시 해볼까요?</span></button></div>'
     });
