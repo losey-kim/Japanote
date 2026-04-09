@@ -716,27 +716,7 @@
         prevId: "flashcard-prev",
         nextId: "flashcard-next",
         againId: "flashcard-again",
-        masteredId: "flashcard-mastered",
-        leadingActionButtons: [
-          {
-            id: "flashcard-pronunciation",
-            className: "secondary-btn button-with-icon vocab-audio-btn",
-            label: "\uC74C\uC131 \uB4E3\uAE30",
-            icon: "volume_up",
-            attributes: {
-              hidden: true,
-              "data-audio-available": "false",
-              "aria-pressed": "false",
-              "aria-label": "\uB2E8\uC5B4 \uC74C\uC131 \uB4E3\uAE30"
-            },
-            iconAttributes: {
-              "data-audio-button-icon": true
-            },
-            labelAttributes: {
-              "data-audio-button-label": true
-            }
-          }
-        ]
+        masteredId: "flashcard-mastered"
       }),
       listView: createCatalogListViewConfig({ scope: "vocab" })
     },
