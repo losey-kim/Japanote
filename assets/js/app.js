@@ -729,10 +729,11 @@ const readingCountOptions = [5, 10, 15, 20];
 const quizDurationOptions = [10, 15, 20, 0];
 const grammarPracticeDurationOptions = [15, 25, 35, 0];
 const readingDurationOptions = [45, 60, 90, 0];
-const kanjiQuizFieldOptions = ["display", "reading"];
+const kanjiQuizFieldOptions = ["display", "reading", "meaning"];
 const kanjiQuizFieldLabels = {
   display: "한자",
-  reading: "발음"
+  reading: "발음",
+  meaning: "\uB73B"
 };
 const vocabPartAllValue = allLevelValue;
 const selectableStudyLevels = [...contentLevels, allLevelValue];
@@ -796,12 +797,17 @@ function getKanjiPracticeQuizField(value, fallback = "display") {
   return kanjiQuizFieldOptions.includes(value) ? value : fallback;
 }
 
+function getAlternateKanjiPracticeField(field) {
+  const normalizedField = getKanjiPracticeQuizField(field);
+  return kanjiQuizFieldOptions.find((candidate) => candidate !== normalizedField) || "display";
+}
+
 function getDefaultKanjiPracticeOptionField(questionField) {
-  return getKanjiPracticeQuizField(questionField) === "display" ? "reading" : "display";
+  return getAlternateKanjiPracticeField(questionField);
 }
 
 function getDefaultKanjiPracticeQuestionField(optionField) {
-  return getKanjiPracticeQuizField(optionField) === "display" ? "reading" : "display";
+  return getAlternateKanjiPracticeField(optionField);
 }
 
 function getKanjiPracticeQuestionField(value = state?.kanjiPracticeQuestionField) {
@@ -814,6 +820,10 @@ function getKanjiPracticeOptionField(value = state?.kanjiPracticeOptionField, qu
 
   if (nextField === normalizedQuestionField) {
     nextField = getDefaultKanjiPracticeOptionField(normalizedQuestionField);
+  }
+
+  if (nextField === normalizedQuestionField) {
+    nextField = kanjiQuizFieldOptions.find((field) => field !== normalizedQuestionField) || "reading";
   }
 
   return nextField;
@@ -832,15 +842,30 @@ function getKanjiPracticeQuizConfigLabel(
 
 function getKanjiPracticeItemValue(item, field) {
   const normalizedField = getKanjiPracticeQuizField(field);
-  return normalizedField === "reading"
-    ? normalizeQuizText(item?.reading)
-    : normalizeQuizDisplay(item?.display);
+
+  if (normalizedField === "meaning") {
+    return normalizeKanjiMeaning(item?.meaning);
+  }
+
+  return normalizedField === "reading" ? normalizeQuizText(item?.reading) : normalizeQuizDisplay(item?.display);
 }
 
-function getKanjiPracticePrompt(questionField = state?.kanjiPracticeQuestionField) {
-  return getKanjiPracticeQuestionField(questionField) === "reading"
-    ? "이 발음, 어떤 한자일까요?"
-    : "이 한자, 어떻게 읽을까요?";
+function getKanjiPracticePrompt(
+  questionField = state?.kanjiPracticeQuestionField,
+  optionField = state?.kanjiPracticeOptionField
+) {
+  const normalizedQuestionField = getKanjiPracticeQuestionField(questionField);
+  const normalizedOptionField = getKanjiPracticeOptionField(optionField, normalizedQuestionField);
+
+  if (normalizedQuestionField === "display") {
+    return normalizedOptionField === "meaning" ? "이 한자, 무슨 뜻일까요?" : "이 한자, 어떻게 읽을까요?";
+  }
+
+  if (normalizedQuestionField === "reading") {
+    return normalizedOptionField === "meaning" ? "이 발음, 무슨 뜻일까요?" : "이 발음, 어떤 한자일까요?";
+  }
+
+  return normalizedOptionField === "reading" ? "이 뜻, 어떤 발음일까요?" : "이 뜻, 어떤 한자일까요?";
 }
 
 function normalizeKanjiMeaning(value) {
@@ -849,7 +874,12 @@ function normalizeKanjiMeaning(value) {
 
 function getKanjiMeaningDisplaySub(meaning) {
   const normalizedMeaning = normalizeKanjiMeaning(meaning);
-  return normalizedMeaning ? `\uB73B: ${normalizedMeaning}` : "";
+  return normalizedMeaning;
+}
+
+function getKanjiPracticeDisplaySub(item, questionField = state?.kanjiPracticeQuestionField) {
+  // 한자 퀴즈는 하단 보조 영역을 비워 두고 문제 본문과 보기만으로 판단하게 한다.
+  return "";
 }
 
 function getKanjiFlashcardReadingText(item) {
@@ -3929,6 +3959,8 @@ let activeVocabQuizQuestions = [];
 let activeVocabQuizSignature = "";
 let activeVocabQuizResults = [];
 let activeKanjiPracticeQuestions = [];
+let activeGrammarPracticeQuestions = [];
+let activeReadingPracticeQuestions = [];
 const kanjiPracticeResultFilterLabels = {
   all: "전체",
   correct: "정답",
@@ -5671,9 +5703,9 @@ function buildKanjiPracticeQuestion(item, pool = getVisibleKanjiItems(), config 
     baseReading: item.reading,
     questionField,
     optionField,
-    prompt: getKanjiPracticePrompt(questionField),
+    prompt: getKanjiPracticePrompt(questionField, optionField),
     display: getKanjiPracticeItemValue(item, questionField),
-    displaySub: questionField === "display" ? getKanjiMeaningDisplaySub(item.meaning) : "",
+    displaySub: getKanjiPracticeDisplaySub(item, questionField),
     options,
     answer
   };
@@ -7047,11 +7079,13 @@ function renderKanjiPracticeControls() {
     selectConfigs: [
       {
         element: questionFieldSelect,
-        value: activeQuestionField
+        value: activeQuestionField,
+        populate: populateKanjiPracticeQuizFieldSelect
       },
       {
         element: optionFieldSelect,
-        value: activeOptionField
+        value: activeOptionField,
+        populate: populateKanjiPracticeQuizFieldSelect
       },
       {
         element: collectionSelect,
@@ -8661,6 +8695,23 @@ function populateVocabQuizFieldSelect(select, activeField) {
   select.value = getVocabQuizField(activeField);
 }
 
+function populateKanjiPracticeQuizFieldSelect(select, activeField) {
+  if (!select) {
+    return;
+  }
+
+  select.innerHTML = "";
+
+  kanjiQuizFieldOptions.forEach((field) => {
+    const option = document.createElement("option");
+    option.value = field;
+    option.textContent = getKanjiPracticeFieldLabel(field);
+    select.appendChild(option);
+  });
+
+  select.value = getKanjiPracticeQuizField(activeField);
+}
+
 function renderVocabStudyControls(counts, availableParts, activePart) {
   const levelSelect = document.getElementById("vocab-level-select");
   const filterSelect = document.getElementById("vocab-filter-select");
@@ -9599,6 +9650,7 @@ function setGrammarPracticeDuration(duration) {
 }
 
 function resetGrammarPracticeSessionState(resetIndex = false) {
+  activeGrammarPracticeQuestions = [];
   grammarPracticeState.results = [];
   grammarPracticeState.showResults = false;
   grammarPracticeState.resultFilter = "all";
@@ -9687,15 +9739,84 @@ function getPracticeLevelIndex(indexes, activeLevel) {
   return Number.isFinite(rawIndex) ? rawIndex : 0;
 }
 
-function getCurrentGrammarPracticeSet() {
-  const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
-  const sets = getVisibleGrammarPracticeSets(activeLevel);
-  const currentIndex = getPracticeLevelIndex(state.grammarPracticeIndexes, activeLevel) % (sets.length || 1);
+function buildFixedPracticeSessionItems(items = [], count = 0, startIndex = 0, allowRepeat = false) {
+  const pool = Array.isArray(items) ? items.filter(Boolean) : [];
+  const requestedCount = Math.max(0, Number(count) || 0);
+  const rawStartIndex = Number.isFinite(Number(startIndex)) ? Math.max(0, Number(startIndex)) : 0;
 
-  if (!sets.length) {
-    return null;
+  if (!pool.length || !requestedCount) {
+    return [];
   }
-  return sets[currentIndex];
+
+  // 세션 시작 시 현재 인덱스 기준으로 문제 배열을 고정해 두면 진행 중 렌더마다 문제가 바뀌지 않는다.
+  const questionCount = allowRepeat ? requestedCount : Math.min(requestedCount, pool.length);
+  const normalizedStartIndex = rawStartIndex % pool.length;
+
+  return Array.from({ length: questionCount }, (_, offset) => pool[(normalizedStartIndex + offset) % pool.length]);
+}
+
+function buildGrammarPracticeQuestionSet(
+  level = state?.grammarPracticeLevel,
+  filter = state?.grammarFilter,
+  count = state?.grammarPracticeCount
+) {
+  const activeLevel = getGrammarPracticeLevel(level);
+  const sets = getVisibleGrammarPracticeSets(activeLevel, filter);
+  const questionCount = getGrammarPracticeQuestionLimit(activeLevel, filter, count);
+  const startIndex = getPracticeLevelIndex(state.grammarPracticeIndexes, activeLevel);
+
+  return buildFixedPracticeSessionItems(sets, questionCount, startIndex);
+}
+
+function startNewGrammarPracticeSession() {
+  const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
+
+  resetGrammarPracticeSessionState();
+  state.grammarPracticeLevel = activeLevel;
+  activeGrammarPracticeQuestions = buildGrammarPracticeQuestionSet(
+    activeLevel,
+    state.grammarFilter,
+    state.grammarPracticeCount
+  );
+
+  if (!activeGrammarPracticeQuestions.length) {
+    state.grammarPracticeStarted = false;
+    return false;
+  }
+
+  state.grammarPracticeStarted = true;
+  return true;
+}
+
+function ensureGrammarPracticeSession(force = false) {
+  if (!state.grammarPracticeStarted) {
+    return false;
+  }
+
+  const currentSessionIndex = Number.isFinite(Number(state.grammarPracticeSessionQuestionIndex))
+    ? Number(state.grammarPracticeSessionQuestionIndex)
+    : 0;
+
+  if (
+    force ||
+    !activeGrammarPracticeQuestions.length ||
+    currentSessionIndex < 0 ||
+    currentSessionIndex >= activeGrammarPracticeQuestions.length
+  ) {
+    const started = startNewGrammarPracticeSession();
+    saveState();
+    return started;
+  }
+
+  return true;
+}
+
+function getCurrentGrammarPracticeSet() {
+  const currentIndex = Number.isFinite(Number(state.grammarPracticeSessionQuestionIndex))
+    ? Number(state.grammarPracticeSessionQuestionIndex)
+    : 0;
+
+  return activeGrammarPracticeQuestions[currentIndex] || activeGrammarPracticeQuestions[0] || null;
 }
 
 function renderGrammarPracticeResults() {
@@ -9771,8 +9892,9 @@ function renderGrammarPractice() {
   const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
   const activeDuration = getGrammarPracticeDuration(state.grammarPracticeDuration);
   const sets = getVisibleGrammarPracticeSets(activeLevel);
-  const current = getCurrentGrammarPracticeSet();
-  const activeCount = getGrammarPracticeQuestionLimit(activeLevel, state.grammarFilter, state.grammarPracticeCount);
+  const activeCount = state.grammarPracticeStarted
+    ? activeGrammarPracticeQuestions.length
+    : getGrammarPracticeQuestionLimit(activeLevel, state.grammarFilter, state.grammarPracticeCount);
   const currentSessionIndex = Number.isFinite(Number(state.grammarPracticeSessionQuestionIndex))
     ? Number(state.grammarPracticeSessionQuestionIndex)
     : 0;
@@ -9816,6 +9938,20 @@ function renderGrammarPractice() {
     return;
   }
 
+  if (!ensureGrammarPracticeSession()) {
+    stopQuizSessionTimer("grammar");
+    setQuizSessionDuration("grammar", activeDuration);
+    empty.hidden = false;
+    practiceView.hidden = true;
+    resultView.hidden = true;
+    empty.textContent = getGrammarEmptyMessage(getGrammarFilter(), activeLevel);
+    renderQuizSessionHud("grammar");
+    return;
+  }
+
+  const current = getCurrentGrammarPracticeSet();
+  const questionCount = activeGrammarPracticeQuestions.length;
+
   if (currentSessionIndex >= activeCount) {
     grammarPracticeState.showResults = true;
     state.grammarPracticeStarted = false;
@@ -9825,7 +9961,7 @@ function renderGrammarPractice() {
     return;
   }
 
-  if (!current || !sets?.length) {
+  if (!current || !questionCount) {
     stopQuizSessionTimer("grammar");
     setQuizSessionDuration("grammar", activeDuration);
     empty.hidden = false;
@@ -9841,12 +9977,12 @@ function renderGrammarPractice() {
   resultView.hidden = true;
 
   progress.textContent =
-    `${currentSessionIndex + 1} / ${activeCount}`;
+    `${currentSessionIndex + 1} / ${questionCount}`;
   sentence.textContent = current.sentence;
   applyDisplayTextSize(sentence);
   feedback.textContent = "";
   explanation.textContent = "";
-  nextButton.textContent = currentSessionIndex >= activeCount - 1 ? "결과 보기" : "다음 문제 보기";
+  nextButton.textContent = currentSessionIndex >= questionCount - 1 ? "결과 보기" : "다음 문제 보기";
   nextButton.disabled = true;
   delete optionsContainer.dataset.answered;
 
@@ -9869,7 +10005,7 @@ function handleGrammarPracticeAnswer(index) {
   const options = document.querySelectorAll(".grammar-practice-option");
   const alreadyAnswered = hasAnsweredChoiceOptions(options);
   const nextButton = document.getElementById("grammar-practice-next");
-  const activeCount = getGrammarPracticeQuestionLimit(state.grammarPracticeLevel, state.grammarFilter, state.grammarPracticeCount);
+  const activeCount = activeGrammarPracticeQuestions.length;
   const isLastQuestion = state.grammarPracticeSessionQuestionIndex >= activeCount - 1;
 
   if (alreadyAnswered || quizSessions.grammar.isPaused) {
@@ -9911,7 +10047,7 @@ function handleGrammarPracticeTimeout() {
   const options = document.querySelectorAll(".grammar-practice-option");
   const alreadyAnswered = hasAnsweredChoiceOptions(options);
   const nextButton = document.getElementById("grammar-practice-next");
-  const activeCount = getGrammarPracticeQuestionLimit(state.grammarPracticeLevel, state.grammarFilter, state.grammarPracticeCount);
+  const activeCount = activeGrammarPracticeQuestions.length;
   const isLastQuestion = state.grammarPracticeSessionQuestionIndex >= activeCount - 1;
 
   if (alreadyAnswered) {
@@ -9946,7 +10082,7 @@ function nextGrammarPracticeSet() {
   const nextButton = document.getElementById("grammar-practice-next");
   const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
   const sets = getVisibleGrammarPracticeSets(activeLevel);
-  const questionLimit = getGrammarPracticeQuestionLimit(activeLevel, state.grammarFilter, state.grammarPracticeCount);
+  const questionLimit = activeGrammarPracticeQuestions.length;
   const currentSessionIndex = Number.isFinite(Number(state.grammarPracticeSessionQuestionIndex))
     ? Number(state.grammarPracticeSessionQuestionIndex)
     : 0;
@@ -9980,8 +10116,7 @@ function restartGrammarPractice() {
     return;
   }
 
-  resetGrammarPracticeSessionState();
-  state.grammarPracticeStarted = true;
+  startNewGrammarPracticeSession();
   saveState();
   renderGrammarPractice();
 }
@@ -10499,6 +10634,7 @@ function invalidateReadingPracticeSession() {
 }
 
 function resetReadingPracticeSessionState() {
+  activeReadingPracticeQuestions = [];
   readingPracticeState.results = [];
   readingPracticeState.showResults = false;
   readingPracticeState.resultFilter = "all";
@@ -10565,15 +10701,60 @@ function renderReadingControls() {
   });
 }
 
-function getCurrentReadingSet() {
-  const activeLevel = getReadingLevel(state.readingLevel);
+function buildReadingPracticeQuestionSet(level = state?.readingLevel, count = state?.readingCount) {
+  const activeLevel = getReadingLevel(level);
   const sets = readingSets[activeLevel] || [];
-  const currentIndex = getPracticeLevelIndex(state.readingIndexes, activeLevel) % (sets.length || 1);
+  const questionCount = getReadingCount(count);
+  const startIndex = getPracticeLevelIndex(state.readingIndexes, activeLevel);
 
-  if (!sets.length) {
-    return null;
+  return buildFixedPracticeSessionItems(sets, questionCount, startIndex, true);
+}
+
+function startNewReadingPracticeSession() {
+  const activeLevel = getReadingLevel(state.readingLevel);
+
+  resetReadingPracticeSessionState();
+  state.readingLevel = activeLevel;
+  activeReadingPracticeQuestions = buildReadingPracticeQuestionSet(activeLevel, state.readingCount);
+
+  if (!activeReadingPracticeQuestions.length) {
+    state.readingStarted = false;
+    return false;
   }
-  return sets[currentIndex];
+
+  state.readingStarted = true;
+  return true;
+}
+
+function ensureReadingPracticeSession(force = false) {
+  if (!state.readingStarted) {
+    return false;
+  }
+
+  const currentSessionIndex = Number.isFinite(Number(state.readingSessionQuestionIndex))
+    ? Number(state.readingSessionQuestionIndex)
+    : 0;
+
+  if (
+    force ||
+    !activeReadingPracticeQuestions.length ||
+    currentSessionIndex < 0 ||
+    currentSessionIndex >= activeReadingPracticeQuestions.length
+  ) {
+    const started = startNewReadingPracticeSession();
+    saveState();
+    return started;
+  }
+
+  return true;
+}
+
+function getCurrentReadingSet() {
+  const currentIndex = Number.isFinite(Number(state.readingSessionQuestionIndex))
+    ? Number(state.readingSessionQuestionIndex)
+    : 0;
+
+  return activeReadingPracticeQuestions[currentIndex] || activeReadingPracticeQuestions[0] || null;
 }
 
 function getReadingPracticeResultFilter(value = readingPracticeState.resultFilter) {
@@ -10686,9 +10867,8 @@ function renderReadingPractice() {
   state.readingLevel = getReadingLevel(state.readingLevel);
   state.readingDuration = getReadingDuration(state.readingDuration);
   renderReadingControls();
-  const current = getCurrentReadingSet();
   const sets = readingSets[state.readingLevel] || [];
-  const activeCount = getReadingCount(state.readingCount);
+  const activeCount = state.readingStarted ? activeReadingPracticeQuestions.length : getReadingCount(state.readingCount);
   const currentSessionIndex = Number.isFinite(Number(state.readingSessionQuestionIndex))
     ? Number(state.readingSessionQuestionIndex)
     : 0;
@@ -10732,6 +10912,20 @@ function renderReadingPractice() {
     return;
   }
 
+  if (!ensureReadingPracticeSession()) {
+    stopQuizSessionTimer("reading");
+    setQuizSessionDuration("reading", state.readingDuration);
+    empty.hidden = false;
+    empty.textContent = "독해 데이터를 준비하고 있어요.";
+    practiceView.hidden = true;
+    resultView.hidden = true;
+    renderQuizSessionHud("reading");
+    return;
+  }
+
+  const current = getCurrentReadingSet();
+  const questionCount = activeReadingPracticeQuestions.length;
+
   if (currentSessionIndex >= activeCount) {
     readingPracticeState.showResults = true;
     state.readingStarted = false;
@@ -10741,7 +10935,7 @@ function renderReadingPractice() {
     return;
   }
 
-  if (!current || !sets.length) {
+  if (!current || !questionCount) {
     stopQuizSessionTimer("reading");
     setQuizSessionDuration("reading", state.readingDuration);
     empty.hidden = false;
@@ -10756,11 +10950,11 @@ function renderReadingPractice() {
   practiceView.hidden = false;
   resultView.hidden = true;
 
-  progress.textContent = `${currentSessionIndex + 1} / ${activeCount}`;
+  progress.textContent = `${currentSessionIndex + 1} / ${questionCount}`;
   question.textContent = softenVisibleKoreanCopy(current.question);
   feedback.textContent = "";
   explanation.textContent = "";
-  nextButton.textContent = currentSessionIndex >= activeCount - 1 ? "결과 보기" : "다음 글 보기";
+  nextButton.textContent = currentSessionIndex >= questionCount - 1 ? "결과 보기" : "다음 글 보기";
   nextButton.disabled = true;
   delete optionsContainer.dataset.answered;
 
@@ -10787,7 +10981,7 @@ function handleReadingAnswer(index) {
   const options = document.querySelectorAll(".reading-option");
   const alreadyAnswered = hasAnsweredChoiceOptions(options);
   const nextButton = document.getElementById("reading-next");
-  const activeCount = getReadingCount(state.readingCount);
+  const activeCount = activeReadingPracticeQuestions.length;
   const isLastQuestion = state.readingSessionQuestionIndex >= activeCount - 1;
 
   if (alreadyAnswered || quizSessions.reading.isPaused) {
@@ -10830,7 +11024,7 @@ function handleReadingTimeout() {
   const options = document.querySelectorAll(".reading-option");
   const alreadyAnswered = hasAnsweredChoiceOptions(options);
   const nextButton = document.getElementById("reading-next");
-  const activeCount = getReadingCount(state.readingCount);
+  const activeCount = activeReadingPracticeQuestions.length;
   const isLastQuestion = state.readingSessionQuestionIndex >= activeCount - 1;
 
   if (alreadyAnswered) {
@@ -10866,7 +11060,7 @@ function nextReadingSet() {
   const nextButton = document.getElementById("reading-next");
   const activeLevel = getReadingLevel(state.readingLevel);
   const sets = readingSets[activeLevel] || [];
-  const questionLimit = getReadingCount(state.readingCount);
+  const questionLimit = activeReadingPracticeQuestions.length;
   const currentSessionIndex = Number.isFinite(Number(state.readingSessionQuestionIndex))
     ? Number(state.readingSessionQuestionIndex)
     : 0;
@@ -10899,8 +11093,7 @@ function restartReadingPractice() {
     return;
   }
 
-  resetReadingPracticeSessionState();
-  state.readingStarted = true;
+  startNewReadingPracticeSession();
   saveState();
   renderReadingPractice();
 }
