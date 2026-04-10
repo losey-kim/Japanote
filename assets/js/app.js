@@ -5243,8 +5243,8 @@ function handleBasicPracticeAnswer(index) {
   });
 
   document.getElementById("basic-practice-feedback").textContent = correct
-    ? "좋아요!"
-    : "아깝네요! 정답 같이 볼까요?";
+    ? ""
+    : "";
   document.getElementById("basic-practice-explanation").textContent = softenExplanationCopy(current.explanation);
 
   updateStudyStreak();
@@ -8254,10 +8254,8 @@ function finalizeVocabQuizQuestion(selectedIndex, timedOut = false) {
   recordVocabQuizResult(question, selectedIndex, correct, timedOut);
   revealVocabQuizAnswer(question, selectedIndex, correct);
   feedback.textContent = correct
-    ? "좋아요!"
-    : timedOut
-      ? ""
-      : "아깝네요! 정답 같이 볼까요?";
+    ? ""
+    : "";
   explanation.textContent = softenExplanationCopy(question.explanation || "");
   nextButton.disabled = false;
   nextButton.hidden = false;
@@ -9800,8 +9798,8 @@ function handleGrammarPracticeAnswer(index) {
   });
 
   document.getElementById("grammar-practice-feedback").textContent = correct
-    ? "좋아요!"
-    : "아깝네요! 정답 같이 볼까요?";
+    ? ""
+    : "";
   document.getElementById("grammar-practice-explanation").textContent = softenExplanationCopy(current.explanation);
   if (nextButton) {
     nextButton.textContent = isLastQuestion ? "결과 보기" : "다음 문제 보기";
@@ -10092,9 +10090,7 @@ function getQuizFeedbackText(question, correct, userAnswer) {
   const meaningText = question.meta?.meaning ? ` 뜻 · ${question.meta.meaning}` : "";
 
   if (correct) {
-    return question.meta?.mode === "reading"
-      ? `좋아요!${meaningText}`
-      : `좋아요!${readingText}`;
+    return "";
   }
 
   return `아깝네요! 정답은 "${question.answer}"예요.${question.meta?.mode === "reading" ? meaningText : readingText} ${
@@ -10721,8 +10717,8 @@ function handleReadingAnswer(index) {
   });
 
   document.getElementById("reading-feedback").textContent = correct
-    ? "좋아요!"
-    : "아깝네요! 정답 같이 볼까요?";
+    ? ""
+    : "";
   document.getElementById("reading-explanation").textContent = softenExplanationCopy(current.explanation);
   if (nextButton) {
     nextButton.textContent = isLastQuestion ? "결과 보기" : "다음 글 보기";
