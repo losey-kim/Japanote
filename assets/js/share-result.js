@@ -57,6 +57,25 @@
       html += "</div>";
     }
 
+    const items = resultView.querySelectorAll(".match-result-item");
+    if (items.length > 0) {
+      html += '<div style="margin-top:4px;border-top:1px solid rgba(25,21,22,0.08);padding-top:12px;">';
+      items.forEach((item) => {
+        const isCorrect = item.classList.contains("is-correct");
+        const icon = isCorrect ? "✅" : "❌";
+        const titleEl = item.querySelector("strong");
+        const descEl = item.querySelector("p");
+        const title = titleEl?.textContent || "";
+        const desc = descEl?.textContent || "";
+        html += `<div style="display:flex;align-items:baseline;gap:6px;padding:5px 0;font-size:0.88rem;line-height:1.4;">
+          <span style="flex-shrink:0;font-size:0.78rem;">${icon}</span>
+          <span style="font-weight:600;">${title}</span>
+          <span style="color:#625a56;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${desc}</span>
+        </div>`;
+      });
+      html += "</div>";
+    }
+
     const now = new Date();
     const dateStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
     html += `<div style="text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid rgba(25,21,22,0.1);color:#625a56;font-size:0.82rem;">${dateStr}</div>`;
