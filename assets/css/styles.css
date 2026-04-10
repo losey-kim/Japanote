@@ -3015,6 +3015,10 @@ button {
   transition: transform 140ms ease;
 }
 
+.flashcard.kanji-flashcard {
+  height: auto;
+}
+
 .flashcard-toggle {
   display: flex;
   flex: 1 1 auto;
@@ -3045,6 +3049,10 @@ button {
   gap: 4px;
   min-height: 0;
   overflow: hidden;
+}
+
+.flashcard.kanji-flashcard .flashcard-copy {
+  overflow: visible;
 }
 
 .flashcard-inline-nav {
@@ -3331,6 +3339,13 @@ button {
 .flashcard.is-revealed .flashcard-meaning {
   opacity: 1;
   transform: translateY(0);
+}
+
+.flashcard.kanji-flashcard .flashcard-reading,
+.flashcard.kanji-flashcard .flashcard-meaning {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
 }
 
 .flashcard-hint {

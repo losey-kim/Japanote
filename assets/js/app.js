@@ -849,69 +849,17 @@ function normalizeKanjiMeaning(value) {
 
 function getKanjiMeaningDisplaySub(meaning) {
   const normalizedMeaning = normalizeKanjiMeaning(meaning);
-  return normalizedMeaning ? `뜻: ${normalizedMeaning}` : "";
-}
-
-function getKanjiFlashcardMeaningText(item) {
-  const lines = [normalizeQuizText(item?.readingsDisplay || item?.reading || "")];
-  const meaningLabel = getKanjiMeaningDisplaySub(item?.meaning);
-
-  if (meaningLabel) {
-    lines.push(meaningLabel);
-  }
-
-  return lines.filter(Boolean).join("\n");
-}
-
-function buildKanjiPracticeItemsFromData(rows = kanjiDataRows) {
-  return (Array.isArray(rows) ? rows : [])
-    .map((row, index) => {
-      const [char, grade, reading, readingsDisplay, strokeCount] = Array.isArray(row) ? row : [];
-      const normalizedGrade = String(grade || "");
-      const normalizedReading = normalizeQuizText(reading || "");
-      const normalizedChar = normalizeQuizText(char || "");
-
-      if (!normalizedChar || !normalizedReading || !kanjiGradeOptions.includes(normalizedGrade)) {
-        return null;
-      }
-
-      const gradeLabel = getKanjiGradeLabel(normalizedGrade);
-      const strokes = Number.isFinite(Number(strokeCount)) ? Number(strokeCount) : 0;
-
-      return {
-        id: `kanji-${normalizedGrade}-${index + 1}-${normalizedChar}`,
-        grade: normalizedGrade,
-        gradeLabel,
-        source: gradeLabel,
-        title: `${gradeLabel} 한자`,
-        note: gradeLabel,
-        prompt: "이 한자, 어떻게 읽을까요?",
-        display: normalizedChar,
-        displaySub: "",
-        reading: normalizedReading,
-        readingsDisplay: normalizeQuizText(readingsDisplay || normalizedReading),
-        strokeCount: strokes,
-        tone: getKanjiTone(normalizedGrade),
-        explanation: `${normalizedChar}의 대표 읽기 중 하나는 ${normalizedReading}예요.`
-      };
-    })
-    .filter(Boolean);
-}
-
-function getKanjiMeaningDisplaySub(meaning) {
-  const normalizedMeaning = normalizeKanjiMeaning(meaning);
   return normalizedMeaning ? `\uB73B: ${normalizedMeaning}` : "";
 }
 
+function getKanjiFlashcardReadingText(item) {
+  const normalizedReading = normalizeQuizText(item?.readingsDisplay || item?.reading || "");
+  return normalizedReading;
+}
+
 function getKanjiFlashcardMeaningText(item) {
-  const lines = [normalizeQuizText(item?.readingsDisplay || item?.reading || "")];
-  const meaningLabel = getKanjiMeaningDisplaySub(item?.meaning);
-
-  if (meaningLabel) {
-    lines.push(meaningLabel);
-  }
-
-  return lines.filter(Boolean).join("\n");
+  const normalizedMeaning = normalizeKanjiMeaning(item?.meaning);
+  return normalizedMeaning;
 }
 
 function buildKanjiPracticeItemsFromData(rows = kanjiDataRows) {
@@ -935,9 +883,9 @@ function buildKanjiPracticeItemsFromData(rows = kanjiDataRows) {
         grade: normalizedGrade,
         gradeLabel,
         source: gradeLabel,
-        title: `${gradeLabel} ?쒖옄`,
+        title: `${gradeLabel} \uD55C\uC790`,
         note: gradeLabel,
-        prompt: "???쒖옄, ?대뼸寃??쎌쓣源뚯슂?",
+        prompt: "\uC774 \uD55C\uC790, \uC5B4\uB5BB\uAC8C \uC77D\uC744\uAE4C\uC694?",
         display: normalizedChar,
         displaySub: getKanjiMeaningDisplaySub(normalizedMeaning),
         reading: normalizedReading,
@@ -947,7 +895,7 @@ function buildKanjiPracticeItemsFromData(rows = kanjiDataRows) {
         tone: getKanjiTone(normalizedGrade),
         explanation: normalizedMeaning
           ? `${normalizedChar}\uB294 ${normalizedReading}\uB77C\uACE0 \uC77D\uACE0, \uB73B\uC740 ${normalizedMeaning}\uC774\uC5D0\uC694.`
-          : `${normalizedChar}??????쎄린 以??섎굹??${normalizedReading}?덉슂.`
+          : `${normalizedChar}\uC758 \uB300\uD45C \uC77D\uAE30 \uC911 \uD558\uB098\uB294 ${normalizedReading}\uC608\uC694.`
       };
     })
     .filter(Boolean);
@@ -4047,6 +3995,7 @@ const defaultState = {
   kanjiPage: 1,
   kanjiFlashcardIndex: 0,
   kanjiFlashcardRevealed: false,
+  kanjiFlashcardRevealStep: 0,
   kanjiReviewIds: [],
   kanjiMasteredIds: [],
   basicPracticeTrack: "hiragana",
@@ -4273,7 +4222,12 @@ function normalizeLoadedState(inputState) {
   nextState.kanjiFlashcardIndex = Number.isFinite(Number(nextState.kanjiFlashcardIndex))
     ? Math.max(0, Number(nextState.kanjiFlashcardIndex))
     : 0;
-  nextState.kanjiFlashcardRevealed = nextState.kanjiFlashcardRevealed === true;
+  nextState.kanjiFlashcardRevealStep = Number.isFinite(Number(nextState.kanjiFlashcardRevealStep))
+    ? Math.min(Math.max(Math.floor(Number(nextState.kanjiFlashcardRevealStep)), 0), 2)
+    : nextState.kanjiFlashcardRevealed === true
+      ? 2
+      : 0;
+  nextState.kanjiFlashcardRevealed = nextState.kanjiFlashcardRevealStep > 0;
   nextState.grammarLevel = getGrammarLevel(nextState.grammarLevel);
   nextState.grammarFilter = getGrammarFilter(nextState.grammarFilter);
   nextState.grammarView = getGrammarView(nextState.grammarView);
@@ -5941,32 +5895,6 @@ function setKanjiPracticeResult(current, selectedIndex, correct, timedOut = fals
     source: current.gradeLabel || current.source,
     char: current.baseDisplay || current.display,
     reading: current.baseReading || current.reading,
-    questionField: current.questionField,
-    optionField: current.optionField,
-    answerText,
-    meta: current.gradeLabel || current.note || "",
-    selected,
-    status: correct ? "correct" : "wrong",
-    timedOut
-  };
-  const currentResultIndex = kanjiPracticeState.results.findIndex((item) => item.id === current.id);
-
-  if (currentResultIndex >= 0) {
-    kanjiPracticeState.results[currentResultIndex] = result;
-    return;
-  }
-
-  kanjiPracticeState.results.push(result);
-}
-
-function setKanjiPracticeResult(current, selectedIndex, correct, timedOut = false) {
-  const answerText = current.options[current.answer] || "";
-  const selected = timedOut ? "" : current.options[selectedIndex] || "";
-  const result = {
-    id: current.id,
-    source: current.gradeLabel || current.source,
-    char: current.baseDisplay || current.display,
-    reading: current.baseReading || current.reading,
     meaning: current.meaning || "",
     questionField: current.questionField,
     optionField: current.optionField,
@@ -6059,29 +5987,11 @@ function getKanjiPracticeResultDetail(item) {
   const parts = [];
 
   if (item.status === "wrong" && item.timedOut) {
-    parts.push("시간 초과");
+    parts.push("\uC2DC\uAC04 \uCD08\uACFC");
   }
 
   if (item.optionField !== "reading" && item.reading) {
-    parts.push(`발음 ${item.reading}`);
-  }
-
-  if (item.meta) {
-    parts.push(item.meta);
-  }
-
-  return parts.join(" · ");
-}
-
-function getKanjiPracticeResultDetail(item) {
-  const parts = [];
-
-  if (item.status === "wrong" && item.timedOut) {
-    parts.push("?쒓컙 珥덇낵");
-  }
-
-  if (item.optionField !== "reading" && item.reading) {
-    parts.push(`諛쒖쓬 ${item.reading}`);
+    parts.push(`\uBC1C\uC74C ${item.reading}`);
   }
 
   if (item.meaning) {
@@ -6092,7 +6002,7 @@ function getKanjiPracticeResultDetail(item) {
     parts.push(item.meta);
   }
 
-  return parts.join(" 쨌 ");
+  return parts.join(" \u00B7 ");
 }
 
 function createStudyStatusBadgesMarkup(review, mastered) {
@@ -6140,6 +6050,8 @@ function renderStudyFlashcardComponent({
   meaningText = "",
   hintText = "",
   hideReading = false,
+  hideMeaning = false,
+  toggleLabel = "",
   toggleOpenLabel,
   toggleClosedLabel,
   toggleEmptyLabel,
@@ -6156,6 +6068,7 @@ function renderStudyFlashcardComponent({
   reading.textContent = formatQuizLineBreaks(readingText || "");
   reading.hidden = hideReading || !normalizeQuizText(readingText || "");
   meaning.textContent = formatQuizLineBreaks(meaningText || "");
+  meaning.hidden = hideMeaning || !normalizeQuizText(meaningText || "");
   hint.textContent = hintText;
 
   flashcard.classList.toggle("is-revealed", isRevealed || (revealWhenEmpty && !hasCards));
@@ -6164,7 +6077,7 @@ function renderStudyFlashcardComponent({
   toggle.setAttribute("aria-expanded", String(isRevealed));
   toggle.setAttribute(
     "aria-label",
-    hasCards ? (isRevealed ? toggleOpenLabel : toggleClosedLabel) : toggleEmptyLabel
+    hasCards ? (toggleLabel || (isRevealed ? toggleOpenLabel : toggleClosedLabel)) : toggleEmptyLabel
   );
 
   if (prev) {
@@ -7277,12 +7190,20 @@ function clampKanjiPage(items) {
   clampStudyPage("kanjiPage", items, kanjiPageSize);
 }
 
+function getKanjiFlashcardRevealStep(step = state?.kanjiFlashcardRevealStep) {
+  const normalizedStep = Math.floor(Number(step));
+  return Number.isFinite(normalizedStep) ? Math.min(Math.max(normalizedStep, 0), 2) : 0;
+}
+
+function setKanjiFlashcardRevealStep(step) {
+  state.kanjiFlashcardRevealStep = getKanjiFlashcardRevealStep(step);
+  state.kanjiFlashcardRevealed = state.kanjiFlashcardRevealStep > 0;
+}
+
 function resetKanjiStudyPointers() {
-  resetStudyCatalogPointers({
-    pageKey: "kanjiPage",
-    indexKey: "kanjiFlashcardIndex",
-    revealedKey: "kanjiFlashcardRevealed"
-  });
+  state.kanjiPage = 1;
+  state.kanjiFlashcardIndex = 0;
+  setKanjiFlashcardRevealStep(0);
 }
 
 function syncKanjiFlashcardIndexAfterUpdate(currentCardId, previousIndex) {
@@ -7403,16 +7324,26 @@ function renderKanjiFlashcard() {
   const currentCard = hasCards ? cards[currentIndex] : getKanjiFlashcardPlaceholder();
   const review = hasCards && isKanjiSavedToReviewList(currentCard.id);
   const mastered = hasCards && isKanjiSavedToMasteredList(currentCard.id);
-  const isRevealed = hasCards && state.kanjiFlashcardRevealed;
+  const revealStep = hasCards ? getKanjiFlashcardRevealStep() : 0;
+  const isRevealed = hasCards && revealStep > 0;
   const hintText = hasCards
-    ? isRevealed
-      ? review
-        ? "다시 볼래요에 담긴 한자예요"
-        : mastered
-          ? "익혔어요에 담긴 한자예요"
-          : "저장 상태를 바로 바꿔볼 수 있어요"
-      : "눌러서 읽기를 확인해볼까요?"
-    : "필터를 바꾸면 다른 한자를 바로 볼 수 있어요.";
+    ? revealStep === 0
+      ? "\uB204\uB974\uBA74 \uBC1C\uC74C\uC744 \uD655\uC778\uD574\uC694"
+      : revealStep === 1
+        ? "\uD55C \uBC88 \uB354 \uB204\uB974\uBA74 \uB73B\uC744 \uD655\uC778\uD574\uC694"
+        : review
+          ? "\uB2E4\uC2DC \uBCFC\uB798\uC694\uC5D0 \uB2F4\uAE34 \uD55C\uC790\uC608\uC694"
+          : mastered
+            ? "\uC775\uD614\uC5B4\uC694\uC5D0 \uB2F4\uAE34 \uD55C\uC790\uC608\uC694"
+            : "\uD55C \uBC88 \uB354 \uB204\uB974\uBA74 \uB2E4\uC2DC \uAC00\uB824\uC838\uC694"
+    : "\uD544\uD130\uB97C \uBC14\uAFB8\uBA74 \uB2E4\uB978 \uD55C\uC790\uB97C \uBC14\uB85C \uBCFC \uC218 \uC788\uC5B4\uC694.";
+  const toggleLabel = hasCards
+    ? revealStep === 0
+      ? "\uBC1C\uC74C\uC744 \uD655\uC778\uD574\uBCFC\uAE4C\uC694?"
+      : revealStep === 1
+        ? "\uB73B\uC744 \uD655\uC778\uD574\uBCFC\uAE4C\uC694?"
+        : "\uCE74\uB4DC\uB97C \uB2E4\uC2DC \uAC00\uB9B4\uAE4C\uC694?"
+    : "";
 
   renderStudyFlashcardComponent({
     flashcard,
@@ -7427,135 +7358,17 @@ function renderKanjiFlashcard() {
     hasCards,
     isRevealed,
     revealWhenEmpty: true,
-    levelText: currentCard.gradeLabel || "한자",
-    wordText: currentCard.display || "漢字",
-    meaningText: hasCards
-      ? currentCard.readingsDisplay || currentCard.reading || ""
-      : currentCard.statusText || getKanjiEmptyMessage(),
-    hintText,
-    hideReading: true,
-    toggleOpenLabel: "읽기를 다시 접어둘까요?",
-    toggleClosedLabel: "읽기를 확인해볼까요?",
-    toggleEmptyLabel: "표시할 한자가 없어요",
-    prevDisabled: cards.length <= 1,
-    nextDisabled: cards.length <= 1,
-    actionButtons: [
-      {
-        button: reviewButton,
-        selected: review,
-        selectedClass: "primary-btn",
-        idleClass: "secondary-btn"
-      },
-      {
-        button: masteredButton,
-        selected: mastered,
-        selectedClass: "primary-btn",
-        idleClass: "secondary-btn"
-      }
-    ]
-  });
-}
-
-function renderKanjiList() {
-  const list = document.getElementById("kanji-list");
-  const pageInfo = document.getElementById("kanji-page-info");
-  const prev = document.getElementById("kanji-page-prev");
-  const next = document.getElementById("kanji-page-next");
-  const items = getVisibleKanjiItems();
-
-  renderStatefulStudyList({
-    list,
-    pageInfo,
-    prev,
-    next,
-    items,
-    pageKey: "kanjiPage",
-    pageSize: kanjiPageSize,
-    emptyMessage: getKanjiEmptyMessage(),
-    renderItem: (item, displayIndex) => {
-      const gradeLabel = item.gradeLabel || getKanjiGradeLabel(item.grade);
-
-      return createStudyListCardMarkup({
-        index: displayIndex,
-        headMetaMarkup: gradeLabel ? `<span class="vocab-list-index">${gradeLabel}</span>` : "",
-        headRightMarkup: createKanjiListStatusIconsMarkup(item.id),
-        mainClassName: "vocab-list-main kanji-list-main",
-        titleClassName: "vocab-list-word kanji-list-char",
-        titleText: formatQuizLineBreaks(item.display),
-        subtitleText: formatQuizLineBreaks(item.readingsDisplay || item.reading),
-        actionsMarkup: ""
-      });
-    }
-  });
-}
-
-function renderKanjiFlashcard() {
-  const flashcard = document.getElementById("kanji-flashcard");
-  const toggle = document.getElementById("kanji-flashcard-toggle");
-  const prev = document.getElementById("kanji-flashcard-prev");
-  const next = document.getElementById("kanji-flashcard-next");
-  const reviewButton = document.getElementById("kanji-flashcard-review");
-  const masteredButton = document.getElementById("kanji-flashcard-mastered");
-  const level = document.getElementById("kanji-flashcard-level");
-  const word = document.getElementById("kanji-flashcard-word");
-  const reading = document.getElementById("kanji-flashcard-reading");
-  const meaning = document.getElementById("kanji-flashcard-meaning");
-  const hint = document.getElementById("kanji-flashcard-hint");
-  const cards = getVisibleKanjiCards();
-
-  if (
-    !flashcard ||
-    !toggle ||
-    !prev ||
-    !next ||
-    !reviewButton ||
-    !masteredButton ||
-    !level ||
-    !word ||
-    !reading ||
-    !meaning ||
-    !hint
-  ) {
-    return;
-  }
-
-  const hasCards = cards.length > 0;
-  const currentIndex = hasCards ? state.kanjiFlashcardIndex % cards.length : 0;
-  const currentCard = hasCards ? cards[currentIndex] : getKanjiFlashcardPlaceholder();
-  const review = hasCards && isKanjiSavedToReviewList(currentCard.id);
-  const mastered = hasCards && isKanjiSavedToMasteredList(currentCard.id);
-  const isRevealed = hasCards && state.kanjiFlashcardRevealed;
-  const hintText = hasCards
-    ? isRevealed
-      ? review
-        ? "?ㅼ떆 蹂쇰옒?붿뿉 ?닿릿 ?쒖옄?덉슂"
-        : mastered
-          ? "?듯삍?댁슂???닿릿 ?쒖옄?덉슂"
-          : "????곹깭瑜?諛붾줈 諛붽퓭蹂????덉뼱??"
-      : "?뚮윭???쎄린瑜??뺤씤?대낵源뚯슂?"
-    : "?꾪꽣瑜?諛붽씀硫??ㅻⅨ ?쒖옄瑜?諛붾줈 蹂????덉뼱??";
-
-  renderStudyFlashcardComponent({
-    flashcard,
-    toggle,
-    prev,
-    next,
-    level,
-    word,
-    reading,
-    meaning,
-    hint,
-    hasCards,
-    isRevealed,
-    revealWhenEmpty: true,
-    levelText: currentCard.gradeLabel || "?쒖옄",
-    wordText: currentCard.display || "轢℡춻",
+    levelText: currentCard.gradeLabel || "\uD55C\uC790",
+    wordText: currentCard.display || "\u6F22\u5B57",
+    readingText: hasCards ? getKanjiFlashcardReadingText(currentCard) : "",
     meaningText: hasCards ? getKanjiFlashcardMeaningText(currentCard) : currentCard.statusText || getKanjiEmptyMessage(),
     hintText,
-    hideReading: true,
-    toggleOpenLabel: "?쎄린瑜??ㅼ떆 ?묒뼱?섍퉴??",
-    toggleClosedLabel: "?쎄린瑜??뺤씤?대낵源뚯슂?",
-    toggleEmptyLabel: "?쒖떆???쒖옄媛 ?놁뼱??",
+    hideReading: hasCards && revealStep < 1,
+    hideMeaning: hasCards && revealStep < 2,
+    toggleLabel,
+    toggleOpenLabel: "\uBC1C\uC74C\uACFC \uB73B\uC744 \uB2E4\uC2DC \uC811\uC744\uAE4C\uC694?",
+    toggleClosedLabel: "\uBC1C\uC74C\uACFC \uB73B\uC744 \uD655\uC778\uD574\uBCFC\uAE4C\uC694?",
+    toggleEmptyLabel: "\uD45C\uC2DC\uD560 \uD55C\uC790\uAC00 \uC5C6\uC5B4\uC694",
     prevDisabled: cards.length <= 1,
     nextDisabled: cards.length <= 1,
     actionButtons: [
@@ -7603,7 +7416,7 @@ function renderKanjiList() {
         titleText: formatQuizLineBreaks(item.display),
         subtitleText: formatQuizLineBreaks(item.readingsDisplay || item.reading),
         descriptionMarkup: item.meaning
-          ? `<p class="vocab-list-meaning">${formatQuizLineBreaks(`\uB73B \u00B7 ${item.meaning}`)}</p>`
+          ? `<p class="vocab-list-meaning kanji-list-meaning">${formatQuizLineBreaks(item.meaning)}</p>`
           : "",
         actionsMarkup: ""
       });
@@ -7828,40 +7641,65 @@ function setKanjiView(view) {
 }
 
 function toggleKanjiFlashcardReveal() {
-  toggleStudyFlashcardReveal("kanjiFlashcardRevealed", () => {
-    renderStudyViewWithStats(renderKanjiPageLayout);
-  });
+  if (!getVisibleKanjiCards().length) {
+    return;
+  }
+
+  // 한자 카드는 한 번에 답을 다 열기보다 발음과 뜻을 순서대로 보여주는 편이 암기 흐름에 맞다.
+  const nextRevealStep = getKanjiFlashcardRevealStep() >= 2 ? 0 : getKanjiFlashcardRevealStep() + 1;
+  setKanjiFlashcardRevealStep(nextRevealStep);
+  updateStudyStreak();
+  saveState();
+  renderStudyViewWithStats(renderKanjiPageLayout);
 }
 
 function moveKanjiFlashcard(step) {
-  moveStudyFlashcard(step, {
-    getCards: getVisibleKanjiCards,
-    indexKey: "kanjiFlashcardIndex",
-    revealedKey: "kanjiFlashcardRevealed",
-    render: renderKanjiPageLayout
-  });
+  const cards = getVisibleKanjiCards();
+
+  if (!cards.length) {
+    return;
+  }
+
+  state.kanjiFlashcardIndex = (state.kanjiFlashcardIndex + step + cards.length) % cards.length;
+  setKanjiFlashcardRevealStep(0);
+  saveState();
+  renderKanjiPageLayout();
 }
 
 function markKanjiFlashcardForReview() {
-  markStudyFlashcardStatus({
-    getCards: getVisibleKanjiCards,
-    indexKey: "kanjiFlashcardIndex",
-    revealedKey: "kanjiFlashcardRevealed",
-    saveItem: saveKanjiToReviewList,
-    syncIndexAfterUpdate: syncKanjiFlashcardIndexAfterUpdate,
-    render: () => renderStudyViewWithStats(renderKanjiPageLayout)
-  });
+  const cards = getVisibleKanjiCards();
+
+  if (!cards.length) {
+    return;
+  }
+
+  const currentIndex = state.kanjiFlashcardIndex % cards.length;
+  const currentCard = cards[currentIndex];
+
+  saveKanjiToReviewList(currentCard.id);
+  updateStudyStreak();
+  setKanjiFlashcardRevealStep(0);
+  syncKanjiFlashcardIndexAfterUpdate(currentCard.id, currentIndex);
+  saveState();
+  renderStudyViewWithStats(renderKanjiPageLayout);
 }
 
 function markKanjiFlashcardMastered() {
-  markStudyFlashcardStatus({
-    getCards: getVisibleKanjiCards,
-    indexKey: "kanjiFlashcardIndex",
-    revealedKey: "kanjiFlashcardRevealed",
-    saveItem: saveKanjiToMasteredList,
-    syncIndexAfterUpdate: syncKanjiFlashcardIndexAfterUpdate,
-    render: () => renderStudyViewWithStats(renderKanjiPageLayout)
-  });
+  const cards = getVisibleKanjiCards();
+
+  if (!cards.length) {
+    return;
+  }
+
+  const currentIndex = state.kanjiFlashcardIndex % cards.length;
+  const currentCard = cards[currentIndex];
+
+  saveKanjiToMasteredList(currentCard.id);
+  updateStudyStreak();
+  setKanjiFlashcardRevealStep(0);
+  syncKanjiFlashcardIndexAfterUpdate(currentCard.id, currentIndex);
+  saveState();
+  renderStudyViewWithStats(renderKanjiPageLayout);
 }
 
 function getVocabFilter(filter = state.vocabFilter) {

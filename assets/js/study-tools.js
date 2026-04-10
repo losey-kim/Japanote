@@ -201,6 +201,55 @@
     return lines.join("\n");
   }
 
+  function getKanjiItemById(id) {
+    const rows = Array.isArray(global.JAPANOTE_KANJI_DATA) ? global.JAPANOTE_KANJI_DATA : [];
+    for (let i = 0; i < rows.length; i++) {
+      const [char, grade, reading, _readingsDisplay, _strokeCount, meaning] = Array.isArray(rows[i]) ? rows[i] : [];
+      const itemId = `kanji-${grade}-${i + 1}-${String(char || "").trim()}`;
+      if (itemId === id) return { char, grade, reading, meaning };
+    }
+    return null;
+  }
+
+  function buildExportData() {
+    const { reviewIds, masteredIds, kanjiReviewIds, kanjiMasteredIds } = getReviewItems();
+    const lines = [];
+
+    lines.push("\uC885\uB958,\uC0C1\uD0DC,\uB2E8\uC5B4/\uD55C\uC790,\uC77D\uAE30,\uB73B,\uB808\uBCA8");
+
+    reviewIds.forEach((id) => {
+      const item = getVocabItemById(id);
+      if (!item) return;
+      const word = item.showEntry || item.show_entry || item.entry || "";
+      const reading = item.pron || "";
+      const meaning = Array.isArray(item.means) ? item.means.join("; ") : "";
+      lines.push(csvRow("\uB2E8\uC5B4", "\uB2E4\uC2DC \uBCFC\uB798\uC694", word, reading, meaning, item._level || ""));
+    });
+
+    masteredIds.forEach((id) => {
+      const item = getVocabItemById(id);
+      if (!item) return;
+      const word = item.showEntry || item.show_entry || item.entry || "";
+      const reading = item.pron || "";
+      const meaning = Array.isArray(item.means) ? item.means.join("; ") : "";
+      lines.push(csvRow("\uB2E8\uC5B4", "\uC775\uD614\uC5B4\uC694", word, reading, meaning, item._level || ""));
+    });
+
+    kanjiReviewIds.forEach((id) => {
+      const item = getKanjiItemById(id);
+      if (!item) return;
+      lines.push(csvRow("\uD55C\uC790", "\uB2E4\uC2DC \uBCFC\uB798\uC694", item.char, item.reading, item.meaning || "", `${item.grade}\uD559\uB144`));
+    });
+
+    kanjiMasteredIds.forEach((id) => {
+      const item = getKanjiItemById(id);
+      if (!item) return;
+      lines.push(csvRow("\uD55C\uC790", "\uC775\uD614\uC5B4\uC694", item.char, item.reading, item.meaning || "", `${item.grade}\uD559\uB144`));
+    });
+
+    return lines.join("\n");
+  }
+
   function csvRow(...values) {
     return values.map((v) => `"${String(v || "").replace(/"/g, '""')}"`).join(",");
   }
