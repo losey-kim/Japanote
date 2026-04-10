@@ -3928,8 +3928,7 @@ let activeQuizQuestions = [];
 let activeVocabQuizQuestions = [];
 let activeVocabQuizSignature = "";
 let activeVocabQuizResults = [];
-let kanjiPracticeQuestionOrder = [];
-let kanjiPracticeOptionOrders = {};
+let activeKanjiPracticeQuestions = [];
 const kanjiPracticeResultFilterLabels = {
   all: "전체",
   correct: "정답",
@@ -5651,16 +5650,20 @@ function buildKanjiPracticeOptions(
   return shuffleQuizArray(options);
 }
 
-function buildKanjiPracticeQuestion(item, pool = getVisibleKanjiItems()) {
+function buildKanjiPracticeQuestion(item, pool = getVisibleKanjiItems(), config = {}) {
   if (!item) {
     return null;
   }
 
-  const questionField = getKanjiPracticeQuestionField();
-  const optionField = getKanjiPracticeOptionField();
+  const questionField = getKanjiPracticeQuestionField(config.questionField);
+  const optionField = getKanjiPracticeOptionField(config.optionField, questionField);
   const options = buildKanjiPracticeOptions(item, pool, optionField);
   const answerValue = getKanjiPracticeItemValue(item, optionField);
   const answer = options.indexOf(answerValue);
+
+  if (!answerValue || answer < 0 || options.length < 2) {
+    return null;
+  }
 
   return {
     ...item,
@@ -5670,48 +5673,33 @@ function buildKanjiPracticeQuestion(item, pool = getVisibleKanjiItems()) {
     optionField,
     prompt: getKanjiPracticePrompt(questionField),
     display: getKanjiPracticeItemValue(item, questionField),
-    displaySub: "",
+    displaySub: questionField === "display" ? getKanjiMeaningDisplaySub(item.meaning) : "",
     options,
-    answer: answer >= 0 ? answer : 0
+    answer
   };
 }
 
-function buildKanjiPracticeQuestion(item, pool = getVisibleKanjiItems()) {
-  if (!item) {
-    return null;
+function buildKanjiPracticeQuestionSet(items = getVisibleKanjiItems(), config = {}) {
+  const pool = Array.isArray(items) ? items.filter(Boolean) : [];
+  const count = Math.min(getKanjiPracticeQuizCount(config.count), pool.length);
+  const questionField = getKanjiPracticeQuestionField(config.questionField);
+  const optionField = getKanjiPracticeOptionField(config.optionField, questionField);
+  const seedItems = shuffleQuizArray(pool);
+  const questions = [];
+
+  // 한자 퀴즈는 시작 시점의 보기 배열을 고정해야 재렌더 중에도 보기가 바뀌지 않는다.
+  for (let index = 0; index < seedItems.length && questions.length < count; index += 1) {
+    const question = buildKanjiPracticeQuestion(seedItems[index], pool, {
+      questionField,
+      optionField
+    });
+
+    if (question) {
+      questions.push(question);
+    }
   }
 
-  const questionField = getKanjiPracticeQuestionField();
-  const optionField = getKanjiPracticeOptionField();
-  const options = buildKanjiPracticeOptions(item, pool, optionField);
-  const answerValue = getKanjiPracticeItemValue(item, optionField);
-  const answer = options.indexOf(answerValue);
-
-  return {
-    ...item,
-    baseDisplay: item.display,
-    baseReading: item.reading,
-    questionField,
-    optionField,
-    prompt: getKanjiPracticePrompt(questionField),
-    display: getKanjiPracticeItemValue(item, questionField),
-    displaySub: getKanjiPracticeQuestionField(questionField) === "display" ? getKanjiMeaningDisplaySub(item.meaning) : "",
-    options,
-    answer: answer >= 0 ? answer : 0
-  };
-}
-
-function resetKanjiPracticeQuestionOrder() {
-  const items = getVisibleKanjiItems();
-
-  if (!items.length) {
-    kanjiPracticeQuestionOrder = [];
-    kanjiPracticeOptionOrders = {};
-    return;
-  }
-
-  kanjiPracticeQuestionOrder = shuffleQuizArray(items.map((_, index) => index));
-  kanjiPracticeOptionOrders = {};
+  return questions;
 }
 
 function getKanjiPracticeQuestionCount() {
@@ -5720,10 +5708,10 @@ function getKanjiPracticeQuestionCount() {
 }
 
 function resetKanjiPracticeSessionState(resetIndex = false) {
+  activeKanjiPracticeQuestions = [];
   kanjiPracticeState.results = [];
   kanjiPracticeState.showResults = false;
   kanjiPracticeState.resultFilter = "all";
-  resetKanjiPracticeQuestionOrder();
   resetQuizSessionScore("kanjiPractice");
   setQuizSessionDuration("kanjiPractice", getKanjiPracticeQuizDuration());
   stopQuizSessionTimer("kanjiPractice");
@@ -5742,88 +5730,52 @@ function invalidateKanjiPracticeSession() {
 }
 
 function startNewKanjiPracticeSession() {
-  const questionCount = getKanjiPracticeQuestionCount();
+  resetKanjiPracticeSessionState(true);
+  activeKanjiPracticeQuestions = buildKanjiPracticeQuestionSet(getVisibleKanjiItems(), {
+    questionField: getKanjiPracticeQuestionField(),
+    optionField: getKanjiPracticeOptionField(),
+    count: getKanjiPracticeQuizCount()
+  });
 
-  if (questionCount <= 0) {
+  if (!activeKanjiPracticeQuestions.length) {
     state.kanjiPracticeQuizStarted = false;
     state.kanjiPracticeQuizFinished = false;
     return false;
   }
 
-  resetKanjiPracticeSessionState(true);
   state.kanjiPracticeQuizStarted = true;
   state.kanjiPracticeQuizFinished = false;
   return true;
 }
 
-function ensureKanjiPracticeQuestionOrder() {
-  const items = getVisibleKanjiItems();
-  const questionCount = getKanjiPracticeQuestionCount();
-
-  if (!items.length) {
-    kanjiPracticeQuestionOrder = [];
-    state.basicPracticeIndexes.kanji = 0;
-    return;
+function ensureKanjiPracticeSession(force = false) {
+  if (!state.kanjiPracticeQuizStarted) {
+    return false;
   }
 
-  const hasValidOrder =
-    kanjiPracticeQuestionOrder.length === items.length &&
-    kanjiPracticeQuestionOrder.every(
-      (value, index, source) =>
-        Number.isInteger(value) &&
-        value >= 0 &&
-        value < items.length &&
-        source.indexOf(value) === index
-    );
-
-  if (!hasValidOrder) {
-    resetKanjiPracticeQuestionOrder();
-  }
+  const currentIndex = Number.isFinite(Number(state.basicPracticeIndexes.kanji))
+    ? Number(state.basicPracticeIndexes.kanji)
+    : 0;
 
   if (
-    !Number.isFinite(Number(state.basicPracticeIndexes.kanji)) ||
-    state.basicPracticeIndexes.kanji < 0 ||
-    state.basicPracticeIndexes.kanji >= questionCount
+    force ||
+    !activeKanjiPracticeQuestions.length ||
+    currentIndex < 0 ||
+    currentIndex >= activeKanjiPracticeQuestions.length
   ) {
-    state.basicPracticeIndexes.kanji = 0;
+    const started = startNewKanjiPracticeSession();
+    saveState();
+    return started;
   }
+
+  return true;
 }
 
 function getCurrentKanjiPracticeSet() {
-  const items = getVisibleKanjiItems();
-  ensureKanjiPracticeQuestionOrder();
-
-  if (!items.length || !kanjiPracticeQuestionOrder.length || getKanjiPracticeQuestionCount() <= 0) {
-    return null;
-  }
-
-  const questionIndex = kanjiPracticeQuestionOrder[state.basicPracticeIndexes.kanji];
-  return buildKanjiPracticeQuestion(items[questionIndex], items);
-}
-
-function getKanjiPracticeOptionOrder(current) {
-  if (!current?.options?.length) {
-    return [];
-  }
-
-  const orderKey = current.id || `${current.source || "kanji"}-${current.display || "item"}`;
-  const existingOrder = kanjiPracticeOptionOrders[orderKey];
-  const hasValidOrder =
-    Array.isArray(existingOrder) &&
-    existingOrder.length === current.options.length &&
-    existingOrder.every(
-      (value, index, source) =>
-        Number.isInteger(value) &&
-        value >= 0 &&
-        value < current.options.length &&
-        source.indexOf(value) === index
-    );
-
-  if (!hasValidOrder) {
-    kanjiPracticeOptionOrders[orderKey] = shuffleQuizArray(current.options.map((_, index) => index));
-  }
-
-  return kanjiPracticeOptionOrders[orderKey];
+  const currentIndex = Number.isFinite(Number(state.basicPracticeIndexes.kanji))
+    ? Number(state.basicPracticeIndexes.kanji)
+    : 0;
+  return activeKanjiPracticeQuestions[currentIndex] || activeKanjiPracticeQuestions[0] || null;
 }
 
 function getKanjiPracticeResultFilter(value = kanjiPracticeState.resultFilter) {
@@ -7126,15 +7078,14 @@ function renderKanjiPractice() {
   const progress = document.getElementById("kanji-practice-progress");
   const display = document.getElementById("kanji-practice-display");
   const displaySub = document.getElementById("kanji-practice-display-sub");
-  const visibleItems = getVisibleKanjiItems();
-  const questionCount = getKanjiPracticeQuestionCount();
+  const questionCount = activeKanjiPracticeQuestions.length;
   const current = getCurrentKanjiPracticeSet();
 
   if (!card || !nextButton || !optionsContainer || !progress || !display || !displaySub) {
     return;
   }
 
-  if (!visibleItems.length || !current) {
+  if (!questionCount || !current) {
     optionsContainer.innerHTML = "";
     delete optionsContainer.dataset.answered;
     nextButton.disabled = true;
@@ -7155,13 +7106,10 @@ function renderKanjiPractice() {
   delete optionsContainer.dataset.answered;
   renderChoiceOptionButtons({
     container: optionsContainer,
-    options: getKanjiPracticeOptionOrder(current),
+    options: current.options,
     buttonClassName: "basic-practice-option",
-    getButtonText: (optionIndex) => current.options[optionIndex],
-    getOptionValue: (optionIndex) => optionIndex,
     formatText: formatQuizLineBreaks,
     onSelect: handleKanjiPracticeAnswer,
-    datasetKey: "optionIndex",
     setPressedState: true
   });
 
@@ -7483,6 +7431,18 @@ function renderKanjiPageLayout() {
     return;
   }
 
+  if (!ensureKanjiPracticeSession()) {
+    stopQuizSessionTimer("kanjiPractice");
+    if (empty) {
+      empty.textContent = getKanjiEmptyMessage();
+    }
+    setElementHidden(empty, false);
+    setElementHidden(practiceView, true);
+    setElementHidden(resultView, true);
+    renderQuizSessionHud("kanjiPractice");
+    return;
+  }
+
   setElementHidden(empty, true);
   setElementHidden(practiceView, kanjiPracticeState.showResults);
   setElementHidden(resultView, !kanjiPracticeState.showResults);
@@ -7526,12 +7486,12 @@ function handleKanjiPracticeAnswer(index) {
   }
 
   const correct = index === current.answer;
-  const totalQuestions = getKanjiPracticeQuestionCount();
+  const totalQuestions = activeKanjiPracticeQuestions.length;
 
   applyChoiceOptionFeedback({
     options,
-    isCorrectOption: (item) => Number(item.dataset.optionIndex) === current.answer,
-    isSelectedOption: (item) => Number(item.dataset.optionIndex) === index,
+    isCorrectOption: (_, optionIndex) => optionIndex === current.answer,
+    isSelectedOption: (_, optionIndex) => optionIndex === index,
     setPressedState: true
   });
   optionsContainer.dataset.answered = "true";
@@ -7553,7 +7513,7 @@ function handleKanjiPracticeTimeout() {
   const optionsContainer = document.getElementById("kanji-practice-options");
   const options = document.querySelectorAll("#kanji-practice-options .basic-practice-option");
   const alreadyAnswered = optionsContainer?.dataset.answered === "true";
-  const totalQuestions = getKanjiPracticeQuestionCount();
+  const totalQuestions = activeKanjiPracticeQuestions.length;
 
   if (!current || !nextButton || !optionsContainer || alreadyAnswered) {
     return;
@@ -7563,7 +7523,7 @@ function handleKanjiPracticeTimeout() {
 
   applyChoiceOptionFeedback({
     options,
-    isCorrectOption: (item) => Number(item.dataset.optionIndex) === current.answer,
+    isCorrectOption: (_, optionIndex) => optionIndex === current.answer,
     setPressedState: true
   });
 
@@ -7578,16 +7538,13 @@ function handleKanjiPracticeTimeout() {
 }
 
 function nextKanjiPracticeSet() {
-  const items = getVisibleKanjiItems();
   const optionsContainer = document.getElementById("kanji-practice-options");
   const answered = optionsContainer?.dataset.answered === "true";
-  const questionCount = getKanjiPracticeQuestionCount();
+  const questionCount = activeKanjiPracticeQuestions.length;
 
-  if (!items.length || !answered) {
+  if (!questionCount || !answered) {
     return;
   }
-
-  ensureKanjiPracticeQuestionOrder();
 
   if (kanjiPracticeState.results.length >= questionCount || state.basicPracticeIndexes.kanji >= questionCount - 1) {
     kanjiPracticeState.showResults = true;
