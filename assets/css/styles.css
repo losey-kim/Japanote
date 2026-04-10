@@ -4113,12 +4113,12 @@ button {
 }
 
 .match-result-stat {
-  padding: 18px;
+  padding: 12px 14px;
 }
 
 .match-result-stat-button {
   width: 100%;
-  padding: 18px;
+  padding: 12px 14px;
   appearance: none;
   -webkit-appearance: none;
   color: inherit;
@@ -4169,9 +4169,9 @@ button {
 
 .match-result-stat strong {
   display: block;
-  margin-top: 10px;
+  margin-top: 4px;
   font-family: "Space Grotesk", sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   letter-spacing: -0.04em;
 }
 
@@ -5555,7 +5555,7 @@ body::after {
   }
 
   .match-result-stat {
-    padding: 16px 12px;
+    padding: 10px;
   }
 
   .match-result-stat strong {

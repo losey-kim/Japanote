@@ -66,9 +66,9 @@
         const isWrong = stat.dataset?.resultFilter === "wrong";
         const bg = isCorrect ? "rgba(95,174,139,0.15)" : isWrong ? "rgba(222,107,72,0.15)" : "rgba(25,21,22,0.06)";
         const color = isCorrect ? "#2d7a54" : isWrong ? "#b84430" : "#191516";
-        html += `<div style="flex:1;padding:18px 12px;border-radius:18px;background:${bg};text-align:center;">
-          <div style="font-size:0.84rem;color:#625a56;">${label}</div>
-          <div style="font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:700;color:${color};margin-top:6px;">${value}</div>
+        html += `<div style="flex:1;padding:10px 10px;border-radius:14px;background:${bg};text-align:center;">
+          <div style="font-size:0.78rem;color:#625a56;">${label}</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.4rem;font-weight:700;color:${color};margin-top:2px;">${value}</div>
         </div>`;
       });
       html += "</div>";
