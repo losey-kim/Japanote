@@ -23,7 +23,8 @@
       "assets/js/app-study-view-helpers.js",
       "assets/js/shared-timer.js",
       "assets/js/shared-match-game.js",
-      "assets/js/app.js"
+      "assets/js/app.js",
+      "assets/js/share-result.js"
     ],
     "reading.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
@@ -34,7 +35,8 @@
       "assets/js/app-study-view-helpers.js",
       "assets/js/shared-timer.js",
       "assets/js/shared-match-game.js",
-      "assets/js/app.js"
+      "assets/js/app.js",
+      "assets/js/share-result.js"
     ],
     "vocab.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
@@ -48,7 +50,8 @@
       "assets/js/shared-match-copy.js",
       "assets/js/app-study-view-helpers.js",
       "assets/js/app.js",
-      "assets/js/match-game.js"
+      "assets/js/match-game.js",
+      "assets/js/share-result.js"
     ],
     "kanji.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
@@ -62,7 +65,8 @@
       "assets/js/shared-match-copy.js",
       "assets/js/app-study-view-helpers.js",
       "assets/js/app.js",
-      "assets/js/kanji-match-game.js"
+      "assets/js/kanji-match-game.js",
+      "assets/js/share-result.js"
     ],
     "characters.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
@@ -72,7 +76,8 @@
       "assets/js/vocab-registry.js?v=20260330a",
       "assets/js/app-study-view-helpers.js?v=20260330a",
       "assets/js/shared-timer.js?v=20260330a",
-      "assets/js/app.js?v=20260330a"
+      "assets/js/app.js?v=20260330a",
+      "assets/js/share-result.js"
     ]
   };
 

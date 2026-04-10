@@ -4268,6 +4268,18 @@ button {
   gap: 12px;
 }
 
+.match-result-share-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.share-result-btn {
+  gap: 8px;
+}
+
 .match-result-item {
   padding: 18px;
   display: grid;
