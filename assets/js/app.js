@@ -5803,11 +5803,11 @@ function renderKanjiPracticeBulkActionButtons(results) {
     datasetKey: "kanjiPracticeBulkAction",
     saveActionValue: "save-review",
     removeActionValue: "remove-review",
-    saveLabel: "전체 다시 볼래요",
-    removeLabel: "전체 빼기",
-    emptyTitle: "지금 다시 볼래요에 담을 한자가 없어요.",
-    saveTitle: "지금 보이는 한자를 다시 볼래요 목록에 모두 담아요.",
-    removeTitle: "지금 보이는 한자를 다시 볼래요 목록에서 모두 빼요."
+    saveLabel: "모두 다시 보기",
+    removeLabel: "다시 보기 해제",
+    emptyTitle: "지금 표시 중인 한자가 없어요.",
+    saveTitle: "지금 보이는 한자를 모두 다시 볼 항목으로 표시해요.",
+    removeTitle: "지금 보이는 한자의 다시 보기 표시를 모두 해제해요."
   });
   renderResultBulkActionButton({
     button: masteredActionButton,
@@ -5819,11 +5819,11 @@ function renderKanjiPracticeBulkActionButtons(results) {
     datasetKey: "kanjiPracticeMasteredBulkAction",
     saveActionValue: "save-mastered",
     removeActionValue: "remove-mastered",
-    saveLabel: "전체 익혔어요",
-    removeLabel: "전체 해제",
-    emptyTitle: "지금 익혔어요로 옮길 한자가 없어요.",
-    saveTitle: "지금 보이는 한자를 익혔어요 목록으로 모두 옮겨요.",
-    removeTitle: "지금 보이는 한자를 익혔어요 목록에서 모두 빼요.",
+    saveLabel: "모두 익히기",
+    removeLabel: "익힘 해제",
+    emptyTitle: "지금 표시 중인 한자가 없어요.",
+    saveTitle: "지금 보이는 한자를 모두 익힘으로 표시해요.",
+    removeTitle: "지금 보이는 한자의 익힘 표시를 모두 해제해요.",
     saveIcon: "check_circle",
     removeIcon: "remove_done"
   });
@@ -6943,7 +6943,7 @@ function renderKanjiPracticeResults() {
             {
               id: item.id,
               selected: reviewSelected,
-              actionLabel: reviewSelected ? "다시 볼래요에서 빼기" : "다시 볼래요로 넘기기",
+              actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
               datasetKey: "kanjiResultReview",
               defaultIcon: "bookmark_add",
               selectedIcon: "delete",
@@ -6952,7 +6952,7 @@ function renderKanjiPracticeResults() {
             {
               id: item.id,
               selected: masteredSelected,
-              actionLabel: masteredSelected ? "익혔어요에서 빼기" : "익혔어요로 넘기기",
+              actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
               datasetKey: "kanjiResultMastered",
               defaultIcon: "check_circle",
               selectedIcon: "task_alt",
@@ -8141,11 +8141,11 @@ function renderVocabQuizBulkActionButtons(results) {
     getId: (item) => item.id,
     isSaved: isWordSavedToReviewList,
     datasetKey: "vocabQuizBulkAction",
-    saveLabel: "전체 담기",
-    removeLabel: "전체 빼기",
-    emptyTitle: "지금 담을 단어가 없어요.",
-    saveTitle: "지금 보이는 단어를 다시 볼래요 목록에 모두 담아요.",
-    removeTitle: "지금 보이는 단어를 다시 볼래요 목록에서 모두 빼요."
+    saveLabel: "모두 다시 보기",
+    removeLabel: "다시 보기 해제",
+    emptyTitle: "지금 표시 중인 단어가 없어요.",
+    saveTitle: "지금 보이는 단어를 모두 다시 볼 항목으로 표시해요.",
+    removeTitle: "지금 보이는 단어의 다시 보기 표시를 모두 해제해요."
   });
   renderResultBulkActionButton({
     button: masteredActionButton,
@@ -8157,11 +8157,11 @@ function renderVocabQuizBulkActionButtons(results) {
     datasetKey: "vocabQuizMasteredBulkAction",
     saveActionValue: "save-mastered",
     removeActionValue: "remove-mastered",
-    saveLabel: "전체 익혔어요",
-    removeLabel: "전체 해제",
-    emptyTitle: "지금 익혔어요로 옮길 단어가 없어요.",
-    saveTitle: "지금 보이는 단어를 익혔어요 목록으로 모두 옮겨요.",
-    removeTitle: "지금 보이는 단어를 익혔어요 목록에서 모두 빼요.",
+    saveLabel: "모두 익히기",
+    removeLabel: "익힘 해제",
+    emptyTitle: "지금 표시 중인 단어가 없어요.",
+    saveTitle: "지금 보이는 단어를 모두 익힘으로 표시해요.",
+    removeTitle: "지금 보이는 단어의 익힘 표시를 모두 해제해요.",
     saveIcon: "check_circle",
     removeIcon: "remove_done"
   });
@@ -8254,7 +8254,7 @@ function renderVocabQuizResults() {
             {
               id: item.id,
               selected: reviewSelected,
-              actionLabel: reviewSelected ? "다시 볼래요에서 빼기" : "다시 볼래요로 넘기기",
+              actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
               datasetKey: "vocabQuizReview",
               defaultIcon: "bookmark_add",
               selectedIcon: "delete",
@@ -8263,7 +8263,7 @@ function renderVocabQuizResults() {
             {
               id: item.id,
               selected: masteredSelected,
-              actionLabel: masteredSelected ? "익혔어요에서 빼기" : "익혔어요로 넘기기",
+              actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
               datasetKey: "vocabQuizMastered",
               defaultIcon: "check_circle",
               selectedIcon: "task_alt",

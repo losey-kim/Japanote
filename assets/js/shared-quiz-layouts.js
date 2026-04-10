@@ -349,6 +349,9 @@
 
   const QUIZ_RESULT_MASTERED_ACTION_LABEL = "전체 익혔어요";
 
+  const QUIZ_RESULT_REVIEW_ACTION_LABEL = "모두 다시 보기";
+  const QUIZ_RESULT_LEARN_ACTION_LABEL = "모두 익히기";
+
   function createPracticeEmptyMessage({ id, text = QUIZ_EMPTY_MESSAGE }) {
     return `<p class="vocab-list-empty" id="${escapeHtml(id)}" hidden>${escapeHtml(text)}</p>`;
   }
@@ -993,7 +996,7 @@
     resultPrefix,
     resultClassName = "match-result-view",
     resultFilterAriaLabel,
-    resultBulkActionLabel = QUIZ_RESULT_ALL_ACTION_LABEL,
+    resultBulkActionLabel = QUIZ_RESULT_REVIEW_ACTION_LABEL,
     resultBulkActions = [],
     resultFooterHtml = ""
   }) {
@@ -1090,7 +1093,7 @@
     className = "match-result-view",
     filterAriaLabel,
     emptyText = QUIZ_RESULT_EMPTY_MESSAGE,
-    bulkActionLabel = QUIZ_RESULT_ALL_ACTION_LABEL,
+    bulkActionLabel = QUIZ_RESULT_REVIEW_ACTION_LABEL,
     bulkActions = [],
     footerHtml = ""
   }) {
@@ -1263,12 +1266,12 @@
         {
           id: "vocab-quiz-result-bulk-action",
           labelId: "vocab-quiz-result-bulk-label",
-          label: QUIZ_RESULT_ALL_ACTION_LABEL
+          label: QUIZ_RESULT_REVIEW_ACTION_LABEL
         },
         {
           id: "vocab-quiz-result-mastered-action",
           labelId: "vocab-quiz-result-mastered-label",
-          label: QUIZ_RESULT_MASTERED_ACTION_LABEL,
+          label: QUIZ_RESULT_LEARN_ACTION_LABEL,
           icon: "check_circle"
         }
       ]
@@ -1363,12 +1366,12 @@
         {
           id: "kanji-practice-result-bulk-action",
           labelId: "kanji-practice-result-bulk-label",
-          label: QUIZ_RESULT_RETRY_ALL_ACTION_LABEL
+          label: QUIZ_RESULT_REVIEW_ACTION_LABEL
         },
         {
           id: "kanji-practice-result-mastered-action",
           labelId: "kanji-practice-result-mastered-label",
-          label: QUIZ_RESULT_MASTERED_ACTION_LABEL,
+          label: QUIZ_RESULT_LEARN_ACTION_LABEL,
           icon: "check_circle"
         }
       ],
@@ -1473,7 +1476,7 @@
       },
       resultPrefix: "match",
       resultFilterAriaLabel: "짝 맞추기 결과 필터",
-      bulkActionLabel: QUIZ_RESULT_ALL_ACTION_LABEL
+      bulkActionLabel: QUIZ_RESULT_REVIEW_ACTION_LABEL
     });
   }
 
@@ -1773,7 +1776,7 @@
     resultPrefix,
     resultFilterAriaLabel,
     resultClassName = "match-result-view",
-    bulkActionLabel = QUIZ_RESULT_ALL_ACTION_LABEL
+    bulkActionLabel = QUIZ_RESULT_REVIEW_ACTION_LABEL
   }) {
     return `
         <div class="match-board" id="${escapeHtml(boardId)}" hidden>
