@@ -608,9 +608,9 @@
     const wrong = document.getElementById(wrongId);
     const empty = document.getElementById(emptyId);
     const list = document.getElementById(listId);
-    const bulkActionButton = document.getElementById(bulkActionButtonId);
+    const bulkActionButton = bulkActionButtonId ? document.getElementById(bulkActionButtonId) : null;
 
-    if (!resultView || !total || !correct || !wrong || !empty || !list || !bulkActionButton) {
+    if (!resultView || !total || !correct || !wrong || !empty || !list) {
       return;
     }
 
@@ -619,7 +619,7 @@
     wrong.textContent = String(counts.wrong);
     syncResultFilterButtons(resultView, activeFilter);
 
-    if (typeof renderBulkActionButton === "function") {
+    if (bulkActionButton && typeof renderBulkActionButton === "function") {
       renderBulkActionButton(filteredResults);
     }
 

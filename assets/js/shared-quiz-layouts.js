@@ -1095,17 +1095,20 @@
     emptyText = QUIZ_RESULT_EMPTY_MESSAGE,
     bulkActionLabel = QUIZ_RESULT_REVIEW_ACTION_LABEL,
     bulkActions = [],
+    disableDefaultBulkAction = false,
     footerHtml = ""
   }) {
     const resolvedBulkActions = Array.isArray(bulkActions) && bulkActions.length
       ? bulkActions
-      : [
-        {
-          id: `${idPrefix}-result-bulk-action`,
-          labelId: `${idPrefix}-result-bulk-label`,
-          label: bulkActionLabel
-        }
-      ];
+      : disableDefaultBulkAction
+        ? []
+        : [
+          {
+            id: `${idPrefix}-result-bulk-action`,
+            labelId: `${idPrefix}-result-bulk-label`,
+            label: bulkActionLabel
+          }
+        ];
 
     return createResultView({
       viewId: `${idPrefix}-result-view`,
@@ -1790,6 +1793,11 @@
       boardClassName: "match-board reading-practice-board",
       emptyId: "reading-empty",
       viewId: "reading-practice-view",
+      resultViewConfig: {
+        idPrefix: "reading-practice",
+        filterAriaLabel: "독해 결과 필터",
+        disableDefaultBulkAction: true
+      },
       viewMarkup: createPracticeModeCardLayout({
         articleClassName: "reading-card",
         metaClassName: "reading-meta",

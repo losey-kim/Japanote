@@ -659,6 +659,11 @@ const grammarPracticeResultFilterLabels = {
   correct: "정답",
   wrong: "오답"
 };
+const readingPracticeResultFilterLabels = {
+  all: "전체",
+  correct: "정답",
+  wrong: "오답"
+};
 const quizSessionSizeOptions = [10, 20];
 const kanjiPracticeQuizCountOptions = [5, 10, 15, 20];
 const kanjiMatchCountOptions = [5, 10, 15, 20];
@@ -3849,6 +3854,11 @@ const kanjiPracticeState = {
   resultFilter: "all"
 };
 const grammarPracticeState = {
+  results: [],
+  showResults: false,
+  resultFilter: "all"
+};
+const readingPracticeState = {
   results: [],
   showResults: false,
   resultFilter: "all"
@@ -10327,6 +10337,7 @@ function setReadingLevel(level) {
   }
 
   state.readingLevel = nextLevel;
+  invalidateReadingPracticeSession();
   saveState();
   renderReadingPractice();
 }
@@ -10344,6 +10355,13 @@ function setReadingDuration(duration) {
 }
 
 function invalidateReadingPracticeSession() {
+  resetReadingPracticeSessionState();
+}
+
+function resetReadingPracticeSessionState() {
+  readingPracticeState.results = [];
+  readingPracticeState.showResults = false;
+  readingPracticeState.resultFilter = "all";
   state.readingStarted = false;
   state.readingSessionQuestionIndex = 0;
   resetQuizSessionScore("reading");
@@ -10401,8 +10419,8 @@ function renderReadingControls() {
     actionButton: {
       button: startButton,
       label: startLabel,
-      isStarted: state.readingStarted,
-      canStart: state.readingStarted || canStart
+      isStarted: state.readingStarted || readingPracticeState.showResults,
+      canStart: state.readingStarted || readingPracticeState.showResults || canStart
     }
   });
 }
@@ -10418,6 +10436,97 @@ function getCurrentReadingSet() {
   return sets[currentIndex];
 }
 
+function getReadingPracticeResultFilter(value = readingPracticeState.resultFilter) {
+  return Object.prototype.hasOwnProperty.call(readingPracticeResultFilterLabels, value) ? value : "all";
+}
+
+function getReadingPracticeResultCounts() {
+  return getStudyResultCounts(readingPracticeState.results);
+}
+
+function getFilteredReadingPracticeResults(filter = getReadingPracticeResultFilter(readingPracticeState.resultFilter)) {
+  return getFilteredStudyResults(readingPracticeState.results, getReadingPracticeResultFilter(filter));
+}
+
+function setReadingPracticeResult(current, selectedIndex, correct, timedOut = false) {
+  // 독해는 문제 수가 지문 수보다 많을 수 있어 같은 지문이 다시 나와도 세션 결과를 덮어쓰지 않게 한다.
+  const resultId = `${current.id || "reading"}-${state.readingSessionQuestionIndex}`;
+  const answerText = current.options[current.answer] || "";
+  const selected = timedOut ? "" : current.options[selectedIndex] || "";
+  const result = {
+    id: resultId,
+    source: current.source || `${getReadingLevel(state.readingLevel)} 독해`,
+    title: current.title || "",
+    question: current.question || "",
+    explanation: current.explanation || "",
+    answerText,
+    selected,
+    status: correct ? "correct" : "wrong",
+    timedOut
+  };
+  const currentResultIndex = readingPracticeState.results.findIndex((item) => item.id === resultId);
+
+  if (currentResultIndex >= 0) {
+    readingPracticeState.results[currentResultIndex] = result;
+    return;
+  }
+
+  readingPracticeState.results.push(result);
+}
+
+function getReadingPracticeResultDetail(item) {
+  const parts = [];
+
+  if (item.question) {
+    parts.push(softenVisibleKoreanCopy(item.question));
+  }
+
+  if (item.status === "wrong") {
+    if (item.timedOut) {
+      parts.push("시간 초과");
+    } else {
+      parts.push(`선택 ${softenVisibleKoreanCopy(item.selected || "미응답")}`);
+    }
+    parts.push(`정답 ${softenVisibleKoreanCopy(item.answerText)}`);
+  }
+
+  if (item.explanation) {
+    parts.push(softenExplanationCopy(item.explanation));
+  }
+
+  return parts.join(" · ");
+}
+
+function renderReadingPracticeResults() {
+  const counts = getReadingPracticeResultCounts();
+  const filteredResults = getFilteredReadingPracticeResults();
+
+  renderSharedStudyResults({
+    resultViewId: "reading-practice-result-view",
+    totalId: "reading-practice-result-total",
+    correctId: "reading-practice-result-correct",
+    wrongId: "reading-practice-result-wrong",
+    emptyId: "reading-practice-result-empty",
+    listId: "reading-practice-result-list",
+    counts,
+    filteredResults,
+    activeFilter: getReadingPracticeResultFilter(readingPracticeState.resultFilter),
+    filterLabels: readingPracticeResultFilterLabels,
+    getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과가 아직 없어요.`,
+    renderItems: (results, container) => {
+      results.forEach((item) => {
+        sharedResultUi.appendResultItem({
+          container,
+          status: item.status,
+          levelText: item.source || "독해",
+          titleText: item.title || item.question || "-",
+          descriptionText: getReadingPracticeResultDetail(item)
+        });
+      });
+    }
+  });
+}
+
 function renderReadingPractice() {
   if (flushPendingExternalStudyStateIfIdle()) {
     return;
@@ -10425,6 +10534,7 @@ function renderReadingPractice() {
 
   const empty = document.getElementById("reading-empty");
   const practiceView = document.getElementById("reading-practice-view");
+  const resultView = document.getElementById("reading-practice-result-view");
   const readingCard = document.querySelector(".reading-card");
   const passage = document.getElementById("reading-passage");
   const optionsContainer = document.getElementById("reading-options");
@@ -10446,14 +10556,26 @@ function renderReadingPractice() {
   if (
     !empty ||
     !practiceView ||
+    !resultView ||
     !readingCard ||
     !passage ||
     !optionsContainer ||
+    !nextButton ||
     !progress ||
     !question ||
     !feedback ||
     !explanation
   ) {
+    return;
+  }
+
+  if (readingPracticeState.showResults) {
+    stopQuizSessionTimer("reading");
+    renderQuizSessionHud("reading");
+    empty.hidden = true;
+    practiceView.hidden = true;
+    resultView.hidden = false;
+    renderReadingPracticeResults();
     return;
   }
 
@@ -10465,11 +10587,13 @@ function renderReadingPractice() {
       ? "준비됐다면 시작해볼까요?"
       : "독해 데이터를 준비하고 있어요.";
     practiceView.hidden = true;
+    resultView.hidden = true;
     renderQuizSessionHud("reading");
     return;
   }
 
   if (currentSessionIndex >= activeCount) {
+    readingPracticeState.showResults = true;
     state.readingStarted = false;
     state.readingSessionQuestionIndex = 0;
     saveState();
@@ -10483,12 +10607,14 @@ function renderReadingPractice() {
     empty.hidden = false;
     empty.textContent = "독해 데이터를 준비하고 있어요.";
     practiceView.hidden = true;
+    resultView.hidden = true;
     renderQuizSessionHud("reading");
     return;
   }
 
   empty.hidden = true;
   practiceView.hidden = false;
+  resultView.hidden = true;
 
   progress.textContent = `${currentSessionIndex + 1} / ${activeCount}`;
   question.textContent = softenVisibleKoreanCopy(current.question);
@@ -10508,7 +10634,8 @@ function renderReadingPractice() {
     options: current.options,
     buttonClassName: "reading-option",
     formatText: softenVisibleKoreanCopy,
-    onSelect: handleReadingAnswer
+    onSelect: handleReadingAnswer,
+    setPressedState: true
   });
 
   setQuizSessionDuration("reading", state.readingDuration);
@@ -10529,12 +10656,14 @@ function handleReadingAnswer(index) {
 
   const correct = index === current.answer;
   finalizeQuizSession("reading", correct);
+  setReadingPracticeResult(current, index, correct, false);
 
   applyChoiceOptionFeedback({
     options,
     isCorrectOption: (_, optionIndex) => optionIndex === current.answer,
     isSelectedOption: (_, optionIndex) => optionIndex === index,
-    markSelected: false
+    markSelected: true,
+    setPressedState: true
   });
 
   document.getElementById("reading-feedback").textContent = correct
@@ -10569,11 +10698,13 @@ function handleReadingTimeout() {
   }
 
   finalizeQuizSession("reading", false);
+  setReadingPracticeResult(current, -1, false, true);
 
   applyChoiceOptionFeedback({
     options,
     isCorrectOption: (_, optionIndex) => optionIndex === current.answer,
-    markSelected: false
+    markSelected: true,
+    setPressedState: true
   });
 
   document.getElementById("reading-feedback").textContent = "";
@@ -10605,6 +10736,7 @@ function nextReadingSet() {
   }
 
   if (currentSessionIndex >= questionLimit - 1) {
+    readingPracticeState.showResults = true;
     state.readingStarted = false;
     state.readingSessionQuestionIndex = 0;
     saveState();
@@ -10627,10 +10759,7 @@ function restartReadingPractice() {
     return;
   }
 
-  stopQuizSessionTimer("reading");
-  resetQuizSessionScore("reading");
-  setQuizSessionDuration("reading", state.readingDuration);
-  state.readingSessionQuestionIndex = 0;
+  resetReadingPracticeSessionState();
   state.readingStarted = true;
   saveState();
   renderReadingPractice();
@@ -11051,6 +11180,7 @@ function attachEventListeners() {
   const readingCountSpinner = document.querySelector('[data-spinner-id="reading-count"]');
   const readingTimeSpinner = document.querySelector('[data-spinner-id="reading-time"]');
   const readingStart = document.getElementById("reading-start");
+  const readingPracticeResultFilter = document.querySelectorAll("#reading-practice-result-view [data-result-filter]");
   const readingNext = document.getElementById("reading-next");
   const basicPracticeNext = document.getElementById("basic-practice-next");
   const kanjiList = document.getElementById("kanji-list");
@@ -11346,6 +11476,15 @@ function attachEventListeners() {
     render: renderReadingPractice
   });
   attachClickListener(readingStart, restartReadingPractice);
+  attachResultFilterButtonListeners({
+    buttons: readingPracticeResultFilter,
+    getNextValue: getReadingPracticeResultFilter,
+    getCurrentValue: () => getReadingPracticeResultFilter(readingPracticeState.resultFilter),
+    setValue: (value) => {
+      readingPracticeState.resultFilter = value;
+    },
+    render: renderReadingPracticeResults
+  });
   attachClickListener(readingNext, nextReadingSet);
   attachClickListener(basicPracticeNext, nextBasicPracticeSet);
   attachKanjiStudyListeners({

@@ -2402,7 +2402,9 @@ button {
 }
 
 .basic-practice-option.is-selected,
-.basic-practice-option.is-selected:disabled {
+.basic-practice-option.is-selected:disabled,
+.reading-option.is-selected,
+.reading-option.is-selected:disabled {
   border-color: rgba(93, 133, 207, 0.72);
   background: rgba(93, 133, 207, 0.12);
   box-shadow: 0 0 0 1px rgba(93, 133, 207, 0.18);
@@ -5856,7 +5858,8 @@ body::after {
     color: #e7fff7;
   }
 
-  html:not([data-theme="light"]) .basic-practice-option.is-selected {
+  html:not([data-theme="light"]) .basic-practice-option.is-selected,
+  html:not([data-theme="light"]) .reading-option.is-selected {
     background: rgba(79, 123, 230, 0.22);
     border-color: rgba(145, 175, 255, 0.4);
     color: #eef3ff;
@@ -6133,7 +6136,8 @@ html[data-theme="dark"] .match-card.is-matched {
   color: #e7fff7;
 }
 
-html[data-theme="dark"] .basic-practice-option.is-selected {
+html[data-theme="dark"] .basic-practice-option.is-selected,
+html[data-theme="dark"] .reading-option.is-selected {
   background: rgba(79, 123, 230, 0.22);
   border-color: rgba(145, 175, 255, 0.4);
   color: #eef3ff;
