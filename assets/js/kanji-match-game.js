@@ -119,6 +119,43 @@ function isKanjiSavedToMemorizationList(id) {
   return Array.isArray(studyState.kanjiReviewIds) && studyState.kanjiReviewIds.includes(id);
 }
 
+function saveKanjiToMasteredList(id) {
+  if (!id) {
+    return;
+  }
+
+  const studyState = loadKanjiSharedStudyState();
+  const reviewIds = Array.isArray(studyState.kanjiReviewIds) ? studyState.kanjiReviewIds : [];
+  const masteredIds = Array.isArray(studyState.kanjiMasteredIds) ? studyState.kanjiMasteredIds : [];
+
+  studyState.kanjiMasteredIds = Array.from(new Set([...masteredIds, id]));
+  studyState.kanjiReviewIds = reviewIds.filter((itemId) => itemId !== id);
+  saveKanjiSharedStudyState(studyState);
+  syncKanjiStudyStateToApp();
+}
+
+function removeKanjiFromMasteredList(id) {
+  if (!id) {
+    return;
+  }
+
+  const studyState = loadKanjiSharedStudyState();
+  const masteredIds = Array.isArray(studyState.kanjiMasteredIds) ? studyState.kanjiMasteredIds : [];
+
+  studyState.kanjiMasteredIds = masteredIds.filter((itemId) => itemId !== id);
+  saveKanjiSharedStudyState(studyState);
+  syncKanjiStudyStateToApp();
+}
+
+function isKanjiSavedToMasteredList(id) {
+  if (!id) {
+    return false;
+  }
+
+  const studyState = loadKanjiSharedStudyState();
+  return Array.isArray(studyState.kanjiMasteredIds) && studyState.kanjiMasteredIds.includes(id);
+}
+
 function getKanjiMatchStudyBuckets() {
   const studyState = loadKanjiSharedStudyState();
   return {
@@ -584,36 +621,56 @@ function getFilteredKanjiMatchResults(filter = getKanjiMatchResultFilter(kanjiMa
   return kanjiMatchEngine.getFilteredResults(filter);
 }
 
-function renderKanjiMatchBulkActionButton(results) {
-  const bulkActionButton = document.getElementById("kanji-match-result-bulk-action");
-  const bulkActionLabel = document.getElementById("kanji-match-result-bulk-label");
-  const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
+function renderKanjiMatchBulkActionButtons(results) {
+  const reviewActionButton = document.getElementById("kanji-match-result-bulk-action");
+  const reviewActionLabel = document.getElementById("kanji-match-result-bulk-label");
+  const reviewActionIcon = reviewActionButton?.querySelector(".material-symbols-rounded");
+  const masteredActionButton = document.getElementById("kanji-match-result-mastered-action");
+  const masteredActionLabel = document.getElementById("kanji-match-result-mastered-label");
+  const masteredActionIcon = masteredActionButton?.querySelector(".material-symbols-rounded");
+  const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
 
-  if (!bulkActionButton || !bulkActionLabel || !bulkActionIcon) {
-    return;
+  if (reviewActionButton && reviewActionLabel && reviewActionIcon) {
+    const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isKanjiSavedToMemorizationList(id));
+
+    sharedMatchGame.renderBulkActionButtonState({
+      button: reviewActionButton,
+      label: reviewActionLabel,
+      icon: reviewActionIcon,
+      count: uniqueIds.length,
+      allSaved,
+      datasetKey: "kanjiMatchBulkAction",
+      getActionLabel: () => allSaved ? "다시 보기 해제" : "모두 다시 보기",
+      getActionTitle: ({ count, allSaved: savedState }) =>
+        count === 0
+          ? "지금 표시 중인 한자가 없어요."
+          : savedState
+            ? "지금 보이는 한자의 다시 보기 표시를 모두 해제해요."
+            : "지금 보이는 한자를 모두 다시 볼 항목으로 표시해요."
+    });
   }
 
-  const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
-  const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isKanjiSavedToMemorizationList(id));
+  if (masteredActionButton && masteredActionLabel && masteredActionIcon) {
+    const allMastered = uniqueIds.length > 0 && uniqueIds.every((id) => isKanjiSavedToMasteredList(id));
 
-  sharedMatchGame.renderBulkActionButtonState({
-    button: bulkActionButton,
-    label: bulkActionLabel,
-    icon: bulkActionIcon,
-    count: uniqueIds.length,
-    allSaved,
-    datasetKey: "kanjiMatchBulkAction",
-    getActionLabel: (savedState) =>
-      typeof matchCopy.getBulkActionLabel === "function" ? matchCopy.getBulkActionLabel(savedState) : savedState ? "전체 빼기" : "전체 담기",
-    getActionTitle: ({ count, allSaved: savedState }) =>
-      typeof matchCopy.getBulkActionTitle === "function"
-        ? matchCopy.getBulkActionTitle({ count, itemLabel: "한자", allSaved: savedState })
-        : count === 0
-          ? "지금 담을 한자가 없어요."
+    sharedMatchGame.renderBulkActionButtonState({
+      button: masteredActionButton,
+      label: masteredActionLabel,
+      icon: masteredActionIcon,
+      count: uniqueIds.length,
+      allSaved: allMastered,
+      datasetKey: "kanjiMatchMasteredBulkAction",
+      getActionLabel: () => allMastered ? "익힘 해제" : "모두 익히기",
+      getActionTitle: ({ count, allSaved: savedState }) =>
+        count === 0
+          ? "지금 표시 중인 한자가 없어요."
           : savedState
-            ? "지금 보이는 한자를 다시 볼래요 목록에서 모두 빼요."
-            : "지금 보이는 한자를 다시 볼래요 목록에 모두 담아요."
-  });
+            ? "지금 보이는 한자의 익힘 표시를 모두 해제해요."
+            : "지금 보이는 한자를 모두 익힘으로 표시해요."
+    });
+
+    masteredActionIcon.textContent = allMastered ? "remove_done" : "check_circle";
+  }
 }
 
 function renderKanjiMatchResultFilterOptions(counts) {
@@ -644,33 +701,40 @@ function renderKanjiMatchResults() {
     activeFilter: getKanjiMatchResultFilter(kanjiMatchState.resultFilter),
     filterLabels: kanjiMatchResultFilterLabels,
     renderFilterOptions: renderKanjiMatchResultFilterOptions,
-    renderBulkActionButton: renderKanjiMatchBulkActionButton,
-    createItemMarkup: (item) => {
-      const saved = isKanjiSavedToMemorizationList(item.id);
-      const statusLabel = item.status === "correct" ? "정답" : "오답";
-      const actionLabel =
-        typeof matchCopy.getSavedActionLabel === "function"
-          ? matchCopy.getSavedActionLabel(saved)
-          : saved
-            ? "다시 볼래요에서 빼기"
-            : "다시 볼래요에 담기";
-      return `
-        <article class="match-result-item is-${item.status}">
-          ${sharedMatchGame.createResultItemHeadMarkup({
-            status: item.status,
-            statusLabel,
-            levelLabel: item.gradeLabel,
-            saved,
-            datasetName: "kanji-match-save",
-            itemId: item.id,
-            actionLabel
-          })}
-          <div class="match-result-item-main">
-            <strong>${item.char}</strong>
-            <p>${item.reading}</p>
-          </div>
-        </article>
-      `;
+    renderBulkActionButton: renderKanjiMatchBulkActionButtons,
+    renderItems: (results, container) => {
+      results.forEach((item) => {
+        const reviewSelected = isKanjiSavedToMemorizationList(item.id);
+        const masteredSelected = isKanjiSavedToMasteredList(item.id);
+
+        sharedMatchGame.appendResultItem({
+          container,
+          status: item.status,
+          levelText: item.gradeLabel,
+          titleText: item.char,
+          descriptionText: item.reading,
+          actionButtons: [
+            {
+              itemId: item.id,
+              selected: reviewSelected,
+              actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
+              datasetName: "kanjiMatchReview",
+              defaultIcon: "bookmark_add",
+              selectedIcon: "delete",
+              selectedClassName: "is-saved"
+            },
+            {
+              itemId: item.id,
+              selected: masteredSelected,
+              actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
+              datasetName: "kanjiMatchMastered",
+              defaultIcon: "check_circle",
+              selectedIcon: "task_alt",
+              selectedClassName: "is-mastered"
+            }
+          ]
+        });
+      });
     }
   });
 }
@@ -843,6 +907,7 @@ function attachKanjiMatchEventListeners() {
   const timeSpinner = document.querySelector('[data-spinner-id="kanji-match-time"]');
   const resultFilterSelect = document.getElementById("kanji-match-result-filter");
   const resultBulkAction = document.getElementById("kanji-match-result-bulk-action");
+  const resultMasteredAction = document.getElementById("kanji-match-result-mastered-action");
   const resultList = document.getElementById("kanji-match-result-list");
 
   sharedMatchGame.attachStandardMatchEventListeners({
@@ -885,13 +950,32 @@ function attachKanjiMatchEventListeners() {
     },
     resultSaveConfig: {
       list: resultList,
-      buttonSelector: "[data-kanji-match-save]",
-      getItemId: (button) => button.dataset.kanjiMatchSave,
+      buttonSelector: "[data-kanji-match-review]",
+      getItemId: (button) => button.dataset.kanjiMatchReview,
       isSaved: isKanjiSavedToMemorizationList,
       onRemove: removeKanjiFromMemorizationList,
       onSave: saveKanjiToMemorizationList,
       afterChange: renderKanjiMatchResults
     }
+  });
+
+  sharedMatchGame.attachBulkActionListener({
+    button: resultMasteredAction,
+    datasetKey: "kanjiMatchMasteredBulkAction",
+    getFilteredResults: getFilteredKanjiMatchResults,
+    getItemId: (item) => item.id,
+    onRemove: removeKanjiFromMasteredList,
+    onSave: saveKanjiToMasteredList,
+    afterChange: renderKanjiMatchResults
+  });
+  sharedMatchGame.attachResultSaveListener({
+    list: resultList,
+    buttonSelector: "[data-kanji-match-mastered]",
+    getItemId: (button) => button.dataset.kanjiMatchMastered,
+    isSaved: isKanjiSavedToMasteredList,
+    onRemove: removeKanjiFromMasteredList,
+    onSave: saveKanjiToMasteredList,
+    afterChange: renderKanjiMatchResults
   });
 }
 

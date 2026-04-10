@@ -61,6 +61,15 @@ function saveSharedStudyState(studyState) {
   sharedMatchGame.saveStoredObject(studyStateStorageKey, studyState);
 }
 
+function syncStudyStateToApp() {
+  if (typeof applyExternalStudyState === "function") {
+    applyExternalStudyState(loadSharedStudyState());
+    return;
+  }
+
+  sharedMatchGame.dispatchStorageUpdated(studyStateStorageKey, loadSharedStudyState(), "local");
+}
+
 function saveWordToMemorizationList(id) {
   if (!id) {
     return;
@@ -73,6 +82,7 @@ function saveWordToMemorizationList(id) {
   studyState.reviewIds = Array.from(new Set([...reviewIds, id]));
   studyState.masteredIds = masteredIds.filter((itemId) => itemId !== id);
   saveSharedStudyState(studyState);
+  syncStudyStateToApp();
 }
 
 function removeWordFromMemorizationList(id) {
@@ -85,6 +95,7 @@ function removeWordFromMemorizationList(id) {
 
   studyState.reviewIds = reviewIds.filter((itemId) => itemId !== id);
   saveSharedStudyState(studyState);
+  syncStudyStateToApp();
 }
 
 function isWordSavedToMemorizationList(id) {
@@ -94,6 +105,43 @@ function isWordSavedToMemorizationList(id) {
 
   const studyState = loadSharedStudyState();
   return Array.isArray(studyState.reviewIds) && studyState.reviewIds.includes(id);
+}
+
+function saveWordToMasteredList(id) {
+  if (!id) {
+    return;
+  }
+
+  const studyState = loadSharedStudyState();
+  const reviewIds = Array.isArray(studyState.reviewIds) ? studyState.reviewIds : [];
+  const masteredIds = Array.isArray(studyState.masteredIds) ? studyState.masteredIds : [];
+
+  studyState.masteredIds = Array.from(new Set([...masteredIds, id]));
+  studyState.reviewIds = reviewIds.filter((itemId) => itemId !== id);
+  saveSharedStudyState(studyState);
+  syncStudyStateToApp();
+}
+
+function removeWordFromMasteredList(id) {
+  if (!id) {
+    return;
+  }
+
+  const studyState = loadSharedStudyState();
+  const masteredIds = Array.isArray(studyState.masteredIds) ? studyState.masteredIds : [];
+
+  studyState.masteredIds = masteredIds.filter((itemId) => itemId !== id);
+  saveSharedStudyState(studyState);
+  syncStudyStateToApp();
+}
+
+function isWordSavedToMasteredList(id) {
+  if (!id) {
+    return false;
+  }
+
+  const studyState = loadSharedStudyState();
+  return Array.isArray(studyState.masteredIds) && studyState.masteredIds.includes(id);
 }
 
 function normalizeMatchText(value) {
@@ -652,36 +700,56 @@ function getFilteredMatchResults(filter = getMatchResultFilter(matchState.result
   return matchEngine.getFilteredResults(filter);
 }
 
-function renderMatchBulkActionButton(results) {
-  const bulkActionButton = document.getElementById("match-result-bulk-action");
-  const bulkActionLabel = document.getElementById("match-result-bulk-label");
-  const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
+function renderMatchBulkActionButtons(results) {
+  const reviewActionButton = document.getElementById("match-result-bulk-action");
+  const reviewActionLabel = document.getElementById("match-result-bulk-label");
+  const reviewActionIcon = reviewActionButton?.querySelector(".material-symbols-rounded");
+  const masteredActionButton = document.getElementById("match-result-mastered-action");
+  const masteredActionLabel = document.getElementById("match-result-mastered-label");
+  const masteredActionIcon = masteredActionButton?.querySelector(".material-symbols-rounded");
+  const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
 
-  if (!bulkActionButton || !bulkActionLabel || !bulkActionIcon) {
-    return;
+  if (reviewActionButton && reviewActionLabel && reviewActionIcon) {
+    const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
+
+    sharedMatchGame.renderBulkActionButtonState({
+      button: reviewActionButton,
+      label: reviewActionLabel,
+      icon: reviewActionIcon,
+      count: uniqueIds.length,
+      allSaved,
+      datasetKey: "matchBulkAction",
+      getActionLabel: () => allSaved ? "다시 보기 해제" : "모두 다시 보기",
+      getActionTitle: ({ count, allSaved: savedState }) =>
+        count === 0
+          ? "지금 표시 중인 단어가 없어요."
+          : savedState
+            ? "지금 보이는 단어의 다시 보기 표시를 모두 해제해요."
+            : "지금 보이는 단어를 모두 다시 볼 항목으로 표시해요."
+    });
   }
 
-  const uniqueIds = Array.from(new Set(results.map((item) => item.id).filter(Boolean)));
-  const allSaved = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMemorizationList(id));
+  if (masteredActionButton && masteredActionLabel && masteredActionIcon) {
+    const allMastered = uniqueIds.length > 0 && uniqueIds.every((id) => isWordSavedToMasteredList(id));
 
-  sharedMatchGame.renderBulkActionButtonState({
-    button: bulkActionButton,
-    label: bulkActionLabel,
-    icon: bulkActionIcon,
-    count: uniqueIds.length,
-    allSaved,
-    datasetKey: "matchBulkAction",
-    getActionLabel: (savedState) =>
-      typeof matchCopy.getBulkActionLabel === "function" ? matchCopy.getBulkActionLabel(savedState) : savedState ? "전체 빼기" : "전체 담기",
-    getActionTitle: ({ count, allSaved: savedState }) =>
-      typeof matchCopy.getBulkActionTitle === "function"
-        ? matchCopy.getBulkActionTitle({ count, itemLabel: "단어", allSaved: savedState })
-        : count === 0
-          ? "지금 담을 단어가 없어요."
+    sharedMatchGame.renderBulkActionButtonState({
+      button: masteredActionButton,
+      label: masteredActionLabel,
+      icon: masteredActionIcon,
+      count: uniqueIds.length,
+      allSaved: allMastered,
+      datasetKey: "matchMasteredBulkAction",
+      getActionLabel: () => allMastered ? "익힘 해제" : "모두 익히기",
+      getActionTitle: ({ count, allSaved: savedState }) =>
+        count === 0
+          ? "지금 표시 중인 단어가 없어요."
           : savedState
-            ? "지금 보이는 단어를 다시 볼래요 목록에서 모두 빼요."
-            : "지금 보이는 단어를 다시 볼래요 목록에 모두 담아요."
-  });
+            ? "지금 보이는 단어의 익힘 표시를 모두 해제해요."
+            : "지금 보이는 단어를 모두 익힘으로 표시해요."
+    });
+
+    masteredActionIcon.textContent = allMastered ? "remove_done" : "check_circle";
+  }
 }
 
 function renderMatchResultFilterOptions(counts) {
@@ -712,33 +780,40 @@ function renderMatchResults() {
     activeFilter: getMatchResultFilter(matchState.resultFilter),
     filterLabels: matchResultFilterLabels,
     renderFilterOptions: renderMatchResultFilterOptions,
-    renderBulkActionButton: renderMatchBulkActionButton,
-    createItemMarkup: (item) => {
-      const saved = isWordSavedToMemorizationList(item.id);
-      const statusLabel = item.status === "correct" ? "정답" : "오답";
-      const actionLabel =
-        typeof matchCopy.getSavedActionLabel === "function"
-          ? matchCopy.getSavedActionLabel(saved)
-          : saved
-            ? "다시 볼래요에서 빼기"
-            : "다시 볼래요에 담기";
-      return `
-        <article class="match-result-item is-${item.status}">
-          ${sharedMatchGame.createResultItemHeadMarkup({
-            status: item.status,
-            statusLabel,
-            levelLabel: formatMatchLevelLabel(item.level),
-            saved,
-            datasetName: "match-save",
-            itemId: item.id,
-            actionLabel
-          })}
-          <div class="match-result-item-main">
-            <strong>${item.reading}</strong>
-            <p>${item.meaning}</p>
-          </div>
-        </article>
-      `;
+    renderBulkActionButton: renderMatchBulkActionButtons,
+    renderItems: (results, container) => {
+      results.forEach((item) => {
+        const reviewSelected = isWordSavedToMemorizationList(item.id);
+        const masteredSelected = isWordSavedToMasteredList(item.id);
+
+        sharedMatchGame.appendResultItem({
+          container,
+          status: item.status,
+          levelText: formatMatchLevelLabel(item.level),
+          titleText: item.reading,
+          descriptionText: item.meaning,
+          actionButtons: [
+            {
+              itemId: item.id,
+              selected: reviewSelected,
+              actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
+              datasetName: "matchReview",
+              defaultIcon: "bookmark_add",
+              selectedIcon: "delete",
+              selectedClassName: "is-saved"
+            },
+            {
+              itemId: item.id,
+              selected: masteredSelected,
+              actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
+              datasetName: "matchMastered",
+              defaultIcon: "check_circle",
+              selectedIcon: "task_alt",
+              selectedClassName: "is-mastered"
+            }
+          ]
+        });
+      });
     }
   });
 }
@@ -948,6 +1023,7 @@ function attachMatchEventListeners() {
   const timeSpinner = document.querySelector('[data-spinner-id="match-time"]');
   const resultFilterSelect = document.getElementById("match-result-filter");
   const resultBulkAction = document.getElementById("match-result-bulk-action");
+  const resultMasteredAction = document.getElementById("match-result-mastered-action");
   const resultList = document.getElementById("match-result-list");
 
   sharedMatchGame.attachStandardMatchEventListeners({
@@ -991,13 +1067,32 @@ function attachMatchEventListeners() {
     },
     resultSaveConfig: {
       list: resultList,
-      buttonSelector: "[data-match-save]",
-      getItemId: (button) => button.dataset.matchSave,
+      buttonSelector: "[data-match-review]",
+      getItemId: (button) => button.dataset.matchReview,
       isSaved: isWordSavedToMemorizationList,
       onRemove: removeWordFromMemorizationList,
       onSave: saveWordToMemorizationList,
       afterChange: renderMatchResults
     }
+  });
+
+  sharedMatchGame.attachBulkActionListener({
+    button: resultMasteredAction,
+    datasetKey: "matchMasteredBulkAction",
+    getFilteredResults: getFilteredMatchResults,
+    getItemId: (item) => item.id,
+    onRemove: removeWordFromMasteredList,
+    onSave: saveWordToMasteredList,
+    afterChange: renderMatchResults
+  });
+  sharedMatchGame.attachResultSaveListener({
+    list: resultList,
+    buttonSelector: "[data-match-mastered]",
+    getItemId: (button) => button.dataset.matchMastered,
+    isSaved: isWordSavedToMasteredList,
+    onRemove: removeWordFromMasteredList,
+    onSave: saveWordToMasteredList,
+    afterChange: renderMatchResults
   });
 }
 

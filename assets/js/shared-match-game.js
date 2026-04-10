@@ -510,6 +510,82 @@
     `;
   }
 
+  function createResultActionButton({
+    selected,
+    datasetName,
+    itemId,
+    actionLabel,
+    defaultIcon = "bookmark_add",
+    selectedIcon = "delete",
+    selectedClassName = "is-saved"
+  }) {
+    const button = document.createElement("button");
+    const icon = document.createElement("span");
+    const safeDatasetName = typeof datasetName === "string" ? datasetName : "match-save";
+    const safeItemId = typeof itemId === "string" ? itemId : "";
+    const safeActionLabel = typeof actionLabel === "string" ? actionLabel : "";
+    const actionIcon = selected ? selectedIcon : defaultIcon;
+
+    button.className = `secondary-btn match-save-btn icon-only-btn${selected ? ` ${selectedClassName}` : ""}`;
+    button.type = "button";
+    button.dataset[safeDatasetName] = safeItemId;
+    button.setAttribute("aria-label", safeActionLabel);
+    button.setAttribute("aria-pressed", selected ? "true" : "false");
+    button.title = safeActionLabel;
+
+    icon.className = "material-symbols-rounded";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = actionIcon;
+
+    button.appendChild(icon);
+    return button;
+  }
+
+  function appendResultItem({
+    container,
+    status,
+    levelText,
+    titleText,
+    descriptionText,
+    actionButtons = []
+  }) {
+    if (!container) {
+      return;
+    }
+
+    const article = document.createElement("article");
+    const head = document.createElement("div");
+    const badges = document.createElement("div");
+    const actions = document.createElement("div");
+    const statusBadge = document.createElement("span");
+    const levelBadge = document.createElement("span");
+    const main = document.createElement("div");
+    const title = document.createElement("strong");
+    const description = document.createElement("p");
+    const statusLabel = status === "correct" ? "정답" : "오답";
+
+    article.className = `match-result-item is-${status}`;
+    head.className = "match-result-item-head";
+    badges.className = "match-result-item-badges";
+    actions.className = "match-result-item-actions";
+    statusBadge.className = `match-result-badge is-${status}`;
+    statusBadge.textContent = statusLabel;
+    levelBadge.className = "match-result-level";
+    levelBadge.textContent = levelText;
+    main.className = "match-result-item-main";
+    title.textContent = titleText;
+    description.textContent = descriptionText;
+
+    badges.append(statusBadge, levelBadge);
+    actionButtons.forEach((actionButtonConfig) => {
+      actions.appendChild(createResultActionButton(actionButtonConfig));
+    });
+    head.append(badges, actions);
+    main.append(title, description);
+    article.append(head, main);
+    container.appendChild(article);
+  }
+
   function renderResultsView({
     resultViewId,
     totalId,
@@ -525,7 +601,9 @@
     filterLabels,
     renderFilterOptions,
     renderBulkActionButton,
-    createItemMarkup
+    createItemMarkup,
+    renderItems,
+    getEmptyText
   }) {
     const resultView = document.getElementById(resultViewId);
     const total = document.getElementById(totalId);
@@ -555,12 +633,24 @@
     if (!filteredResults.length) {
       const matchCopy = global.japanoteMatchCopy || {};
       empty.hidden = false;
-      empty.textContent = typeof matchCopy.getEmptyResultsText === "function" ? matchCopy.getEmptyResultsText(filterLabels[activeFilter]) : `${filterLabels[activeFilter]} 결과가 아직 없어요.`;
+      empty.textContent =
+        typeof getEmptyText === "function"
+          ? getEmptyText({ activeFilter, filterLabels })
+          : typeof matchCopy.getEmptyResultsText === "function"
+            ? matchCopy.getEmptyResultsText(filterLabels[activeFilter])
+            : `${filterLabels[activeFilter]} 결과가 아직 없어요.`;
       list.innerHTML = "";
       return;
     }
 
     empty.hidden = true;
+    list.innerHTML = "";
+
+    if (typeof renderItems === "function") {
+      renderItems(filteredResults, list);
+      return;
+    }
+
     list.innerHTML = filteredResults.map((item) => createItemMarkup(item)).join("");
   }
 
@@ -964,7 +1054,6 @@
       state.hasStarted = false;
       state.timeLeft = getActiveDuration();
       resetCurrentPageState();
-      setActionAvailability(true);
       setFeedback(message);
       render();
     }
@@ -1158,6 +1247,11 @@
       return;
     }
 
+    if (hasBoundListener(element, "shared-select-change")) {
+      return;
+    }
+
+    markBoundListener(element, "shared-select-change");
     element.addEventListener("change", (event) => {
       handler(event.target.value);
     });
@@ -1169,6 +1263,11 @@
     }
 
     spinner.querySelectorAll("[data-spinner-direction]").forEach((button) => {
+      if (hasBoundListener(button, "shared-spinner-click")) {
+        return;
+      }
+
+      markBoundListener(button, "shared-spinner-click");
       button.addEventListener("click", () => {
         const currentValue = getCurrentValue();
         const currentIndex = options.indexOf(currentValue);
@@ -1218,7 +1317,10 @@
     resultSaveConfig
   }) {
     if (newRoundButton && typeof onStartNewRound === "function") {
-      newRoundButton.addEventListener("click", onStartNewRound);
+      if (!hasBoundListener(newRoundButton, "shared-new-round-click")) {
+        markBoundListener(newRoundButton, "shared-new-round-click");
+        newRoundButton.addEventListener("click", onStartNewRound);
+      }
     }
 
     if (typeof onToggleOptions === "function") {
@@ -1253,6 +1355,11 @@
       return;
     }
 
+    if (hasBoundListener(button, "shared-bulk-action-click")) {
+      return;
+    }
+
+    markBoundListener(button, "shared-bulk-action-click");
     button.addEventListener("click", () => {
       const filteredResults = getFilteredResults();
       const uniqueIds = Array.from(new Set(filteredResults.map((item) => getItemId(item)).filter(Boolean)));
@@ -1282,6 +1389,11 @@
       return;
     }
 
+    if (hasBoundListener(list, `shared-result-save-click-${buttonSelector}`)) {
+      return;
+    }
+
+    markBoundListener(list, `shared-result-save-click-${buttonSelector}`);
     list.addEventListener("click", (event) => {
       const button = event.target.closest(buttonSelector);
 
@@ -1331,6 +1443,8 @@
     renderResultFilterOptions,
     renderBulkActionButtonState,
     createResultItemHeadMarkup,
+    createResultActionButton,
+    appendResultItem,
     renderResultsView,
     renderScreen,
     attachSelectChangeListener,

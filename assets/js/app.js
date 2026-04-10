@@ -33,6 +33,7 @@ let writingPracticePools = {
 let kanaDerivedCollectionsReady = false;
 const studyViewHelpers = globalThis.japanoteStudyViewHelpers || {};
 const sharedTimer = globalThis.japanoteSharedTimer || {};
+const sharedResultUi = globalThis.japanoteSharedMatchGame || {};
 const applyStudyActionButtonState = studyViewHelpers.applyStudyActionButtonState;
 const createStudyListCardMarkup = studyViewHelpers.createStudyListCardMarkup;
 const syncStudyViewButtons = studyViewHelpers.syncStudyViewButtons;
@@ -649,6 +650,11 @@ const vocabQuizFieldLabels = {
 };
 const vocabQuizFieldOptions = ["reading", "word", "meaning"];
 const vocabQuizResultFilterLabels = {
+  all: "전체",
+  correct: "정답",
+  wrong: "오답"
+};
+const grammarPracticeResultFilterLabels = {
   all: "전체",
   correct: "정답",
   wrong: "오답"
@@ -3848,6 +3854,11 @@ const kanjiPracticeState = {
   showResults: false,
   resultFilter: "all"
 };
+const grammarPracticeState = {
+  results: [],
+  showResults: false,
+  resultFilter: "all"
+};
 
 const defaultState = {
   flashcardIndex: 0,
@@ -6655,100 +6666,46 @@ function renderResultBulkActionButton({
   icon.textContent = allSaved ? removeIcon : saveIcon;
 }
 
-function renderStudyResultSection({
-  total,
-  correct,
-  wrong,
-  empty,
-  list,
+function renderSharedStudyResults({
+  resultViewId,
+  totalId,
+  correctId,
+  wrongId,
+  emptyId,
+  listId,
+  filterSelectId,
+  bulkActionButtonId,
   counts,
   filteredResults,
-  emptyMessage,
+  activeFilter,
+  filterLabels,
+  renderFilterOptions,
+  renderBulkActionButton,
+  getEmptyText,
   renderItems
 }) {
-  total.textContent = String(counts.all);
-  correct.textContent = String(counts.correct);
-  wrong.textContent = String(counts.wrong);
-
-  if (!filteredResults.length) {
-    empty.hidden = false;
-    empty.textContent = emptyMessage;
-    list.innerHTML = "";
-    return false;
+  if (typeof sharedResultUi.renderResultsView !== "function") {
+    return;
   }
 
-  empty.hidden = true;
-  list.innerHTML = "";
-  renderItems(filteredResults, list);
-  return true;
-}
-
-function createQuizResultActionButton({
-  id,
-  selected,
-  actionLabel,
-  datasetKey,
-  defaultIcon = "bookmark_add",
-  selectedIcon = "delete",
-  selectedClassName = "is-saved"
-}) {
-  const actionButton = document.createElement("button");
-  const actionIcon = document.createElement("span");
-
-  actionButton.className = `secondary-btn match-save-btn icon-only-btn${selected ? ` ${selectedClassName}` : ""}`;
-  actionButton.type = "button";
-  actionButton.dataset[datasetKey] = id;
-  actionButton.setAttribute("aria-label", actionLabel);
-  actionButton.setAttribute("aria-pressed", selected ? "true" : "false");
-  actionButton.title = actionLabel;
-
-  actionIcon.className = "material-symbols-rounded";
-  actionIcon.setAttribute("aria-hidden", "true");
-  actionIcon.textContent = selected ? selectedIcon : defaultIcon;
-
-  actionButton.appendChild(actionIcon);
-  return actionButton;
-}
-
-function appendQuizResultItem({
-  container,
-  status,
-  levelText,
-  titleText,
-  descriptionText,
-  actionButtons = []
-}) {
-  const article = document.createElement("article");
-  const head = document.createElement("div");
-  const badges = document.createElement("div");
-  const actions = document.createElement("div");
-  const statusBadge = document.createElement("span");
-  const levelBadge = document.createElement("span");
-  const main = document.createElement("div");
-  const title = document.createElement("strong");
-  const description = document.createElement("p");
-  const statusLabel = status === "correct" ? "정답" : "오답";
-
-  article.className = `match-result-item is-${status}`;
-  head.className = "match-result-item-head";
-  badges.className = "match-result-item-badges";
-  actions.className = "match-result-item-actions";
-  statusBadge.className = `match-result-badge is-${status}`;
-  statusBadge.textContent = statusLabel;
-  levelBadge.className = "match-result-level";
-  levelBadge.textContent = levelText;
-  main.className = "match-result-item-main";
-  title.textContent = titleText;
-  description.textContent = descriptionText;
-
-  badges.append(statusBadge, levelBadge);
-  actionButtons.forEach((actionButtonConfig) => {
-    actions.appendChild(createQuizResultActionButton(actionButtonConfig));
+  sharedResultUi.renderResultsView({
+    resultViewId,
+    totalId,
+    correctId,
+    wrongId,
+    emptyId,
+    listId,
+    filterSelectId,
+    bulkActionButtonId,
+    counts,
+    filteredResults,
+    activeFilter,
+    filterLabels,
+    renderFilterOptions,
+    renderBulkActionButton,
+    getEmptyText,
+    renderItems
   });
-  head.append(badges, actions);
-  main.append(title, description);
-  article.append(head, main);
-  container.appendChild(article);
 }
 
 function attachResultFilterSelectListener({
@@ -6900,40 +6857,31 @@ function attachToggleResultActionListener({
 }
 
 function renderKanjiPracticeResults() {
-  const total = document.getElementById("kanji-practice-result-total");
-  const correct = document.getElementById("kanji-practice-result-correct");
-  const wrong = document.getElementById("kanji-practice-result-wrong");
-  const empty = document.getElementById("kanji-practice-result-empty");
-  const list = document.getElementById("kanji-practice-result-list");
-  const filterSelect = document.getElementById("kanji-practice-result-filter");
-  const reviewActionButton = document.getElementById("kanji-practice-result-bulk-action");
-  const masteredActionButton = document.getElementById("kanji-practice-result-mastered-action");
   const counts = getKanjiPracticeResultCounts();
   const filteredResults = getFilteredKanjiPracticeResults();
-
-  if (!total || !correct || !wrong || !empty || !list || !filterSelect || !reviewActionButton || !masteredActionButton) {
-    return;
-  }
-
-  renderKanjiPracticeResultFilterOptions(counts);
-  renderKanjiPracticeBulkActionButtons(filteredResults);
-
-  const hasResults = renderStudyResultSection({
-    total,
-    correct,
-    wrong,
-    empty,
-    list,
+  renderSharedStudyResults({
+    resultViewId: "kanji-practice-result-view",
+    totalId: "kanji-practice-result-total",
+    correctId: "kanji-practice-result-correct",
+    wrongId: "kanji-practice-result-wrong",
+    emptyId: "kanji-practice-result-empty",
+    listId: "kanji-practice-result-list",
+    filterSelectId: "kanji-practice-result-filter",
+    bulkActionButtonId: "kanji-practice-result-bulk-action",
     counts,
     filteredResults,
-    emptyMessage: `${kanjiPracticeResultFilterLabels[getKanjiPracticeResultFilter(kanjiPracticeState.resultFilter)]} 결과가 없어요.`,
+    activeFilter: getKanjiPracticeResultFilter(kanjiPracticeState.resultFilter),
+    filterLabels: kanjiPracticeResultFilterLabels,
+    renderFilterOptions: renderKanjiPracticeResultFilterOptions,
+    renderBulkActionButton: renderKanjiPracticeBulkActionButtons,
+    getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과가 없어요.`,
     renderItems: (results, container) => {
       results.forEach((item) => {
         const saved = isKanjiSavedToReviewList(item.id);
         const reviewSelected = saved;
         const masteredSelected = isKanjiSavedToMasteredList(item.id);
 
-        appendQuizResultItem({
+        sharedResultUi.appendResultItem({
           container,
           status: item.status,
           levelText: item.source || "한자",
@@ -6941,19 +6889,19 @@ function renderKanjiPracticeResults() {
           descriptionText: getKanjiPracticeResultDetail(item),
           actionButtons: [
             {
-              id: item.id,
+              itemId: item.id,
               selected: reviewSelected,
               actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
-              datasetKey: "kanjiResultReview",
+              datasetName: "kanjiResultReview",
               defaultIcon: "bookmark_add",
               selectedIcon: "delete",
               selectedClassName: "is-saved"
             },
             {
-              id: item.id,
+              itemId: item.id,
               selected: masteredSelected,
               actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
-              datasetKey: "kanjiResultMastered",
+              datasetName: "kanjiResultMastered",
               defaultIcon: "check_circle",
               selectedIcon: "task_alt",
               selectedClassName: "is-mastered"
@@ -6963,10 +6911,6 @@ function renderKanjiPracticeResults() {
       });
     }
   });
-
-  if (!hasResults) {
-    return;
-  }
 }
 
 function setActionButtonIcon(button, iconName) {
@@ -8167,29 +8111,6 @@ function renderVocabQuizBulkActionButtons(results) {
   });
 }
 
-function renderVocabQuizBulkActionButton(results) {
-  return renderVocabQuizBulkActionButtons(results);
-  const reviewActionButton = document.getElementById("vocab-quiz-result-bulk-action");
-  const masteredActionButton = document.getElementById("vocab-quiz-result-mastered-action");
-  const bulkActionLabel = document.getElementById("vocab-quiz-result-bulk-label");
-  const bulkActionIcon = bulkActionButton?.querySelector(".material-symbols-rounded");
-
-  renderResultBulkActionButton({
-    button: bulkActionButton,
-    label: bulkActionLabel,
-    icon: bulkActionIcon,
-    results,
-    getId: (item) => item.id,
-    isSaved: isWordSavedToReviewList,
-    datasetKey: "vocabQuizBulkAction",
-    saveLabel: "전체 담기",
-    removeLabel: "전체 빼기",
-    emptyTitle: "지금 담아둘 단어가 없어요.",
-    saveTitle: "지금 보이는 단어를 다시 볼래요에 모두 담아둘게요.",
-    removeTitle: "지금 보이는 단어를 다시 볼래요에서 모두 뺄게요."
-  });
-}
-
 function recordVocabQuizResult(question, selectedIndex, correct, timedOut = false) {
   if (!question) {
     return;
@@ -8211,40 +8132,31 @@ function recordVocabQuizResult(question, selectedIndex, correct, timedOut = fals
 }
 
 function renderVocabQuizResults() {
-  const total = document.getElementById("vocab-quiz-result-total");
-  const correct = document.getElementById("vocab-quiz-result-correct");
-  const wrong = document.getElementById("vocab-quiz-result-wrong");
-  const empty = document.getElementById("vocab-quiz-result-empty");
-  const list = document.getElementById("vocab-quiz-result-list");
-  const filterSelect = document.getElementById("vocab-quiz-result-filter");
-  const reviewActionButton = document.getElementById("vocab-quiz-result-bulk-action");
-  const masteredActionButton = document.getElementById("vocab-quiz-result-mastered-action");
   const counts = getVocabQuizResultCounts();
   const filteredResults = getFilteredVocabQuizResults();
-
-  if (!total || !correct || !wrong || !empty || !list || !filterSelect || !reviewActionButton || !masteredActionButton) {
-    return;
-  }
-
-  renderVocabQuizResultFilterOptions(counts);
-  renderVocabQuizBulkActionButtons(filteredResults);
-
-  const hasResults = renderStudyResultSection({
-    total,
-    correct,
-    wrong,
-    empty,
-    list,
+  renderSharedStudyResults({
+    resultViewId: "vocab-quiz-result-view",
+    totalId: "vocab-quiz-result-total",
+    correctId: "vocab-quiz-result-correct",
+    wrongId: "vocab-quiz-result-wrong",
+    emptyId: "vocab-quiz-result-empty",
+    listId: "vocab-quiz-result-list",
+    filterSelectId: "vocab-quiz-result-filter",
+    bulkActionButtonId: "vocab-quiz-result-bulk-action",
     counts,
     filteredResults,
-    emptyMessage: `${vocabQuizResultFilterLabels[getVocabQuizResultFilter()]} 결과는 아직 없어요.`,
+    activeFilter: getVocabQuizResultFilter(),
+    filterLabels: vocabQuizResultFilterLabels,
+    renderFilterOptions: renderVocabQuizResultFilterOptions,
+    renderBulkActionButton: renderVocabQuizBulkActionButtons,
+    getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과는 아직 없어요.`,
     renderItems: (results, container) => {
       results.forEach((item) => {
         const saved = isWordSavedToReviewList(item.id);
         const reviewSelected = saved;
         const masteredSelected = isWordSavedToMasteredList(item.id);
 
-        appendQuizResultItem({
+        sharedResultUi.appendResultItem({
           container,
           status: item.status,
           levelText: item.level || getVocabLevelLabel(),
@@ -8252,19 +8164,19 @@ function renderVocabQuizResults() {
           descriptionText: item.meaning,
           actionButtons: [
             {
-              id: item.id,
+              itemId: item.id,
               selected: reviewSelected,
               actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
-              datasetKey: "vocabQuizReview",
+              datasetName: "vocabQuizReview",
               defaultIcon: "bookmark_add",
               selectedIcon: "delete",
               selectedClassName: "is-saved"
             },
             {
-              id: item.id,
+              itemId: item.id,
               selected: masteredSelected,
               actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
-              datasetKey: "vocabQuizMastered",
+              datasetName: "vocabQuizMastered",
               defaultIcon: "check_circle",
               selectedIcon: "task_alt",
               selectedClassName: "is-mastered"
@@ -8274,10 +8186,6 @@ function renderVocabQuizResults() {
       });
     }
   });
-
-  if (!hasResults) {
-    return;
-  }
 }
 
 function revealVocabQuizAnswer(question, selectedIndex, correct) {
@@ -9099,6 +9007,113 @@ function getGrammarPracticeCollectionCounts(level = state?.grammarPracticeLevel)
   };
 }
 
+function getGrammarPracticeResultFilter(value = grammarPracticeState.resultFilter) {
+  return Object.prototype.hasOwnProperty.call(grammarPracticeResultFilterLabels, value) ? value : "all";
+}
+
+function getGrammarPracticeResultCounts() {
+  return getStudyResultCounts(grammarPracticeState.results);
+}
+
+function getFilteredGrammarPracticeResults(filter = getGrammarPracticeResultFilter(grammarPracticeState.resultFilter)) {
+  return getFilteredStudyResults(grammarPracticeState.results, getGrammarPracticeResultFilter(filter));
+}
+
+function setGrammarPracticeResult(current, selectedIndex, correct, timedOut = false) {
+  if (!current) {
+    return;
+  }
+
+  const grammarId = getGrammarPracticeSetGrammarId(current);
+  const answerText = current.options[current.answer] || "";
+  const selected = timedOut ? "" : current.options[selectedIndex] || "";
+  const result = {
+    id: grammarId,
+    source: getGrammarPracticeSetLevel(current),
+    title: current.title || current.sentence || "",
+    sentence: current.sentence || "",
+    selected,
+    answerText,
+    explanation: current.explanation || "",
+    status: correct ? "correct" : "wrong",
+    timedOut
+  };
+  const currentResultIndex = grammarPracticeState.results.findIndex((item) => item.id === grammarId);
+
+  if (currentResultIndex >= 0) {
+    grammarPracticeState.results[currentResultIndex] = result;
+    return;
+  }
+
+  grammarPracticeState.results.push(result);
+}
+
+function getGrammarPracticeResultDetail(item) {
+  if (item.explanation) {
+    return item.explanation;
+  }
+
+  if (item.sentence && item.sentence !== item.title) {
+    return item.sentence;
+  }
+
+  return "";
+}
+
+function renderGrammarPracticeResultFilterOptions(counts) {
+  const filterSelect = document.getElementById("grammar-practice-result-filter");
+
+  renderResultFilterOptions({
+    select: filterSelect,
+    labels: grammarPracticeResultFilterLabels,
+    counts,
+    activeValue: getGrammarPracticeResultFilter(grammarPracticeState.resultFilter)
+  });
+}
+
+function renderGrammarPracticeBulkActionButtons(results) {
+  const reviewActionButton = document.getElementById("grammar-practice-result-bulk-action");
+  const reviewActionLabel = document.getElementById("grammar-practice-result-bulk-label");
+  const reviewActionIcon = reviewActionButton?.querySelector(".material-symbols-rounded");
+  const masteredActionButton = document.getElementById("grammar-practice-result-mastered-action");
+  const masteredActionLabel = document.getElementById("grammar-practice-result-mastered-label");
+  const masteredActionIcon = masteredActionButton?.querySelector(".material-symbols-rounded");
+
+  renderResultBulkActionButton({
+    button: reviewActionButton,
+    label: reviewActionLabel,
+    icon: reviewActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isGrammarSavedToReviewList,
+    datasetKey: "grammarPracticeBulkAction",
+    removeActionValue: "remove-review",
+    saveLabel: "모두 다시 보기",
+    removeLabel: "다시 보기 해제",
+    emptyTitle: "지금 표시 중인 문법이 없어요.",
+    saveTitle: "지금 보이는 문법을 모두 다시 볼 항목으로 표시해요.",
+    removeTitle: "지금 보이는 문법의 다시 보기 표시를 모두 해제해요."
+  });
+  renderResultBulkActionButton({
+    button: masteredActionButton,
+    label: masteredActionLabel,
+    icon: masteredActionIcon,
+    results,
+    getId: (item) => item.id,
+    isSaved: isGrammarSavedToMasteredList,
+    datasetKey: "grammarPracticeMasteredBulkAction",
+    saveActionValue: "save-mastered",
+    removeActionValue: "remove-mastered",
+    saveLabel: "모두 익히기",
+    removeLabel: "익힘 해제",
+    emptyTitle: "지금 표시 중인 문법이 없어요.",
+    saveTitle: "지금 보이는 문법을 모두 익힘으로 표시해요.",
+    removeTitle: "지금 보이는 문법의 익힘 표시를 모두 해제해요.",
+    saveIcon: "check_circle",
+    removeIcon: "remove_done"
+  });
+}
+
 function getGrammarEmptyMessage(filter = state?.grammarFilter, level = state?.grammarLevel) {
   const activeFilter = getGrammarFilter(filter);
   const activeLevel = getGrammarLevel(level);
@@ -9474,12 +9489,24 @@ function setGrammarPracticeDuration(duration) {
   renderGrammarPractice();
 }
 
-function invalidateGrammarPracticeSession() {
+function resetGrammarPracticeSessionState(resetIndex = false) {
+  grammarPracticeState.results = [];
+  grammarPracticeState.showResults = false;
+  grammarPracticeState.resultFilter = "all";
   state.grammarPracticeStarted = false;
   state.grammarPracticeSessionQuestionIndex = 0;
   resetQuizSessionScore("grammar");
   setQuizSessionDuration("grammar", getGrammarPracticeDuration());
   stopQuizSessionTimer("grammar");
+
+  if (resetIndex) {
+    const activeLevel = getGrammarPracticeLevel(state.grammarPracticeLevel);
+    state.grammarPracticeIndexes[activeLevel] = 0;
+  }
+}
+
+function invalidateGrammarPracticeSession() {
+  resetGrammarPracticeSessionState();
 }
 
 function renderGrammarPracticeControls() {
@@ -9539,8 +9566,8 @@ function renderGrammarPracticeControls() {
     actionButton: {
       button: startButton,
       label: startLabel,
-      isStarted: state.grammarPracticeStarted,
-      canStart: state.grammarPracticeStarted || canStart
+      isStarted: state.grammarPracticeStarted || grammarPracticeState.showResults,
+      canStart: state.grammarPracticeStarted || grammarPracticeState.showResults || canStart
     }
   });
 }
@@ -9562,6 +9589,63 @@ function getCurrentGrammarPracticeSet() {
   return sets[currentIndex];
 }
 
+function renderGrammarPracticeResults() {
+  const counts = getGrammarPracticeResultCounts();
+  const filteredResults = getFilteredGrammarPracticeResults();
+
+  renderSharedStudyResults({
+    resultViewId: "grammar-practice-result-view",
+    totalId: "grammar-practice-result-total",
+    correctId: "grammar-practice-result-correct",
+    wrongId: "grammar-practice-result-wrong",
+    emptyId: "grammar-practice-result-empty",
+    listId: "grammar-practice-result-list",
+    filterSelectId: "grammar-practice-result-filter",
+    bulkActionButtonId: "grammar-practice-result-bulk-action",
+    counts,
+    filteredResults,
+    activeFilter: getGrammarPracticeResultFilter(grammarPracticeState.resultFilter),
+    filterLabels: grammarPracticeResultFilterLabels,
+    renderFilterOptions: renderGrammarPracticeResultFilterOptions,
+    renderBulkActionButton: renderGrammarPracticeBulkActionButtons,
+    getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과가 아직 없어요.`,
+    renderItems: (results, container) => {
+      results.forEach((item) => {
+        const reviewSelected = isGrammarSavedToReviewList(item.id);
+        const masteredSelected = isGrammarSavedToMasteredList(item.id);
+
+        sharedResultUi.appendResultItem({
+          container,
+          status: item.status,
+          levelText: item.source || "문법",
+          titleText: item.title || item.sentence || "-",
+          descriptionText: getGrammarPracticeResultDetail(item),
+          actionButtons: [
+            {
+              itemId: item.id,
+              selected: reviewSelected,
+              actionLabel: reviewSelected ? "다시 보기 해제" : "다시 보기로 표시",
+              datasetName: "grammarPracticeReview",
+              defaultIcon: "bookmark_add",
+              selectedIcon: "delete",
+              selectedClassName: "is-saved"
+            },
+            {
+              itemId: item.id,
+              selected: masteredSelected,
+              actionLabel: masteredSelected ? "익힘 해제" : "익힘으로 표시",
+              datasetName: "grammarPracticeMastered",
+              defaultIcon: "check_circle",
+              selectedIcon: "task_alt",
+              selectedClassName: "is-mastered"
+            }
+          ]
+        });
+      });
+    }
+  });
+}
+
 function renderGrammarPractice() {
   if (flushPendingExternalStudyStateIfIdle()) {
     return;
@@ -9569,6 +9653,7 @@ function renderGrammarPractice() {
 
   const empty = document.getElementById("grammar-practice-empty");
   const practiceView = document.getElementById("grammar-practice-view");
+  const resultView = document.getElementById("grammar-practice-result-view");
   const grammarCard = document.querySelector(".grammar-practice-card");
   const optionsContainer = document.getElementById("grammar-practice-options");
   const nextButton = document.getElementById("grammar-practice-next");
@@ -9590,6 +9675,7 @@ function renderGrammarPractice() {
   if (
     !empty ||
     !practiceView ||
+    !resultView ||
     !grammarCard ||
     !optionsContainer ||
     !nextButton ||
@@ -9601,18 +9687,30 @@ function renderGrammarPractice() {
     return;
   }
 
+  if (grammarPracticeState.showResults) {
+    stopQuizSessionTimer("grammar");
+    renderQuizSessionHud("grammar");
+    empty.hidden = true;
+    practiceView.hidden = true;
+    resultView.hidden = false;
+    renderGrammarPracticeResults();
+    return;
+  }
+
   if (!state.grammarPracticeStarted) {
     stopQuizSessionTimer("grammar");
     resetQuizSessionScore("grammar");
     setQuizSessionDuration("grammar", activeDuration);
     empty.hidden = false;
     practiceView.hidden = true;
+    resultView.hidden = true;
     empty.textContent = sets?.length ? "준비되면 시작해볼까요?" : getGrammarEmptyMessage(getGrammarFilter(), activeLevel);
     renderQuizSessionHud("grammar");
     return;
   }
 
   if (currentSessionIndex >= activeCount) {
+    grammarPracticeState.showResults = true;
     state.grammarPracticeStarted = false;
     state.grammarPracticeSessionQuestionIndex = 0;
     saveState();
@@ -9625,6 +9723,7 @@ function renderGrammarPractice() {
     setQuizSessionDuration("grammar", activeDuration);
     empty.hidden = false;
     practiceView.hidden = true;
+    resultView.hidden = true;
     empty.textContent = sets?.length ? "준비되면 시작해볼까요?" : getGrammarEmptyMessage(getGrammarFilter(), activeLevel);
     renderQuizSessionHud("grammar");
     return;
@@ -9632,6 +9731,7 @@ function renderGrammarPractice() {
 
   empty.hidden = true;
   practiceView.hidden = false;
+  resultView.hidden = true;
 
   progress.textContent =
     `${currentSessionIndex + 1} / ${activeCount}`;
@@ -9670,6 +9770,7 @@ function handleGrammarPracticeAnswer(index) {
 
   const correct = index === current.answer;
   finalizeQuizSession("grammar", correct);
+  setGrammarPracticeResult(current, index, correct, false);
 
   applyChoiceOptionFeedback({
     options,
@@ -9710,6 +9811,7 @@ function handleGrammarPracticeTimeout() {
   }
 
   finalizeQuizSession("grammar", false);
+  setGrammarPracticeResult(current, -1, false, true);
 
   applyChoiceOptionFeedback({
     options,
@@ -9746,6 +9848,7 @@ function nextGrammarPracticeSet() {
   }
 
   if (currentSessionIndex >= questionLimit - 1) {
+    grammarPracticeState.showResults = true;
     state.grammarPracticeStarted = false;
     state.grammarPracticeSessionQuestionIndex = 0;
     saveState();
@@ -9769,10 +9872,7 @@ function restartGrammarPractice() {
     return;
   }
 
-  stopQuizSessionTimer("grammar");
-  resetQuizSessionScore("grammar");
-  setQuizSessionDuration("grammar", state.grammarPracticeDuration);
-  state.grammarPracticeSessionQuestionIndex = 0;
+  resetGrammarPracticeSessionState();
   state.grammarPracticeStarted = true;
   saveState();
   renderGrammarPractice();
@@ -10975,6 +11075,10 @@ function attachEventListeners() {
   const grammarPracticeCountSpinner = document.querySelector('[data-spinner-id="grammar-practice-count"]');
   const grammarPracticeTimeSpinner = document.querySelector('[data-spinner-id="grammar-practice-time"]');
   const grammarPracticeStart = document.getElementById("grammar-practice-start");
+  const grammarPracticeResultBulkAction = document.getElementById("grammar-practice-result-bulk-action");
+  const grammarPracticeResultMasteredAction = document.getElementById("grammar-practice-result-mastered-action");
+  const grammarPracticeResultFilter = document.getElementById("grammar-practice-result-filter");
+  const grammarPracticeResultList = document.getElementById("grammar-practice-result-list");
   const grammarViewButtons = document.querySelectorAll("[data-grammar-view]");
   const grammarLevelSelect = document.getElementById("grammar-level-select");
   const grammarFilterSelect = document.getElementById("grammar-filter-select");
@@ -11212,6 +11316,53 @@ function attachEventListeners() {
     render: renderGrammarPractice
   });
   attachClickListener(grammarPracticeStart, restartGrammarPractice);
+  attachBulkResultActionListener({
+    button: grammarPracticeResultBulkAction,
+    getResults: getFilteredGrammarPracticeResults,
+    datasetKey: "grammarPracticeBulkAction",
+    removeActionValue: "remove-review",
+    removeItem: removeGrammarFromReviewList,
+    saveItem: saveGrammarToReviewList,
+    render: renderGrammarPractice
+  });
+  attachBulkResultActionListener({
+    button: grammarPracticeResultMasteredAction,
+    getResults: getFilteredGrammarPracticeResults,
+    datasetKey: "grammarPracticeMasteredBulkAction",
+    removeActionValue: "remove-mastered",
+    removeItem: removeGrammarFromMasteredList,
+    saveItem: saveGrammarToMasteredList,
+    render: renderGrammarPractice
+  });
+  attachResultFilterSelectListener({
+    select: grammarPracticeResultFilter,
+    getNextValue: getGrammarPracticeResultFilter,
+    getCurrentValue: () => getGrammarPracticeResultFilter(grammarPracticeState.resultFilter),
+    setValue: (value) => {
+      grammarPracticeState.resultFilter = value;
+    },
+    render: renderGrammarPracticeResults
+  });
+  attachToggleResultActionListener({
+    list: grammarPracticeResultList,
+    actions: [
+      {
+        selector: "[data-grammar-practice-review]",
+        getId: (button) => button.dataset.grammarPracticeReview,
+        isSelected: isGrammarSavedToReviewList,
+        selectItem: saveGrammarToReviewList,
+        unselectItem: removeGrammarFromReviewList
+      },
+      {
+        selector: "[data-grammar-practice-mastered]",
+        getId: (button) => button.dataset.grammarPracticeMastered,
+        isSelected: isGrammarSavedToMasteredList,
+        selectItem: saveGrammarToMasteredList,
+        unselectItem: removeGrammarFromMasteredList
+      }
+    ],
+    render: renderGrammarPractice
+  });
   attachStateOptionsToggle(readingOptionsToggle, "readingOptionsOpen", renderReadingControls);
   attachSelectValueListener(readingLevelSelect, setReadingLevel);
   attachStateSpinner({

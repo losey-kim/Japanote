@@ -1000,31 +1000,27 @@
     resultBulkActions = [],
     resultFooterHtml = ""
   }) {
-    const viewClassAttribute = viewClassName ? ` class="${escapeHtml(viewClassName)}"` : "";
-
-    return createLayoutShell({
+    return createPracticeModeLayout({
       shellClassName,
       sidebarClassName,
       sidebarHead,
       optionsShellConfig,
       sidebarExtra,
       startButton,
-      boardMarkup: `
-        <div class="${escapeHtml(boardClassName)}">
-          ${createPracticeEmptyMessage({ id: emptyId, text: emptyText })}
-          <div${viewClassAttribute} id="${escapeHtml(viewId)}">
-            ${createChoiceQuizCard(choiceQuizCardConfig)}
-          </div>
-          ${createPrefixedResultView({
-            idPrefix: resultPrefix,
-            className: resultClassName,
-            filterAriaLabel: resultFilterAriaLabel,
-            bulkActionLabel: resultBulkActionLabel,
-            bulkActions: resultBulkActions,
-            footerHtml: resultFooterHtml
-          })}
-        </div>
-      `
+      boardClassName,
+      emptyId,
+      emptyText,
+      viewId,
+      viewClassName,
+      viewMarkup: createChoiceQuizCard(choiceQuizCardConfig),
+      resultViewConfig: {
+        idPrefix: resultPrefix,
+        className: resultClassName,
+        filterAriaLabel: resultFilterAriaLabel,
+        bulkActionLabel: resultBulkActionLabel,
+        bulkActions: resultBulkActions,
+        footerHtml: resultFooterHtml
+      }
     });
   }
   function createResultView({
@@ -1404,7 +1400,8 @@
     resultPrefix,
     resultFilterAriaLabel,
     resultClassName = "match-result-view",
-    bulkActionLabel
+    bulkActionLabel,
+    resultBulkActions = []
   }) {
     return createLayoutShell({
       sidebarHead,
@@ -1438,7 +1435,8 @@
         resultPrefix,
         resultFilterAriaLabel,
         resultClassName,
-        bulkActionLabel
+        bulkActionLabel,
+        bulkActions: resultBulkActions
       })
     });
   }
@@ -1476,7 +1474,19 @@
       },
       resultPrefix: "match",
       resultFilterAriaLabel: "짝 맞추기 결과 필터",
-      bulkActionLabel: QUIZ_RESULT_REVIEW_ACTION_LABEL
+      resultBulkActions: [
+        {
+          id: "match-result-bulk-action",
+          labelId: "match-result-bulk-label",
+          label: QUIZ_RESULT_REVIEW_ACTION_LABEL
+        },
+        {
+          id: "match-result-mastered-action",
+          labelId: "match-result-mastered-label",
+          label: QUIZ_RESULT_LEARN_ACTION_LABEL,
+          icon: "check_circle"
+        }
+      ]
     });
   }
 
@@ -1522,7 +1532,19 @@
       resultPrefix: "kanji-match",
       resultFilterAriaLabel: "한자 짝 맞추기 결과 필터",
       resultClassName: "match-result-view kanji-result-view",
-      bulkActionLabel: QUIZ_RESULT_RETRY_ALL_ACTION_LABEL
+      resultBulkActions: [
+        {
+          id: "kanji-match-result-bulk-action",
+          labelId: "kanji-match-result-bulk-label",
+          label: QUIZ_RESULT_REVIEW_ACTION_LABEL
+        },
+        {
+          id: "kanji-match-result-mastered-action",
+          labelId: "kanji-match-result-mastered-label",
+          label: QUIZ_RESULT_LEARN_ACTION_LABEL,
+          icon: "check_circle"
+        }
+      ]
     });
   }
 
@@ -1551,30 +1573,43 @@
   function createPracticeBoardLayout({
     boardClassName,
     emptyId,
+    emptyText = QUIZ_EMPTY_MESSAGE,
     viewId,
-    viewMarkup
+    viewClassName = "",
+    viewMarkup,
+    resultViewConfig = null
   }) {
+    const viewClassAttribute = viewClassName ? ` class="${escapeHtml(viewClassName)}"` : "";
+
     return `
       <div class="${escapeHtml(boardClassName)}">
-        ${createPracticeEmptyMessage({ id: emptyId })}
-        <div id="${escapeHtml(viewId)}">
+        ${createPracticeEmptyMessage({ id: emptyId, text: emptyText })}
+        <div${viewClassAttribute} id="${escapeHtml(viewId)}">
           ${viewMarkup}
         </div>
+        ${resultViewConfig ? createPrefixedResultView(resultViewConfig) : ""}
       </div>
     `;
   }
 
   function createPracticeModeLayout({
+    shellClassName = "match-shell",
+    sidebarClassName = "match-sidebar",
     sidebarHead,
     optionsShellConfig,
     sidebarExtra = "",
     startButton = "",
     boardClassName,
     emptyId,
+    emptyText = QUIZ_EMPTY_MESSAGE,
     viewId,
-    viewMarkup
+    viewClassName = "",
+    viewMarkup,
+    resultViewConfig = null
   }) {
     return createLayoutShell({
+      shellClassName,
+      sidebarClassName,
       sidebarHead,
       optionsShellConfig,
       sidebarExtra,
@@ -1582,8 +1617,11 @@
       boardMarkup: createPracticeBoardLayout({
         boardClassName,
         emptyId,
+        emptyText,
         viewId,
-        viewMarkup
+        viewClassName,
+        viewMarkup,
+        resultViewConfig
       })
     });
   }
@@ -1672,7 +1710,25 @@
       startButton: createStartQuizButton({ id: "grammar-practice-start", labelId: "grammar-practice-start-label" }),
       boardClassName: "match-board grammar-practice-board",
       emptyId: "grammar-practice-empty",
+      emptyText: QUIZ_EMPTY_MESSAGE,
       viewId: "grammar-practice-view",
+      resultViewConfig: {
+        idPrefix: "grammar-practice",
+        filterAriaLabel: "문법 퀴즈 결과 필터",
+        bulkActions: [
+          {
+            id: "grammar-practice-result-bulk-action",
+            labelId: "grammar-practice-result-bulk-label",
+            label: QUIZ_RESULT_REVIEW_ACTION_LABEL
+          },
+          {
+            id: "grammar-practice-result-mastered-action",
+            labelId: "grammar-practice-result-mastered-label",
+            label: QUIZ_RESULT_LEARN_ACTION_LABEL,
+            icon: "check_circle"
+          }
+        ]
+      },
       viewMarkup: createPracticeModeCardLayout({
         articleClassName: "grammar-practice-card",
         metaClassName: "grammar-practice-meta",
@@ -1776,7 +1832,8 @@
     resultPrefix,
     resultFilterAriaLabel,
     resultClassName = "match-result-view",
-    bulkActionLabel = QUIZ_RESULT_REVIEW_ACTION_LABEL
+    bulkActionLabel = QUIZ_RESULT_REVIEW_ACTION_LABEL,
+    bulkActions = []
   }) {
     return `
         <div class="match-board" id="${escapeHtml(boardId)}" hidden>
@@ -1786,7 +1843,8 @@
             idPrefix: resultPrefix,
             className: resultClassName,
             filterAriaLabel: resultFilterAriaLabel,
-            bulkActionLabel
+            bulkActionLabel,
+            bulkActions
           })}
         </div>
     `;
