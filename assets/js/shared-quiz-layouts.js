@@ -1748,7 +1748,7 @@
         ],
         header: null,
         contentMarkup: `
-          <div class="grammar-practice-question"><span class="eyebrow">SENTENCE</span><p id="grammar-practice-sentence">문장을 불러오고 있어요.</p></div>
+          <div class="grammar-practice-question"><span class="eyebrow">GRAMMAR</span><p id="grammar-practice-sentence">문법을 불러오고 있어요.</p></div>
         `,
         optionsId: "grammar-practice-options",
         feedbackId: "grammar-practice-feedback",

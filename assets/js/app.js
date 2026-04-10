@@ -117,23 +117,77 @@ function normalizeGrammarPracticeSet(set, item = null) {
     sentence,
     options,
     answer,
-    explanation: normalizeQuizText(normalizedSet.explanation || item?.description)
+    // 문법 퀴즈 풀이도 학습 목록과 같은 기준 설명을 보여줘야 흐름이 끊기지 않는다.
+    explanation: normalizeQuizText(item?.description || normalizedSet.explanation)
   };
 }
 
+function getGrammarPracticeDistractorDescriptions(item, levelItems = [], fallbackItems = []) {
+  const correctDescription = normalizeQuizText(item?.description);
+  const candidateItems = [...(Array.isArray(levelItems) ? levelItems : []), ...(Array.isArray(fallbackItems) ? fallbackItems : [])];
+
+  return Array.from(
+    new Set(
+      candidateItems
+        .filter((candidate) => candidate && candidate.id !== item?.id)
+        .map((candidate) => normalizeQuizText(candidate?.description))
+        .filter((description) => description && description !== correctDescription)
+    )
+  );
+}
+
+function createGrammarPracticeSetFromItem(item, levelItems = [], index = 0, fallbackItems = []) {
+  const pattern = normalizeQuizText(item?.pattern);
+  const description = normalizeQuizText(item?.description);
+  const grammarId = normalizeQuizText(item?.id);
+
+  if (!pattern || !description || !grammarId) {
+    return null;
+  }
+
+  // 문법 퀴즈는 별도 practice 데이터가 아니라 학습 목록의 pattern/description 조합을 그대로 쓴다.
+  const distractorDescriptions = shuffleQuizArray(
+    getGrammarPracticeDistractorDescriptions(item, levelItems, fallbackItems)
+  ).slice(0, 3);
+  const options = shuffleQuizArray([description, ...distractorDescriptions]);
+  const tones = ["tone-gold", "tone-coral", "tone-sky", "tone-mint"];
+
+  return normalizeGrammarPracticeSet(
+    {
+      id: grammarId,
+      grammarId,
+      source: `${formatStudyLevelLabel(item?.level, "N5")} 문법`,
+      title: pattern,
+      note: "문법 뜻 고르기",
+      tone: tones[index % tones.length],
+      sentence: pattern,
+      options,
+      answer: options.indexOf(description),
+      explanation: description
+    },
+    item
+  );
+}
+
 function getGrammarPracticeEntriesByLevelFromItems(items = []) {
-  return (Array.isArray(items) ? items : []).reduce((setsByLevel, item) => {
+  const safeItems = Array.isArray(items) ? items : [];
+  const itemsByLevel = safeItems.reduce((grouped, item) => {
     const level = normalizeStudyLevelValue(item?.level);
 
     if (!contentLevels.includes(level)) {
-      return setsByLevel;
+      return grouped;
     }
 
-    const normalizedPractice = normalizeGrammarPracticeSet(item?.practice, item);
+    grouped[level].push(item);
+    return grouped;
+  }, getLevelContentSets({}));
 
-    if (normalizedPractice) {
-      setsByLevel[level].push(normalizedPractice);
-    }
+  return contentLevels.reduce((setsByLevel, level) => {
+    const levelItems = itemsByLevel[level] || [];
+
+    setsByLevel[level] = levelItems
+      .map((item, index) => createGrammarPracticeSetFromItem(item, levelItems, index, safeItems))
+      .filter(Boolean);
 
     return setsByLevel;
   }, getLevelContentSets({}));
