@@ -1055,28 +1055,32 @@
         </div>
       `
       : "";
+    const actionRowMarkup = bulkActionMarkup
+      ? `
+        <div class="match-result-filters">
+          ${bulkActionMarkup}
+        </div>
+      `
+      : "";
 
     return `
       <div class="${escapeHtml(className)}" id="${escapeHtml(viewId)}" hidden>
         <p class="match-result-title">결과를 볼까요?</p>
-        <div class="match-result-grid">
-          <article class="match-result-stat"><span>전체</span><strong id="${escapeHtml(totalId)}">0</strong></article>
-          <article class="match-result-stat"><span>정답</span><strong id="${escapeHtml(correctId)}">0</strong></article>
-          <article class="match-result-stat"><span>오답</span><strong id="${escapeHtml(wrongId)}">0</strong></article>
+        <div class="match-result-grid" role="group" aria-label="${escapeHtml(filterAriaLabel)}">
+          <button class="match-result-stat match-result-stat-button is-active" id="${escapeHtml(filterId)}-all" type="button" data-result-filter="all" aria-pressed="true">
+            <span>전체</span>
+            <strong id="${escapeHtml(totalId)}">0</strong>
+          </button>
+          <button class="match-result-stat match-result-stat-button" id="${escapeHtml(filterId)}-correct" type="button" data-result-filter="correct" aria-pressed="false">
+            <span>정답</span>
+            <strong id="${escapeHtml(correctId)}">0</strong>
+          </button>
+          <button class="match-result-stat match-result-stat-button" id="${escapeHtml(filterId)}-wrong" type="button" data-result-filter="wrong" aria-pressed="false">
+            <span>오답</span>
+            <strong id="${escapeHtml(wrongId)}">0</strong>
+          </button>
         </div>
-        <div class="match-result-filters">
-          <label class="match-result-filter-field" for="${escapeHtml(filterId)}">
-            <div class="match-result-filter-select-wrap">
-              <select class="match-result-filter-select" id="${escapeHtml(filterId)}" aria-label="${escapeHtml(filterAriaLabel)}">
-                <option value="all">전체</option>
-                <option value="correct">정답</option>
-                <option value="wrong">오답</option>
-              </select>
-              <span class="material-symbols-rounded" aria-hidden="true">expand_more</span>
-            </div>
-          </label>
-          ${bulkActionMarkup}
-        </div>
+        ${actionRowMarkup}
         <p class="match-result-empty" id="${escapeHtml(emptyId)}" hidden>${escapeHtml(emptyText)}</p>
         <div class="match-result-list" id="${escapeHtml(listId)}"></div>
         ${footerHtml}

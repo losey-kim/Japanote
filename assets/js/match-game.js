@@ -752,16 +752,6 @@ function renderMatchBulkActionButtons(results) {
   }
 }
 
-function renderMatchResultFilterOptions(counts) {
-  sharedMatchGame.renderResultFilterOptions({
-    selectId: "match-result-filter",
-    filters: matchResultFilterOptions,
-    labels: matchResultFilterLabels,
-    counts,
-    activeFilter: getMatchResultFilter(matchState.resultFilter)
-  });
-}
-
 function renderMatchResults() {
   const counts = getMatchResultCounts();
   const filteredResults = getFilteredMatchResults();
@@ -773,13 +763,11 @@ function renderMatchResults() {
     wrongId: "match-result-wrong",
     emptyId: "match-result-empty",
     listId: "match-result-list",
-    filterSelectId: "match-result-filter",
     bulkActionButtonId: "match-result-bulk-action",
     counts,
     filteredResults,
     activeFilter: getMatchResultFilter(matchState.resultFilter),
     filterLabels: matchResultFilterLabels,
-    renderFilterOptions: renderMatchResultFilterOptions,
     renderBulkActionButton: renderMatchBulkActionButtons,
     renderItems: (results, container) => {
       results.forEach((item) => {
@@ -1021,7 +1009,7 @@ function attachMatchEventListeners() {
   const partSelect = document.getElementById("match-part-select");
   const countSpinner = document.querySelector('[data-spinner-id="match-count"]');
   const timeSpinner = document.querySelector('[data-spinner-id="match-time"]');
-  const resultFilterSelect = document.getElementById("match-result-filter");
+  const resultFilterButtons = document.querySelectorAll("#match-result-view [data-result-filter]");
   const resultBulkAction = document.getElementById("match-result-bulk-action");
   const resultMasteredAction = document.getElementById("match-result-mastered-action");
   const resultList = document.getElementById("match-result-list");
@@ -1054,7 +1042,7 @@ function attachMatchEventListeners() {
         handler: setMatchDuration
       }
     ],
-    resultFilterSelect,
+    resultFilterButtons,
     onResultFilterChange: setMatchResultFilter,
     bulkActionConfig: {
       button: resultBulkAction,

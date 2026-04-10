@@ -1594,16 +1594,10 @@ function setKanaQuizResult(current, selectedIndex, correct, timedOut = false) {
 }
 
 function renderKanaQuizResultFilterOptions(counts) {
-  const filterSelect = document.getElementById("kana-quiz-result-filter");
-
-  if (!filterSelect) {
-    return;
-  }
-
-  filterSelect.innerHTML = Object.keys(kanaQuizResultFilterLabels)
-    .map((filter) => `<option value="${filter}">${kanaQuizResultFilterLabels[filter]} (${counts[filter] ?? 0})</option>`)
-    .join("");
-  filterSelect.value = getKanaQuizResultFilter(kanaQuizSheetState.resultFilter);
+  syncResultFilterButtons({
+    resultViewId: "kana-quiz-result-view",
+    activeValue: getKanaQuizResultFilter(kanaQuizSheetState.resultFilter)
+  });
 }
 
 function renderKanaQuizResults() {
@@ -5785,17 +5779,6 @@ function setKanjiPracticeResult(current, selectedIndex, correct, timedOut = fals
   kanjiPracticeState.results.push(result);
 }
 
-function renderKanjiPracticeResultFilterOptions(counts) {
-  const filterSelect = document.getElementById("kanji-practice-result-filter");
-
-  renderResultFilterOptions({
-    select: filterSelect,
-    labels: kanjiPracticeResultFilterLabels,
-    counts,
-    activeValue: getKanjiPracticeResultFilter(kanjiPracticeState.resultFilter)
-  });
-}
-
 function renderKanjiPracticeBulkActionButtons(results) {
   const reviewActionButton = document.getElementById("kanji-practice-result-bulk-action");
   const reviewActionLabel = document.getElementById("kanji-practice-result-bulk-label");
@@ -6610,15 +6593,18 @@ function attachLinkedFieldSelectors({
   }
 }
 
-function renderResultFilterOptions({ select, labels, counts, activeValue }) {
-  if (!select) {
+function syncResultFilterButtons({ resultViewId, activeValue }) {
+  const resultView = document.getElementById(resultViewId);
+
+  if (!resultView) {
     return;
   }
 
-  select.innerHTML = Object.keys(labels)
-    .map((filter) => `<option value="${filter}">${labels[filter]} (${counts[filter] ?? 0})</option>`)
-    .join("");
-  select.value = activeValue;
+  resultView.querySelectorAll("[data-result-filter]").forEach((button) => {
+    const isActive = button.dataset.resultFilter === activeValue;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
 }
 
 function getUniqueStudyResultIds(results, getId = (item) => item?.id) {
@@ -6673,13 +6659,11 @@ function renderSharedStudyResults({
   wrongId,
   emptyId,
   listId,
-  filterSelectId,
   bulkActionButtonId,
   counts,
   filteredResults,
   activeFilter,
   filterLabels,
-  renderFilterOptions,
   renderBulkActionButton,
   getEmptyText,
   renderItems
@@ -6695,50 +6679,50 @@ function renderSharedStudyResults({
     wrongId,
     emptyId,
     listId,
-    filterSelectId,
     bulkActionButtonId,
     counts,
     filteredResults,
     activeFilter,
     filterLabels,
-    renderFilterOptions,
     renderBulkActionButton,
     getEmptyText,
     renderItems
   });
 }
 
-function attachResultFilterSelectListener({
-  select,
+function attachResultFilterButtonListeners({
+  buttons,
   getNextValue,
   getCurrentValue,
   setValue,
   shouldSaveState = false,
   render
 }) {
-  if (!select) {
-    return;
-  }
-
-  if (hasBoundListener(select, "result-filter-change")) {
-    return;
-  }
-
-  markBoundListener(select, "result-filter-change");
-  select.addEventListener("change", () => {
-    const nextValue = getNextValue(select.value);
-
-    if (getCurrentValue() === nextValue) {
+  Array.from(buttons || []).forEach((button) => {
+    if (!button) {
       return;
     }
 
-    setValue(nextValue);
-
-    if (shouldSaveState) {
-      saveState();
+    if (hasBoundListener(button, "result-filter-click")) {
+      return;
     }
 
-    render();
+    markBoundListener(button, "result-filter-click");
+    button.addEventListener("click", () => {
+      const nextValue = getNextValue(button.dataset.resultFilter);
+
+      if (getCurrentValue() === nextValue) {
+        return;
+      }
+
+      setValue(nextValue);
+
+      if (shouldSaveState) {
+        saveState();
+      }
+
+      render();
+    });
   });
 }
 
@@ -6866,13 +6850,11 @@ function renderKanjiPracticeResults() {
     wrongId: "kanji-practice-result-wrong",
     emptyId: "kanji-practice-result-empty",
     listId: "kanji-practice-result-list",
-    filterSelectId: "kanji-practice-result-filter",
     bulkActionButtonId: "kanji-practice-result-bulk-action",
     counts,
     filteredResults,
     activeFilter: getKanjiPracticeResultFilter(kanjiPracticeState.resultFilter),
     filterLabels: kanjiPracticeResultFilterLabels,
-    renderFilterOptions: renderKanjiPracticeResultFilterOptions,
     renderBulkActionButton: renderKanjiPracticeBulkActionButtons,
     getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과가 없어요.`,
     renderItems: (results, container) => {
@@ -8058,17 +8040,6 @@ function getFilteredVocabQuizResults() {
   return getFilteredStudyResults(activeVocabQuizResults, getVocabQuizResultFilter());
 }
 
-function renderVocabQuizResultFilterOptions(counts) {
-  const filterSelect = document.getElementById("vocab-quiz-result-filter");
-
-  renderResultFilterOptions({
-    select: filterSelect,
-    labels: vocabQuizResultFilterLabels,
-    counts,
-    activeValue: getVocabQuizResultFilter()
-  });
-}
-
 function renderVocabQuizBulkActionButtons(results) {
   const reviewActionButton = document.getElementById("vocab-quiz-result-bulk-action");
   const reviewActionLabel = document.getElementById("vocab-quiz-result-bulk-label");
@@ -8141,13 +8112,11 @@ function renderVocabQuizResults() {
     wrongId: "vocab-quiz-result-wrong",
     emptyId: "vocab-quiz-result-empty",
     listId: "vocab-quiz-result-list",
-    filterSelectId: "vocab-quiz-result-filter",
     bulkActionButtonId: "vocab-quiz-result-bulk-action",
     counts,
     filteredResults,
     activeFilter: getVocabQuizResultFilter(),
     filterLabels: vocabQuizResultFilterLabels,
-    renderFilterOptions: renderVocabQuizResultFilterOptions,
     renderBulkActionButton: renderVocabQuizBulkActionButtons,
     getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과는 아직 없어요.`,
     renderItems: (results, container) => {
@@ -9060,17 +9029,6 @@ function getGrammarPracticeResultDetail(item) {
   return "";
 }
 
-function renderGrammarPracticeResultFilterOptions(counts) {
-  const filterSelect = document.getElementById("grammar-practice-result-filter");
-
-  renderResultFilterOptions({
-    select: filterSelect,
-    labels: grammarPracticeResultFilterLabels,
-    counts,
-    activeValue: getGrammarPracticeResultFilter(grammarPracticeState.resultFilter)
-  });
-}
-
 function renderGrammarPracticeBulkActionButtons(results) {
   const reviewActionButton = document.getElementById("grammar-practice-result-bulk-action");
   const reviewActionLabel = document.getElementById("grammar-practice-result-bulk-label");
@@ -9600,13 +9558,11 @@ function renderGrammarPracticeResults() {
     wrongId: "grammar-practice-result-wrong",
     emptyId: "grammar-practice-result-empty",
     listId: "grammar-practice-result-list",
-    filterSelectId: "grammar-practice-result-filter",
     bulkActionButtonId: "grammar-practice-result-bulk-action",
     counts,
     filteredResults,
     activeFilter: getGrammarPracticeResultFilter(grammarPracticeState.resultFilter),
     filterLabels: grammarPracticeResultFilterLabels,
-    renderFilterOptions: renderGrammarPracticeResultFilterOptions,
     renderBulkActionButton: renderGrammarPracticeBulkActionButtons,
     getEmptyText: ({ activeFilter, filterLabels }) => `${filterLabels[activeFilter]} 결과가 아직 없어요.`,
     renderItems: (results, container) => {
@@ -11055,7 +11011,7 @@ function attachEventListeners() {
   const vocabQuizLevelSelect = document.getElementById("vocab-quiz-level-select");
   const vocabQuizFilterSelect = document.getElementById("vocab-quiz-filter-select");
   const vocabQuizPartSelect = document.getElementById("vocab-quiz-part-select");
-  const vocabQuizResultFilter = document.getElementById("vocab-quiz-result-filter");
+  const vocabQuizResultFilter = document.querySelectorAll("#vocab-quiz-result-view [data-result-filter]");
   const vocabQuizResultBulkAction = document.getElementById("vocab-quiz-result-bulk-action");
   const vocabQuizResultMasteredAction = document.getElementById("vocab-quiz-result-mastered-action");
   const vocabQuizResultList = document.getElementById("vocab-quiz-result-list");
@@ -11077,7 +11033,7 @@ function attachEventListeners() {
   const grammarPracticeStart = document.getElementById("grammar-practice-start");
   const grammarPracticeResultBulkAction = document.getElementById("grammar-practice-result-bulk-action");
   const grammarPracticeResultMasteredAction = document.getElementById("grammar-practice-result-mastered-action");
-  const grammarPracticeResultFilter = document.getElementById("grammar-practice-result-filter");
+  const grammarPracticeResultFilter = document.querySelectorAll("#grammar-practice-result-view [data-result-filter]");
   const grammarPracticeResultList = document.getElementById("grammar-practice-result-list");
   const grammarViewButtons = document.querySelectorAll("[data-grammar-view]");
   const grammarLevelSelect = document.getElementById("grammar-level-select");
@@ -11122,13 +11078,13 @@ function attachEventListeners() {
   const kanjiPracticeRestart = document.getElementById("kanji-practice-restart");
   const kanjiPracticeResultBulkAction = document.getElementById("kanji-practice-result-bulk-action");
   const kanjiPracticeResultMasteredAction = document.getElementById("kanji-practice-result-mastered-action");
-  const kanjiPracticeResultFilter = document.getElementById("kanji-practice-result-filter");
+  const kanjiPracticeResultFilter = document.querySelectorAll("#kanji-practice-result-view [data-result-filter]");
   const kanjiPracticeResultList = document.getElementById("kanji-practice-result-list");
   const kanjiTabButtons = document.querySelectorAll("[data-kanji-tab]");
   const grammarPracticeNext = document.getElementById("grammar-practice-next");
   const kanaQuizNext = document.getElementById("kana-quiz-next");
   const kanaQuizRestart = document.getElementById("kana-quiz-restart");
-  const kanaQuizResultFilter = document.getElementById("kana-quiz-result-filter");
+  const kanaQuizResultFilter = document.querySelectorAll("#kana-quiz-result-view [data-result-filter]");
   const kanaSetupToggle = document.getElementById("kana-setup-toggle");
   const kanaModeButtons = document.querySelectorAll("[data-kana-mode]");
   const kanaCountSpinner = document.querySelector('[data-spinner-id="kana-quiz-count"]');
@@ -11204,8 +11160,8 @@ function attachEventListeners() {
   attachSelectValueListener(vocabQuizLevelSelect, setVocabLevel);
   attachSelectValueListener(vocabQuizFilterSelect, setVocabFilter);
   attachSelectValueListener(vocabQuizPartSelect, setVocabPartFilter);
-  attachResultFilterSelectListener({
-    select: vocabQuizResultFilter,
+  attachResultFilterButtonListeners({
+    buttons: vocabQuizResultFilter,
     getNextValue: getVocabQuizResultFilter,
     getCurrentValue: getVocabQuizResultFilter,
     setValue: (value) => {
@@ -11334,8 +11290,8 @@ function attachEventListeners() {
     saveItem: saveGrammarToMasteredList,
     render: renderGrammarPractice
   });
-  attachResultFilterSelectListener({
-    select: grammarPracticeResultFilter,
+  attachResultFilterButtonListeners({
+    buttons: grammarPracticeResultFilter,
     getNextValue: getGrammarPracticeResultFilter,
     getCurrentValue: () => getGrammarPracticeResultFilter(grammarPracticeState.resultFilter),
     setValue: (value) => {
@@ -11483,8 +11439,8 @@ function attachEventListeners() {
     saveItem: saveKanjiToMasteredList,
     render: renderKanjiPageLayout
   });
-  attachResultFilterSelectListener({
-    select: kanjiPracticeResultFilter,
+  attachResultFilterButtonListeners({
+    buttons: kanjiPracticeResultFilter,
     getNextValue: getKanjiPracticeResultFilter,
     getCurrentValue: () => getKanjiPracticeResultFilter(kanjiPracticeState.resultFilter),
     setValue: (value) => {
@@ -11554,9 +11510,14 @@ function attachEventListeners() {
       toggleQuizSessionPause(key);
     });
   });
-  attachSelectValueListener(kanaQuizResultFilter, (value) => {
-    kanaQuizSheetState.resultFilter = getKanaQuizResultFilter(value);
-    renderKanaQuizResults();
+  attachResultFilterButtonListeners({
+    buttons: kanaQuizResultFilter,
+    getNextValue: getKanaQuizResultFilter,
+    getCurrentValue: () => getKanaQuizResultFilter(kanaQuizSheetState.resultFilter),
+    setValue: (value) => {
+      kanaQuizSheetState.resultFilter = value;
+    },
+    render: renderKanaQuizResults
   });
   attachValueButtonListeners(
     charactersTabButtons,

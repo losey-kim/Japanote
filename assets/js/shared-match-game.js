@@ -431,17 +431,16 @@
     }
   }
 
-  function renderResultFilterOptions({ selectId, filters, labels, counts, activeFilter }) {
-    const select = document.getElementById(selectId);
-
-    if (!select) {
+  function syncResultFilterButtons(resultView, activeFilter) {
+    if (!resultView) {
       return;
     }
 
-    select.innerHTML = filters
-      .map((filter) => `<option value="${filter}">${labels[filter]} (${counts[filter] ?? 0})</option>`)
-      .join("");
-    select.value = activeFilter;
+    resultView.querySelectorAll("[data-result-filter]").forEach((button) => {
+      const isActive = button.dataset.resultFilter === activeFilter;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
   }
 
   function renderBulkActionButtonState({
@@ -593,13 +592,11 @@
     wrongId,
     emptyId,
     listId,
-    filterSelectId,
     bulkActionButtonId,
     counts,
     filteredResults,
     activeFilter,
     filterLabels,
-    renderFilterOptions,
     renderBulkActionButton,
     createItemMarkup,
     renderItems,
@@ -611,20 +608,16 @@
     const wrong = document.getElementById(wrongId);
     const empty = document.getElementById(emptyId);
     const list = document.getElementById(listId);
-    const filterSelect = document.getElementById(filterSelectId);
     const bulkActionButton = document.getElementById(bulkActionButtonId);
 
-    if (!resultView || !total || !correct || !wrong || !empty || !list || !filterSelect || !bulkActionButton) {
+    if (!resultView || !total || !correct || !wrong || !empty || !list || !bulkActionButton) {
       return;
     }
 
     total.textContent = String(counts.all);
     correct.textContent = String(counts.correct);
     wrong.textContent = String(counts.wrong);
-
-    if (typeof renderFilterOptions === "function") {
-      renderFilterOptions(counts);
-    }
+    syncResultFilterButtons(resultView, activeFilter);
 
     if (typeof renderBulkActionButton === "function") {
       renderBulkActionButton(filteredResults);
@@ -1257,6 +1250,23 @@
     });
   }
 
+  function attachResultFilterButtons(buttons, handler) {
+    Array.from(buttons || []).forEach((button) => {
+      if (!button) {
+        return;
+      }
+
+      if (hasBoundListener(button, "shared-result-filter-click")) {
+        return;
+      }
+
+      markBoundListener(button, "shared-result-filter-click");
+      button.addEventListener("click", () => {
+        handler(button.dataset.resultFilter);
+      });
+    });
+  }
+
   function attachSpinnerListeners({ spinner, options = [], getCurrentValue, handler }) {
     if (!spinner) {
       return;
@@ -1311,7 +1321,7 @@
     onToggleOptions,
     selectConfigs = [],
     spinnerConfigs = [],
-    resultFilterSelect,
+    resultFilterButtons = [],
     onResultFilterChange,
     bulkActionConfig,
     resultSaveConfig
@@ -1338,7 +1348,7 @@
     });
 
     if (typeof onResultFilterChange === "function") {
-      attachSelectChangeListener(resultFilterSelect, onResultFilterChange);
+      attachResultFilterButtons(resultFilterButtons, onResultFilterChange);
     }
 
     if (bulkActionConfig) {
@@ -1440,7 +1450,6 @@
     renderSettingsPanel,
     renderStandardMatchSettings,
     renderBoard,
-    renderResultFilterOptions,
     renderBulkActionButtonState,
     createResultItemHeadMarkup,
     createResultActionButton,
@@ -1448,6 +1457,7 @@
     renderResultsView,
     renderScreen,
     attachSelectChangeListener,
+    attachResultFilterButtons,
     attachSpinnerListeners,
     attachOptionsToggleListener,
     attachStandardMatchEventListeners,

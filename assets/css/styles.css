@@ -4148,6 +4148,48 @@ button {
   padding: 18px;
 }
 
+.match-result-stat-button {
+  width: 100%;
+  padding: 18px;
+  appearance: none;
+  -webkit-appearance: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.match-result-stat-button:hover,
+.match-result-stat-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(222, 107, 72, 0.18);
+}
+
+.match-result-stat-button.is-active {
+  border-color: rgba(222, 107, 72, 0.28);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 245, 238, 0.96)),
+    linear-gradient(135deg, rgba(222, 107, 72, 0.14), rgba(216, 166, 58, 0.08));
+  box-shadow: 0 14px 26px rgba(222, 107, 72, 0.08);
+}
+
+.match-result-stat-button.is-active[data-result-filter="correct"] {
+  border-color: rgba(95, 174, 139, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 252, 247, 0.96)),
+    linear-gradient(135deg, rgba(95, 174, 139, 0.18), rgba(93, 133, 207, 0.08));
+  box-shadow: 0 14px 26px rgba(95, 174, 139, 0.1);
+}
+
+.match-result-stat-button.is-active[data-result-filter="wrong"] {
+  border-color: rgba(222, 107, 72, 0.34);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 244, 240, 0.96)),
+    linear-gradient(135deg, rgba(222, 107, 72, 0.18), rgba(216, 166, 58, 0.08));
+  box-shadow: 0 14px 26px rgba(222, 107, 72, 0.1);
+}
+
 .match-result-stat span {
   display: block;
   color: var(--muted);
@@ -4167,10 +4209,8 @@ button {
 
 .match-result-filters {
   display: flex;
-  align-items: stretch;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
 .match-result-title {
@@ -4224,7 +4264,9 @@ button {
   min-height: 50px;
   padding-inline: 18px;
   white-space: nowrap;
-  flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
   align-self: stretch;
 }
 
@@ -4233,6 +4275,8 @@ button {
   align-items: stretch;
   gap: 12px;
   flex-wrap: wrap;
+  min-width: 0;
+  justify-content: flex-end;
 }
 
 .match-result-bulk-btn:disabled {
@@ -5413,6 +5457,10 @@ body::after {
     padding: 14px 12px 56px;
   }
 
+  .match-result-bulk-btn {
+    flex-basis: 100%;
+  }
+
   .topbar {
     padding: 14px;
     border-radius: 24px;
@@ -5556,11 +5604,18 @@ body::after {
   }
 
   .match-result-filters {
-    display: flex;
+    justify-content: flex-start;
   }
 
-  .match-result-filter-select-wrap {
+  .match-result-bulk-actions {
     width: 100%;
+    justify-content: flex-start;
+  }
+
+  .match-result-bulk-btn {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+    white-space: normal;
   }
 
   .match-result-item {

@@ -673,16 +673,6 @@ function renderKanjiMatchBulkActionButtons(results) {
   }
 }
 
-function renderKanjiMatchResultFilterOptions(counts) {
-  sharedMatchGame.renderResultFilterOptions({
-    selectId: "kanji-match-result-filter",
-    filters: kanjiMatchResultFilterOptions,
-    labels: kanjiMatchResultFilterLabels,
-    counts,
-    activeFilter: getKanjiMatchResultFilter(kanjiMatchState.resultFilter)
-  });
-}
-
 function renderKanjiMatchResults() {
   const counts = getKanjiMatchResultCounts();
   const filteredResults = getFilteredKanjiMatchResults();
@@ -694,13 +684,11 @@ function renderKanjiMatchResults() {
     wrongId: "kanji-match-result-wrong",
     emptyId: "kanji-match-result-empty",
     listId: "kanji-match-result-list",
-    filterSelectId: "kanji-match-result-filter",
     bulkActionButtonId: "kanji-match-result-bulk-action",
     counts,
     filteredResults,
     activeFilter: getKanjiMatchResultFilter(kanjiMatchState.resultFilter),
     filterLabels: kanjiMatchResultFilterLabels,
-    renderFilterOptions: renderKanjiMatchResultFilterOptions,
     renderBulkActionButton: renderKanjiMatchBulkActionButtons,
     renderItems: (results, container) => {
       results.forEach((item) => {
@@ -905,7 +893,7 @@ function attachKanjiMatchEventListeners() {
   const filterSelect = document.getElementById("kanji-match-filter-select");
   const countSpinner = document.querySelector('[data-spinner-id="kanji-match-count"]');
   const timeSpinner = document.querySelector('[data-spinner-id="kanji-match-time"]');
-  const resultFilterSelect = document.getElementById("kanji-match-result-filter");
+  const resultFilterButtons = document.querySelectorAll("#kanji-match-result-view [data-result-filter]");
   const resultBulkAction = document.getElementById("kanji-match-result-bulk-action");
   const resultMasteredAction = document.getElementById("kanji-match-result-mastered-action");
   const resultList = document.getElementById("kanji-match-result-list");
@@ -937,7 +925,7 @@ function attachKanjiMatchEventListeners() {
         handler: setKanjiMatchDuration
       }
     ],
-    resultFilterSelect,
+    resultFilterButtons,
     onResultFilterChange: setKanjiMatchResultFilter,
     bulkActionConfig: {
       button: resultBulkAction,
