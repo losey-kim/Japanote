@@ -1,11 +1,15 @@
 const SUPABASE_URL = "https://nppaqezqwusbagzdnoqi.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wcGFxZXpxd3VzYmFnemRub3FpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NTU5MzIsImV4cCI6MjA5MDQzMTkzMn0.cVnznT2P0sOoX6nA9mCLLNtIID5m2I1LW8N36FY9iqA";
-const DEFAULT_TITLE = "친구의 도전장이 도착했어요";
+const DEFAULT_TITLE = "두근두근! 도전장이 왔어요 💌";
 const DEFAULT_DESCRIPTION = "같은 문제로 바로 도전해 보세요";
+const DEFAULT_CHALLENGE_PROMPT = "나보다 더 잘할 수 있을까? 도전장을 받아줘!";
 const DEFAULT_SITE_NAME = "Japanote";
 const DEFAULT_IMAGE_WIDTH = 1200;
 const DEFAULT_IMAGE_HEIGHT = 630;
+const CHALLENGE_PREVIEW_ILLUSTRATION_PATH = "/assets/images/social-preview-traced-quantized.svg";
+
+let challengePreviewIllustrationHrefPromise = null;
 
 function escapeHtml(value) {
   return String(value || "")
@@ -28,57 +32,42 @@ function isValidTargetPath(targetPath) {
   if (targetPath === "/") {
     return true;
   }
-
   return /^\/(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+(?:\.html)?$/u.test(targetPath);
 }
 
 function readResultSummary(payload) {
-  if (!payload || typeof payload !== "object") {
-    return null;
-  }
-
+  if (!payload || typeof payload !== "object") return null;
   if (Array.isArray(payload.sr) && payload.sr.length >= 3) {
     const total = Number(payload.sr[0]);
     const correct = Number(payload.sr[1]);
     const wrong = Number(payload.sr[2]);
-
     if (Number.isFinite(total) && Number.isFinite(correct) && Number.isFinite(wrong) && total > 0) {
       return { total, correct, wrong };
     }
   }
-
   const sourceResult = payload.sourceResult;
-
   if (sourceResult && typeof sourceResult === "object") {
     const total = Number(sourceResult.total);
     const correct = Number(sourceResult.correct);
     const wrong = Number(sourceResult.wrong);
-
     if (Number.isFinite(total) && Number.isFinite(correct) && Number.isFinite(wrong) && total > 0) {
       return { total, correct, wrong };
     }
   }
-
   return null;
 }
 
 function readTargetOrigin(payload, requestUrl) {
   const payloadOrigin = normalizeText(payload?.targetOrigin || payload?.o);
-
   if (payloadOrigin && /^https?:\/\/[^/]+$/u.test(payloadOrigin)) {
     return payloadOrigin.replace(/\/+$/u, "");
   }
-
   return requestUrl.origin;
 }
 
 function readTargetPath(payload) {
   const path = normalizeText(payload?.targetPath || payload?.p);
-
-  if (!path) {
-    return "";
-  }
-
+  if (!path) return "";
   return path.startsWith("/") ? path : `/${path}`;
 }
 
@@ -89,19 +78,42 @@ function readTargetHash(payload) {
 function buildTargetUrl(code, origin, path, hash) {
   const url = new URL(path, origin);
   url.searchParams.set("c", code);
-
-  if (hash) {
-    url.hash = hash;
-  }
-
+  if (hash) url.hash = hash;
   return url.toString();
 }
 
-function buildPreviewText() {
-  return {
+/**
+ * [귀여움 버전] 문구 생성 함수
+ */
+function buildPreviewText(payload) {
+  const summary = readResultSummary(payload);
+  
+  if (summary) {
+    const { correct, total } = summary;
+    const ratio = correct / total;
+    
+    let emoji = "✨";
+    if (ratio >= 0.8) emoji = "👑"; 
+    else if (ratio <= 0.3) emoji = "🌱";
+    
+    const scoreLabel = `무려 ${correct}개나 맞혔어요! ${emoji}`;
+    const challengeLabel = DEFAULT_CHALLENGE_PROMPT;
+    const description = `${scoreLabel}. ${challengeLabel}`;
+    
+    return {
       title: DEFAULT_TITLE,
-      description: DEFAULT_DESCRIPTION
+      description,
+      scoreLabel,
+      challengeLabel
     };
+  }
+
+  return {
+    title: "함께 공부할래요? 🐾",
+    description: DEFAULT_DESCRIPTION,
+    scoreLabel: "반가워요! 👋",
+    challengeLabel: DEFAULT_DESCRIPTION
+  };
 }
 
 function buildPreviewImageUrl(requestUrl, code) {
@@ -112,71 +124,81 @@ function buildPreviewImageUrl(requestUrl, code) {
   return imageUrl.toString();
 }
 
-function buildPreviewImageSvg({ title, description }) {
+function encodeBase64(value) {
+  if (typeof btoa === "function") return btoa(value);
+  return Buffer.from(value, "utf8").toString("base64");
+}
+
+async function loadChallengePreviewIllustrationHref(requestUrl, env) {
+  if (!env?.ASSETS || typeof env.ASSETS.fetch !== "function") return "";
+  if (!challengePreviewIllustrationHrefPromise) {
+    const assetUrl = new URL(CHALLENGE_PREVIEW_ILLUSTRATION_PATH, requestUrl.origin).toString();
+    challengePreviewIllustrationHrefPromise = env.ASSETS
+      .fetch(new Request(assetUrl))
+      .then(async (response) => {
+        if (!response.ok) return "";
+        const svgText = await response.text();
+        return `data:image/svg+xml;base64,${encodeBase64(svgText)}`;
+      })
+      .catch(() => "");
+  }
+  return challengePreviewIllustrationHrefPromise;
+}
+
+/**
+ * [귀여움 버전] SVG 생성 함수
+ */
+function buildPreviewImageSvgLegacy({ title, description, scoreLabel, illustrationHref }) {
   const safeTitle = escapeHtml(title);
-  const safeDescription = escapeHtml(description);
+  const safeScoreLabel = escapeHtml(scoreLabel || "안녕!");
+  const safeChallengeLabel = escapeHtml(scoreLabel ? "당신의 실력을 보여주세요!" : "함께 시작해봐요!");
+  const safeIllustrationHref = escapeHtml(illustrationHref || "");
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${DEFAULT_IMAGE_WIDTH}" height="${DEFAULT_IMAGE_HEIGHT}" viewBox="0 0 ${DEFAULT_IMAGE_WIDTH} ${DEFAULT_IMAGE_HEIGHT}" role="img" aria-label="${safeTitle}">
+  const illustrationMarkup = safeIllustrationHref
+    ? `<image href="${safeIllustrationHref}" x="670" y="115" width="400" height="400" preserveAspectRatio="xMidYMid meet"/>`
+    : `<g transform="translate(750, 200)">
+         <circle cx="100" cy="100" r="100" fill="#FF8A5B" opacity="0.2"/>
+         <circle cx="70" cy="85" r="12" fill="#FF8A5B"/>
+         <circle cx="130" cy="85" r="12" fill="#FF8A5B"/>
+         <path d="M75 130 Q100 155 125 130" stroke="#FF8A5B" stroke-width="10" fill="none" stroke-linecap="round"/>
+       </g>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${DEFAULT_IMAGE_WIDTH}" height="${DEFAULT_IMAGE_HEIGHT}" viewBox="0 0 ${DEFAULT_IMAGE_WIDTH} ${DEFAULT_IMAGE_HEIGHT}">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#fff8f1" />
-      <stop offset="52%" stop-color="#ffe9db" />
-      <stop offset="100%" stop-color="#ffd7c2" />
+    <linearGradient id="softBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF0F0" />
+      <stop offset="100%" stop-color="#FFE4D6" />
     </linearGradient>
-
-    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="100%" stop-color="#fffaf6" />
-    </linearGradient>
-
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ff8a5b" />
-      <stop offset="100%" stop-color="#ef4444" />
-    </linearGradient>
-
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#7c2d12" flood-opacity="0.12"/>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#FF9E7D" flood-opacity="0.15"/>
     </filter>
   </defs>
 
-  <rect width="${DEFAULT_IMAGE_WIDTH}" height="${DEFAULT_IMAGE_HEIGHT}" fill="url(#bg)"/>
+  <rect width="100%" height="100%" fill="url(#softBg)"/>
 
-  <circle cx="1050" cy="110" r="120" fill="#ffffff" opacity="0.30"/>
-  <circle cx="1120" cy="170" r="54" fill="#fff3eb" opacity="0.95"/>
-  <circle cx="140" cy="560" r="96" fill="#fff1e7" opacity="0.9"/>
+  <circle cx="100" cy="100" r="60" fill="#FFCFB3" opacity="0.4"/>
+  <circle cx="1120" cy="550" r="70" fill="#FFB7B7" opacity="0.3"/>
 
-  <rect x="70" y="58" width="1060" height="514" rx="42" fill="url(#card)" filter="url(#shadow)"/>
+  <rect x="60" y="60" width="1080" height="510" rx="60" fill="white" filter="url(#softShadow)"/>
 
-  <rect x="116" y="108" width="146" height="46" rx="23" fill="#fff0e7"/>
-  <text x="189" y="138" fill="#e85d3f" font-size="22" font-weight="800" text-anchor="middle" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">친구 도전</text>
+  <rect x="650" y="100" width="430" height="430" rx="50" fill="#FFF9F5"/>
 
-  <text x="116" y="230" fill="#8f4e3c" font-size="28" font-weight="700" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">Japanote Challenge</text>
+  <text x="120" y="240" fill="#FF6B6B" font-size="48" font-weight="800" font-family="Pretendard, sans-serif">
+    ${safeScoreLabel}
+  </text>
+  
+  <text x="120" y="350" fill="#1f1b1c" font-size="95" font-weight="900" font-family="Pretendard, sans-serif" letter-spacing="-1">
+    도전 수락? ✌️
+  </text>
 
-  <text x="116" y="350" fill="#1f1b1c" font-size="92" font-weight="900" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">${safeTitle}</text>
+  <text x="120" y="430" fill="#777" font-size="36" font-weight="500" font-family="Pretendard, sans-serif">
+    ${safeChallengeLabel}
+  </text>
 
-  <text x="116" y="426" fill="#5f4a43" font-size="34" font-weight="700" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">${safeDescription}</text>
+  <rect x="120" y="485" width="160" height="48" rx="24" fill="#FF8A5B"/>
+  <text x="200" y="518" fill="white" font-size="22" font-weight="800" text-anchor="middle" font-family="Pretendard, sans-serif">Japanote</text>
 
-  <rect x="116" y="470" width="508" height="62" rx="31" fill="#fff4ed"/>
-  <circle cx="151" cy="501" r="11" fill="url(#accent)"/>
-  <text x="178" y="509" fill="#8b5e51" font-size="22" font-weight="700" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">링크를 열면 같은 문제로 바로 시작돼요</text>
-
-  <g transform="translate(820 160)">
-    <rect x="0" y="0" width="200" height="238" rx="30" fill="#fff4ea"/>
-    <rect x="24" y="24" width="152" height="190" rx="26" fill="#ffffff" stroke="#f6d7c7"/>
-    <rect x="48" y="56" width="104" height="12" rx="6" fill="#ffd8c6"/>
-    <rect x="48" y="84" width="88" height="12" rx="6" fill="#ffd8c6"/>
-    <rect x="48" y="112" width="96" height="12" rx="6" fill="#ffd8c6"/>
-    <circle cx="76" cy="162" r="22" fill="#1f1b1c"/>
-    <circle cx="124" cy="162" r="22" fill="#1f1b1c"/>
-    <circle cx="76" cy="157" r="6" fill="#ffffff"/>
-    <circle cx="124" cy="157" r="6" fill="#ffffff"/>
-    <path d="M84 194 Q100 208 116 194" fill="none" stroke="#ef5d4a" stroke-width="8" stroke-linecap="round"/>
-    <rect x="120" y="-12" width="92" height="34" rx="17" fill="url(#accent)"/>
-    <text x="166" y="10" fill="#ffffff" font-size="16" font-weight="800" text-anchor="middle" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">TRY</text>
-  </g>
-
-  <text x="1030" y="500" fill="#ef5d4a" font-size="44" font-weight="900" text-anchor="end" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">Japanote</text>
-  <text x="1030" y="532" fill="#8d6a5d" font-size="20" font-weight="700" text-anchor="end" font-family="Pretendard, 'Noto Sans KR', system-ui, sans-serif">친구와 점수를 비교해 보세요</text>
+  ${illustrationMarkup}
 </svg>`;
 }
 
@@ -213,86 +235,111 @@ function buildHtml({ previewUrl, targetUrl, title, description, imageUrl }) {
   <script>window.location.replace(${JSON.stringify(targetUrl)});</script>
 </head>
 <body>
-  <main>
-    <p>도전 링크로 이동하고 있어요.</p>
+  <main style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <p>도전 링크로 이동하고 있어요! 🏃‍♀️</p>
     <p><a href="${safeTargetUrl}">이동하지 않으면 여기를 눌러 주세요.</a></p>
   </main>
 </body>
 </html>`;
 }
 
+function buildPreviewImageSvg({ title, description, scoreLabel, challengeLabel, illustrationHref }) {
+  const safeTitle = escapeHtml(title);
+  const safeScoreLabel = escapeHtml(scoreLabel || "지금 시작해요! 🌸");
+  const safeChallengeLabel = escapeHtml(challengeLabel || description || DEFAULT_DESCRIPTION);
+  const safeIllustrationHref = escapeHtml(illustrationHref || "");
+
+  const illustrationMarkup = safeIllustrationHref
+    ? `<image href="${safeIllustrationHref}" x="670" y="115" width="400" height="400" preserveAspectRatio="xMidYMid meet"/>`
+    : `<g transform="translate(750, 200)">
+         <circle cx="100" cy="100" r="100" fill="#FF8A5B" opacity="0.2"/>
+         <circle cx="70" cy="85" r="12" fill="#FF8A5B"/>
+         <circle cx="130" cy="85" r="12" fill="#FF8A5B"/>
+         <path d="M75 130 Q100 155 125 130" stroke="#FF8A5B" stroke-width="10" fill="none" stroke-linecap="round"/>
+       </g>`;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${DEFAULT_IMAGE_WIDTH}" height="${DEFAULT_IMAGE_HEIGHT}" viewBox="0 0 ${DEFAULT_IMAGE_WIDTH} ${DEFAULT_IMAGE_HEIGHT}">
+  <defs>
+    <linearGradient id="softBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF0F0" />
+      <stop offset="100%" stop-color="#FFE4D6" />
+    </linearGradient>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#FF9E7D" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <rect width="100%" height="100%" fill="url(#softBg)"/>
+
+  <circle cx="100" cy="100" r="60" fill="#FFCFB3" opacity="0.4"/>
+  <circle cx="1120" cy="550" r="70" fill="#FFB7B7" opacity="0.3"/>
+
+  <rect x="60" y="60" width="1080" height="510" rx="60" fill="white" filter="url(#softShadow)"/>
+
+  <rect x="650" y="100" width="430" height="430" rx="50" fill="#FFF9F5"/>
+
+  <text x="120" y="240" fill="#FF6B6B" font-size="48" font-weight="800" font-family="Pretendard, sans-serif">
+    ${safeScoreLabel}
+  </text>
+
+  <text x="120" y="340" fill="#1f1b1c" font-size="56" font-weight="900" font-family="Pretendard, sans-serif" textLength="470" lengthAdjust="spacingAndGlyphs">
+    ${safeTitle}
+  </text>
+
+  <text x="120" y="430" fill="#777" font-size="36" font-weight="500" font-family="Pretendard, sans-serif">
+    ${safeChallengeLabel}
+  </text>
+
+  <rect x="120" y="485" width="160" height="48" rx="24" fill="#FF8A5B"/>
+  <text x="200" y="518" fill="white" font-size="22" font-weight="800" text-anchor="middle" font-family="Pretendard, sans-serif">Japanote</text>
+
+  ${illustrationMarkup}
+</svg>`;
+}
+
 async function fetchChallenge(code) {
   const requestUrl = new URL(`${SUPABASE_URL}/rest/v1/shared_challenges`);
   requestUrl.searchParams.set("select", "kind,payload");
   requestUrl.searchParams.set("code", `eq.${code}`);
-
   const response = await fetch(requestUrl.toString(), {
     headers: {
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`
     }
   });
-
-  if (!response.ok) {
-    throw new Error(`Challenge fetch failed: ${response.status}`);
-  }
-
+  if (!response.ok) throw new Error(`Challenge fetch failed: ${response.status}`);
   const rows = await response.json();
   return Array.isArray(rows) ? rows[0] : null;
 }
 
 async function loadChallengePreviewContext(requestUrl, code) {
   const normalizedCode = normalizeText(code);
-
   if (!isValidCode(normalizedCode)) {
-    return {
-      error: new Response("Invalid challenge code", { status: 400 })
-    };
+    return { error: new Response("Invalid challenge code", { status: 400 }) };
   }
-
   const challenge = await fetchChallenge(normalizedCode);
-
   if (!challenge?.payload) {
-    return {
-      error: new Response("Challenge not found", { status: 404 })
-    };
+    return { error: new Response("Challenge not found", { status: 404 }) };
   }
-
   const payload = challenge.payload;
   const targetPath = readTargetPath(payload);
   const targetHash = readTargetHash(payload);
-
   if (!isValidTargetPath(targetPath)) {
-    return {
-      error: new Response("Invalid challenge target", { status: 400 })
-    };
+    return { error: new Response("Invalid challenge target", { status: 400 }) };
   }
-
   if (targetHash && !/^#[A-Za-z0-9_-]+$/u.test(targetHash)) {
-    return {
-      error: new Response("Invalid challenge target", { status: 400 })
-    };
+    return { error: new Response("Invalid challenge target", { status: 400 }) };
   }
-
   const targetOrigin = readTargetOrigin(payload, requestUrl);
   const targetUrl = buildTargetUrl(normalizedCode, targetOrigin, targetPath, targetHash);
   const previewText = buildPreviewText(payload);
-
-  return {
-    code: normalizedCode,
-    targetUrl,
-    ...previewText
-  };
+  return { code: normalizedCode, targetUrl, ...previewText };
 }
 
 export async function handleChallengePreviewRequest(requestUrl, code) {
   try {
     const previewContext = await loadChallengePreviewContext(requestUrl, code);
-
-    if (previewContext.error) {
-      return previewContext.error;
-    }
-
+    if (previewContext.error) return previewContext.error;
     const html = buildHtml({
       previewUrl: requestUrl.toString(),
       targetUrl: previewContext.targetUrl,
@@ -300,7 +347,6 @@ export async function handleChallengePreviewRequest(requestUrl, code) {
       description: previewContext.description,
       imageUrl: buildPreviewImageUrl(requestUrl, previewContext.code)
     });
-
     return new Response(html, {
       status: 200,
       headers: {
@@ -313,19 +359,18 @@ export async function handleChallengePreviewRequest(requestUrl, code) {
   }
 }
 
-export async function handleChallengePreviewImageRequest(requestUrl, code) {
+export async function handleChallengePreviewImageRequest(requestUrl, code, env) {
   try {
     const previewContext = await loadChallengePreviewContext(requestUrl, code);
-
-    if (previewContext.error) {
-      return previewContext.error;
-    }
-
+    if (previewContext.error) return previewContext.error;
+    const illustrationHref = await loadChallengePreviewIllustrationHref(requestUrl, env);
     const svg = buildPreviewImageSvg({
       title: previewContext.title,
-      description: previewContext.description
+      description: previewContext.description,
+      scoreLabel: previewContext.scoreLabel,
+      challengeLabel: previewContext.challengeLabel,
+      illustrationHref
     });
-
     return new Response(svg, {
       status: 200,
       headers: {

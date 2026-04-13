@@ -10,7 +10,7 @@ export default {
     const matchedPreviewPath = requestUrl.pathname.match(challengePreviewPathPattern);
 
     if (matchedPreviewImagePath) {
-      return handleChallengePreviewImageRequest(requestUrl, matchedPreviewImagePath[1]);
+      return handleChallengePreviewImageRequest(requestUrl, matchedPreviewImagePath[1], env);
     }
 
     if (matchedPreviewPath) {
