@@ -1,50 +1,70 @@
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-
-/** 대상 에셋 파일 → HTML에서 참조되는 상대 경로 */
-const trackedAssets = [
-  "assets/css/styles.css",
-  "assets/js/page-script-loader.js"
-];
+const entryFilePath = fileURLToPath(import.meta.url);
+const assetPattern = /assets\/[A-Za-z0-9_./-]+\.(?:css|js)(?:\?v=[^"'`\s]+)?/gu;
 
 function getFileHash(filePath) {
   const content = readFileSync(filePath);
   return createHash("md5").update(content).digest("hex").slice(0, 8);
 }
 
-function buildHashMap() {
-  const map = new Map();
+function parseCliArgs(argv) {
+  const options = {};
 
-  for (const asset of trackedAssets) {
-    const fullPath = resolve(repoRoot, asset);
-    try {
-      map.set(asset, getFileHash(fullPath));
-    } catch {
-      console.warn(`⚠ ${asset} 파일을 찾을 수 없어서 건너뜁니다.`);
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+
+    if (token === "--root" && argv[index + 1]) {
+      options.rootDir = resolve(repoRoot, argv[index + 1]);
+      index += 1;
     }
+  }
+
+  return options;
+}
+
+function getHtmlFiles(rootDir) {
+  return readdirSync(rootDir)
+    .filter((name) => name.endsWith(".html"))
+    .map((name) => resolve(rootDir, name));
+}
+
+function buildHashMap(content, rootDir) {
+  const map = new Map();
+  const matches = content.match(assetPattern) || [];
+
+  for (const rawAsset of matches) {
+    const asset = rawAsset.replace(/\?v=[^"'`\s]+$/u, "");
+
+    if (map.has(asset)) {
+      continue;
+    }
+
+    const fullPath = resolve(rootDir, asset);
+
+    if (!existsSync(fullPath)) {
+      console.warn(`⚠ ${asset} 파일을 찾을 수 없어서 건너뜁니다.`);
+      continue;
+    }
+
+    map.set(asset, getFileHash(fullPath));
   }
 
   return map;
 }
 
-function getHtmlFiles() {
-  return readdirSync(repoRoot)
-    .filter((name) => name.endsWith(".html"))
-    .map((name) => resolve(repoRoot, name));
-}
-
-function updateVersionStrings(htmlPath, hashMap) {
-  let content = readFileSync(htmlPath, "utf8");
+function updateVersionStrings(filePath, rootDir) {
+  let content = readFileSync(filePath, "utf8");
   let changed = false;
+  const hashMap = buildHashMap(content, rootDir);
 
   for (const [asset, hash] of hashMap) {
-    // asset?v=anything → asset?v=hash
     const pattern = new RegExp(
-      asset.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\?v=[^\"'\\s]+",
+      `${asset.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:\\?v=[^"'\\s]+)?`,
       "g"
     );
     const replacement = `${asset}?v=${hash}`;
@@ -57,29 +77,45 @@ function updateVersionStrings(htmlPath, hashMap) {
   }
 
   if (changed) {
-    writeFileSync(htmlPath, content, "utf8");
+    writeFileSync(filePath, content, "utf8");
   }
 
   return changed;
 }
 
-const hashMap = buildHashMap();
-const htmlFiles = getHtmlFiles();
-let updatedCount = 0;
+function getTargetFiles(rootDir) {
+  const files = [...getHtmlFiles(rootDir)];
+  const loaderPath = resolve(rootDir, "assets", "js", "page-script-loader.js");
 
-console.log("에셋 해시:");
-for (const [asset, hash] of hashMap) {
-  console.log(`  ${asset} → ${hash}`);
+  if (existsSync(loaderPath)) {
+    files.push(loaderPath);
+  }
+
+  return files;
 }
 
-for (const htmlPath of htmlFiles) {
-  if (updateVersionStrings(htmlPath, hashMap)) {
-    const name = htmlPath.replace(repoRoot + "\\", "").replace(repoRoot + "/", "");
-    console.log(`✔ ${name} 업데이트됨`);
-    updatedCount += 1;
+export function applyAssetVersioning(options = {}) {
+  const rootDir = options.rootDir || repoRoot;
+  const targetFiles = getTargetFiles(rootDir);
+  let updatedCount = 0;
+
+  for (const filePath of targetFiles) {
+    if (updateVersionStrings(filePath, rootDir)) {
+      const name = filePath.replace(rootDir + "\\", "").replace(rootDir + "/", "");
+      console.log(`✔ ${name} 업데이트됨`);
+      updatedCount += 1;
+    }
+  }
+
+  if (!updatedCount) {
+    console.log("모든 배포 파일이 이미 최신 버전입니다.");
   }
 }
 
-if (!updatedCount) {
-  console.log("모든 HTML 파일이 이미 최신 버전입니다.");
+function isDirectRun() {
+  return Boolean(process.argv[1] && resolve(process.argv[1]) === entryFilePath);
+}
+
+if (isDirectRun()) {
+  applyAssetVersioning(parseCliArgs(process.argv.slice(2)));
 }

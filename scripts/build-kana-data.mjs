@@ -6,6 +6,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const sourcePath = resolve(repoRoot, "data-source", "kana-source.json");
 const outputPath = resolve(repoRoot, "data", "kana.json");
 const scripts = ["hiragana", "katakana"];
+const entryFilePath = fileURLToPath(import.meta.url);
 
 function loadJson(filePath, label) {
   try {
@@ -266,13 +267,47 @@ function buildKanaData(source) {
   };
 }
 
-try {
-  // 런타임은 기존 data/kana.json 구조를 유지하고, 정본 스키마 확장만 이 스크립트에서 맡는다.
-  const source = loadJson(sourcePath, "data-source/kana-source.json");
+function parseCliArgs(argv) {
+  const options = {};
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+
+    if (token === "--source" && argv[index + 1]) {
+      options.sourcePath = resolve(repoRoot, argv[index + 1]);
+      index += 1;
+      continue;
+    }
+
+    if (token === "--output" && argv[index + 1]) {
+      options.outputPath = resolve(repoRoot, argv[index + 1]);
+      index += 1;
+    }
+  }
+
+  return options;
+}
+
+export function buildKanaDataFile(options = {}) {
+  const nextSourcePath = options.sourcePath || sourcePath;
+  const nextOutputPath = options.outputPath || outputPath;
+  const source = loadJson(nextSourcePath, "data-source/kana-source.json");
   const output = buildKanaData(source);
-  writeJson(outputPath, output);
-  console.log(`Wrote ${outputPath}`);
-} catch (error) {
-  console.error(error.message);
-  process.exitCode = 1;
+
+  writeJson(nextOutputPath, output);
+  console.log(`Wrote ${nextOutputPath}`);
+}
+
+function isDirectRun() {
+  return Boolean(process.argv[1] && resolve(process.argv[1]) === entryFilePath);
+}
+
+if (isDirectRun()) {
+  try {
+    // 런타임은 기존 data/kana.json 구조를 유지하고, 정본 스키마 확장만 이 스크립트에서 맡는다.
+    buildKanaDataFile(parseCliArgs(process.argv.slice(2)));
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
 }

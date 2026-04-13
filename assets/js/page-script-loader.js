@@ -1,5 +1,5 @@
 (function loadJapanotePageScripts(global) {
-  const assetVersion = "20260413m";
+  const assetVersion = "20260413o";
   const pageName = (() => {
     const path = global.location?.pathname || "";
     const segments = path.split("/").filter(Boolean);
@@ -9,82 +9,82 @@
 
   const pageScriptMap = {
     "index.html": [
-      "assets/js/theme.js",
-      "assets/js/app-study-view-helpers.js",
-      "assets/js/shared-timer.js",
-      "assets/js/app.js"
+      "assets/js/theme.js?v=0cb88168",
+      "assets/js/app-study-view-helpers.js?v=444dc3dc",
+      "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/app.js?v=33a15021"
     ],
     "grammar.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-      "assets/js/supabase-config.js",
-      "assets/js/supabase-sync.js",
-      "assets/js/theme.js",
-      "assets/js/shared-quiz-layouts.js",
-      "assets/js/app-study-view-helpers.js",
-      "assets/js/shared-timer.js",
-      "assets/js/shared-match-game.js",
-      "assets/js/challenge-links.js",
-      "assets/js/app.js",
-      "assets/js/grammar-match-game.js",
-      "assets/js/share-result.js"
+      "assets/js/supabase-config.js?v=f7482a29",
+      "assets/js/supabase-sync.js?v=475dffb1",
+      "assets/js/theme.js?v=0cb88168",
+      "assets/js/shared-quiz-layouts.js?v=1de1e6a7",
+      "assets/js/app-study-view-helpers.js?v=444dc3dc",
+      "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/shared-match-game.js?v=2c46766b",
+      "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app.js?v=33a15021",
+      "assets/js/grammar-match-game.js?v=4087c18c",
+      "assets/js/share-result.js?v=441dcdce"
     ],
     "reading.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-      "assets/js/supabase-config.js",
-      "assets/js/supabase-sync.js",
-      "assets/js/theme.js",
-      "assets/js/shared-quiz-layouts.js",
-      "assets/js/app-study-view-helpers.js",
-      "assets/js/shared-timer.js",
-      "assets/js/shared-match-game.js",
-      "assets/js/challenge-links.js",
-      "assets/js/app.js",
-      "assets/js/share-result.js"
+      "assets/js/supabase-config.js?v=f7482a29",
+      "assets/js/supabase-sync.js?v=475dffb1",
+      "assets/js/theme.js?v=0cb88168",
+      "assets/js/shared-quiz-layouts.js?v=1de1e6a7",
+      "assets/js/app-study-view-helpers.js?v=444dc3dc",
+      "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/shared-match-game.js?v=2c46766b",
+      "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app.js?v=33a15021",
+      "assets/js/share-result.js?v=441dcdce"
     ],
     "vocab.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-      "assets/js/supabase-config.js",
-      "assets/js/supabase-sync.js",
-      "assets/js/theme.js",
-      "assets/js/vocab-registry.js",
-      "assets/js/shared-quiz-layouts.js",
-      "assets/js/shared-timer.js",
-      "assets/js/shared-match-game.js",
-      "assets/js/shared-match-copy.js",
-      "assets/js/app-study-view-helpers.js",
-      "assets/js/challenge-links.js",
-      "assets/js/app.js",
-      "assets/js/match-game.js",
-      "assets/js/share-result.js",
-      "assets/js/study-tools.js"
+      "assets/js/supabase-config.js?v=f7482a29",
+      "assets/js/supabase-sync.js?v=475dffb1",
+      "assets/js/theme.js?v=0cb88168",
+      "assets/js/vocab-registry.js?v=eb163433",
+      "assets/js/shared-quiz-layouts.js?v=1de1e6a7",
+      "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/shared-match-game.js?v=2c46766b",
+      "assets/js/shared-match-copy.js?v=42df64f0",
+      "assets/js/app-study-view-helpers.js?v=444dc3dc",
+      "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app.js?v=33a15021",
+      "assets/js/match-game.js?v=3f2e2e22",
+      "assets/js/share-result.js?v=441dcdce",
+      "assets/js/study-tools.js?v=9b778c4f"
     ],
     "kanji.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-      "assets/js/supabase-config.js",
-      "assets/js/supabase-sync.js",
-      "assets/js/theme.js",
-      "assets/js/vocab-registry.js",
-      "assets/js/shared-quiz-layouts.js",
-      "assets/js/shared-timer.js",
-      "assets/js/shared-match-game.js",
-      "assets/js/shared-match-copy.js",
-      "assets/js/app-study-view-helpers.js",
-      "assets/js/challenge-links.js",
-      "assets/js/app.js",
-      "assets/js/kanji-match-game.js",
-      "assets/js/share-result.js"
+      "assets/js/supabase-config.js?v=f7482a29",
+      "assets/js/supabase-sync.js?v=475dffb1",
+      "assets/js/theme.js?v=0cb88168",
+      "assets/js/vocab-registry.js?v=eb163433",
+      "assets/js/shared-quiz-layouts.js?v=1de1e6a7",
+      "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/shared-match-game.js?v=2c46766b",
+      "assets/js/shared-match-copy.js?v=42df64f0",
+      "assets/js/app-study-view-helpers.js?v=444dc3dc",
+      "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app.js?v=33a15021",
+      "assets/js/kanji-match-game.js?v=74bea83e",
+      "assets/js/share-result.js?v=441dcdce"
     ],
     "characters.html": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
-      "assets/js/supabase-config.js?v=20260330a",
-      "assets/js/supabase-sync.js?v=20260330a",
-      "assets/js/theme.js?v=20260330a",
-      "assets/js/vocab-registry.js?v=20260330a",
-      "assets/js/app-study-view-helpers.js?v=20260330a",
-      "assets/js/shared-timer.js?v=20260330a",
-      "assets/js/challenge-links.js?v=20260330a",
-      "assets/js/app.js?v=20260330a",
-      "assets/js/share-result.js"
+      "assets/js/supabase-config.js?v=f7482a29",
+      "assets/js/supabase-sync.js?v=475dffb1",
+      "assets/js/theme.js?v=0cb88168",
+      "assets/js/vocab-registry.js?v=eb163433",
+      "assets/js/app-study-view-helpers.js?v=444dc3dc",
+      "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app.js?v=33a15021",
+      "assets/js/share-result.js?v=441dcdce"
     ]
   };
 
@@ -93,7 +93,7 @@
       return src;
     }
 
-    if (/[?&]v=/.test(src)) {
+    if (/[?&]v=/u.test(src)) {
       return src.replace(/([?&])v=[^&]*/u, `$1v=${assetVersion}`);
     }
 
