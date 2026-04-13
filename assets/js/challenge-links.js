@@ -10,6 +10,7 @@
   const shortCodeLength = 10;
   const shortLinkMaxSaveAttempts = 4;
   const challengeTableName = "shared_challenges";
+  const challengePreviewFunctionName = "challenge-preview";
   const lzReverseDictionaries = Object.create(null);
   const providersByResultViewId = new Map();
   const providersByKind = new Map();
@@ -589,6 +590,18 @@
       packed.s = payload.sessionItems;
     }
 
+    if (payload.targetOrigin) {
+      packed.o = normalizeText(payload.targetOrigin);
+    }
+
+    if (payload.targetPath) {
+      packed.p = normalizeText(payload.targetPath);
+    }
+
+    if (payload.targetHash) {
+      packed.h = normalizeText(payload.targetHash);
+    }
+
     const sourceResult = packResultSummary(payload.sourceResult);
     if (sourceResult) {
       packed.sr = sourceResult;
@@ -630,6 +643,18 @@
       unpacked.sessionItems = payload.s;
     }
 
+    if (payload.o) {
+      unpacked.targetOrigin = normalizeText(payload.o);
+    }
+
+    if (payload.p) {
+      unpacked.targetPath = normalizeText(payload.p);
+    }
+
+    if (payload.h) {
+      unpacked.targetHash = normalizeText(payload.h);
+    }
+
     const sourceResult = unpackResultSummary(payload.sr);
     if (sourceResult) {
       unpacked.sourceResult = sourceResult;
@@ -653,7 +678,8 @@
       enabled: Boolean(rawConfig.enabled && rawConfig.url && rawConfig.anonKey),
       url: rawConfig.url || "",
       anonKey: rawConfig.anonKey || "",
-      table: rawConfig.challengeTable || challengeTableName
+      table: rawConfig.challengeTable || challengeTableName,
+      previewBaseUrl: rawConfig.challengePreviewBaseUrl || ""
     };
   }
 
@@ -737,6 +763,23 @@
     return {
       code: "",
       warning: "짧은 링크를 만드는 중 충돌이 생겨서 일반 링크를 복사했어요."
+    };
+  }
+
+  async function createChallengePreviewLink(code) {
+    const config = getChallengeSupabaseConfig();
+
+    if (!config.enabled || !config.previewBaseUrl || !code) {
+      return {
+        url: "",
+        warning: ""
+      };
+    }
+
+    const normalizedBaseUrl = String(config.previewBaseUrl).replace(/\/+$/u, "");
+    return {
+      url: `${normalizedBaseUrl}/${challengePreviewFunctionName}?code=${encodeURIComponent(code)}`,
+      warning: ""
     };
   }
 
@@ -1236,7 +1279,7 @@
       };
     }
 
-    const completedPayload = {
+    const basePayload = {
       v: 1,
       kind: provider.kind,
       createdAt: payload.createdAt || Date.now(),
@@ -1245,20 +1288,33 @@
       sourceResult: sourceResult || payload.sourceResult || null,
       sourceItems: sourceItems.length ? sourceItems : payload.sourceItems || []
     };
+    const targetPath = provider.getTargetPath?.(basePayload) || global.location.pathname;
+    const nextHash = provider.getTargetHash?.(basePayload);
+    const completedPayload = {
+      ...basePayload,
+      targetOrigin: global.location.origin,
+      targetPath,
+      targetHash: nextHash || ""
+    };
     const shortLink = await createShortChallengeReference(completedPayload);
 
     if (shortLink.code) {
-      const shortTargetUrl = new URL(
-        provider.getTargetPath?.(completedPayload) || global.location.pathname,
-        global.location.href
-      );
+      const shortTargetUrl = new URL(targetPath, global.location.href);
 
       shortTargetUrl.searchParams.delete(challengeParamKey);
       shortTargetUrl.searchParams.set(challengeRefParamKey, shortLink.code);
 
-      const shortHash = provider.getTargetHash?.(completedPayload);
-      if (shortHash) {
-        shortTargetUrl.hash = shortHash;
+      if (nextHash) {
+        shortTargetUrl.hash = nextHash;
+      }
+
+      const previewLink = await createChallengePreviewLink(shortLink.code);
+
+      if (previewLink.url) {
+        return {
+          url: previewLink.url,
+          error: ""
+        };
       }
 
       return {
@@ -1276,10 +1332,8 @@
       };
     }
 
-    const targetUrl = new URL(provider.getTargetPath?.(completedPayload) || global.location.pathname, global.location.href);
+    const targetUrl = new URL(targetPath, global.location.href);
     targetUrl.searchParams.set(challengeParamKey, encoded);
-
-    const nextHash = provider.getTargetHash?.(completedPayload);
     if (nextHash) {
       targetUrl.hash = nextHash;
     }
