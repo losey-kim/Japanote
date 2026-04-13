@@ -432,12 +432,16 @@
     const shareTitle = "Japanote 친구 도전";
     // 일부 공유 대상은 url 필드를 무시해서 링크를 본문 텍스트에 함께 넣는다.
     const candidates = [
-      { title: shareTitle, text: buildChallengeShareText(resultViewId, url) },
-      { text: buildChallengeShareText(resultViewId, url) }
+      { url },
+      { title: shareTitle, url }
     ];
 
     for (const data of candidates) {
       try {
+        if (typeof global.navigator?.canShare === "function" && !global.navigator.canShare(data)) {
+          continue;
+        }
+
         await global.navigator.share(data);
         return "shared";
       } catch (error) {
