@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "japanote",
+  "compatibility_date": "2026-04-13",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./output"
+  }
+}

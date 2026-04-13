@@ -2,3 +2,4 @@ tmp/
 /tmp_*
 node_modules/
 output/
+.wrangler/
