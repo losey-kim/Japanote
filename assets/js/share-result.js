@@ -442,13 +442,14 @@
     const label = document.createElement("span");
 
     button.type = "button";
-    button.className = "secondary-btn button-with-icon share-result-btn";
+    button.className = "secondary-btn button-with-icon share-result-btn match-result-bulk-btn";
 
     icon.className = "material-symbols-rounded";
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = "share";
 
     label.textContent = "결과 공유하기";
+    button.title = label.textContent;
     button.append(icon, label);
 
     button.addEventListener("click", async () => {
@@ -475,6 +476,57 @@
     return button;
   }
 
+  function ensureResultActionContainer(resultView) {
+    const statsGrid = resultView.querySelector(".match-result-grid");
+    let filters = resultView.querySelector(".match-result-filters");
+
+    if (!filters) {
+      filters = document.createElement("div");
+      filters.className = "match-result-filters";
+
+      if (statsGrid?.nextElementSibling) {
+        resultView.insertBefore(filters, statsGrid.nextElementSibling);
+      } else if (statsGrid) {
+        resultView.insertBefore(filters, resultView.children[2] || null);
+      } else {
+        resultView.appendChild(filters);
+      }
+    }
+
+    let bulkActions = filters.querySelector(".match-result-bulk-actions");
+
+    if (!bulkActions) {
+      bulkActions = document.createElement("div");
+      bulkActions.className = "match-result-bulk-actions";
+      filters.appendChild(bulkActions);
+    }
+
+    return { filters, bulkActions, statsGrid };
+  }
+
+  function ensureComparisonFooter(resultView, filters, statsGrid) {
+    let footer = resultView.querySelector(".match-result-share-footer");
+
+    if (footer) {
+      return footer;
+    }
+
+    footer = document.createElement("div");
+    footer.className = "match-result-share-footer";
+
+    if (filters) {
+      resultView.insertBefore(footer, filters);
+    } else if (statsGrid?.nextElementSibling) {
+      resultView.insertBefore(footer, statsGrid.nextElementSibling);
+    } else if (statsGrid) {
+      resultView.insertBefore(footer, resultView.children[2] || null);
+    } else {
+      resultView.appendChild(footer);
+    }
+
+    return footer;
+  }
+
   function attachShareButton(resultViewId) {
     const resultView = document.getElementById(resultViewId);
 
@@ -488,24 +540,14 @@
       challengeLinks && typeof challengeLinks.createChallengeButton === "function"
         ? challengeLinks.createChallengeButton(resultViewId)
         : null;
-    const footer = document.createElement("div");
-    const statsGrid = resultView.querySelector(".match-result-grid");
-    const filters = resultView.querySelector(".match-result-filters");
-    const insertBefore = filters || (statsGrid ? statsGrid.nextElementSibling : null);
-
-    footer.className = "match-result-share-footer";
-    footer.appendChild(button);
+    const { filters, bulkActions, statsGrid } = ensureResultActionContainer(resultView);
 
     if (challengeButton) {
-      footer.appendChild(challengeButton);
+      challengeButton.classList.add("match-result-bulk-btn");
     }
 
-    if (insertBefore) {
-      resultView.insertBefore(footer, insertBefore);
-    } else {
-      resultView.insertBefore(footer, resultView.children[1] || null);
-    }
-
+    bulkActions.prepend(button, ...(challengeButton ? [challengeButton] : []));
+    ensureComparisonFooter(resultView, filters, statsGrid);
     challengeLinks?.syncResultComparison?.(resultViewId);
   }
 

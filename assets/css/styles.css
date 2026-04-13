@@ -4199,7 +4199,9 @@ button {
 
 .match-result-filters {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -4251,13 +4253,31 @@ button {
 }
 
 .match-result-bulk-btn {
-  min-height: 50px;
-  padding-inline: 18px;
+  width: 52px;
+  height: 52px;
+  min-height: 52px;
+  padding: 0;
+  min-width: 52px;
+  max-width: 52px;
+  flex: 0 0 52px;
+  border-radius: 18px;
+  align-self: center;
+}
+
+.match-result-bulk-btn .material-symbols-rounded {
+  font-size: 1.25rem;
+}
+
+.match-result-bulk-btn > span:not(.material-symbols-rounded) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  min-width: 0;
-  max-width: 100%;
-  flex: 0 1 auto;
-  align-self: stretch;
+  border: 0;
 }
 
 .match-result-bulk-actions {
@@ -4265,8 +4285,9 @@ button {
   align-items: stretch;
   gap: 12px;
   flex-wrap: wrap;
+  width: 100%;
   min-width: 0;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .match-result-bulk-btn:disabled {
@@ -4298,6 +4319,10 @@ button {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid var(--line);
+}
+
+.match-result-share-footer:empty {
+  display: none;
 }
 
 .share-result-btn,
@@ -5823,7 +5848,12 @@ body::after {
   }
 
   .match-result-bulk-btn {
-    flex-basis: 100%;
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    flex: 0 0 48px;
   }
 
   .topbar {
@@ -5974,13 +6004,16 @@ body::after {
 
   .match-result-bulk-actions {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .match-result-bulk-btn {
-    flex: 1 1 calc(50% - 6px);
-    justify-content: center;
-    white-space: normal;
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    flex: 0 0 48px;
   }
 
   .match-result-item {

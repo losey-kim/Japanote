@@ -1063,7 +1063,7 @@
       ? `
         <div class="match-result-bulk-actions">
           ${resolvedBulkActions.map((action) => `
-            <button class="secondary-btn button-with-icon match-result-bulk-btn" id="${escapeHtml(action.id)}" type="button">
+            <button class="secondary-btn button-with-icon match-result-bulk-btn" id="${escapeHtml(action.id)}" type="button" title="${escapeHtml(action.label)}">
               <span class="material-symbols-rounded" aria-hidden="true">${escapeHtml(action.icon || "bookmark_add")}</span>
               <span id="${escapeHtml(action.labelId)}">${escapeHtml(action.label)}</span>
             </button>
