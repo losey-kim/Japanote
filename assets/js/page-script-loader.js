@@ -1,5 +1,5 @@
 (function loadJapanotePageScripts(global) {
-  const assetVersion = "20260413h";
+  const assetVersion = "20260413k";
   const pageName = (() => {
     const path = global.location?.pathname || "";
     const segments = path.split("/").filter(Boolean);

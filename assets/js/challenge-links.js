@@ -1,14 +1,27 @@
 (function challengeLinksBootstrap(global) {
   const challengeParamKey = "challenge";
+  const challengeRefParamKey = "c";
   const maxEncodedChallengeLength = 20000;
   const comparisonCardClassName = "challenge-result-comparison";
   const maxVisibleComparisonItems = 6;
+  const compressedPayloadPrefix = "lz:";
+  const lzUrlAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const shortCodeAlphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  const shortCodeLength = 10;
+  const shortLinkMaxSaveAttempts = 4;
+  const challengeTableName = "shared_challenges";
+  const lzReverseDictionaries = Object.create(null);
   const providersByResultViewId = new Map();
   const providersByKind = new Map();
   let pendingChallengePayload = null;
+  let pendingChallengeToken = "";
+  let pendingChallengeLoadPromise = null;
+  let pendingChallengeLoadError = "";
+  let pendingChallengeErrorNotifiedToken = "";
   let appliedChallengeKey = "";
   let applyAttemptQueued = false;
   let activeChallengeState = null;
+  let challengeSupabaseClient = null;
 
   function notify(message) {
     if (!message) {
@@ -44,27 +57,307 @@
     return new TextDecoder().decode(bytes);
   }
 
+  function getLzBaseValue(alphabet, character) {
+    if (!lzReverseDictionaries[alphabet]) {
+      const dictionary = Object.create(null);
+
+      for (let index = 0; index < alphabet.length; index += 1) {
+        dictionary[alphabet.charAt(index)] = index;
+      }
+
+      lzReverseDictionaries[alphabet] = dictionary;
+    }
+
+    return lzReverseDictionaries[alphabet][character];
+  }
+
+  function lzCompressToUrlSafe(value) {
+    if (value == null) {
+      return "";
+    }
+
+    let index;
+    let currentValue;
+    let contextW = "";
+    let contextC = "";
+    let contextWc = "";
+    let enlargeIn = 2;
+    let dictionarySize = 3;
+    let numBits = 2;
+    const dictionary = Object.create(null);
+    const dictionaryToCreate = Object.create(null);
+    const data = [];
+    let dataValue = 0;
+    let dataPosition = 0;
+
+    const writeBit = (bit) => {
+      dataValue = (dataValue << 1) | bit;
+
+      if (dataPosition === 5) {
+        dataPosition = 0;
+        data.push(lzUrlAlphabet.charAt(dataValue));
+        dataValue = 0;
+        return;
+      }
+
+      dataPosition += 1;
+    };
+
+    const writeValue = (bitCount, rawValue) => {
+      let nextValue = rawValue;
+
+      for (let bitIndex = 0; bitIndex < bitCount; bitIndex += 1) {
+        writeBit(nextValue & 1);
+        nextValue >>= 1;
+      }
+    };
+
+    for (index = 0; index < value.length; index += 1) {
+      contextC = value.charAt(index);
+
+      if (!Object.prototype.hasOwnProperty.call(dictionary, contextC)) {
+        dictionary[contextC] = dictionarySize;
+        dictionarySize += 1;
+        dictionaryToCreate[contextC] = true;
+      }
+
+      contextWc = contextW + contextC;
+
+      if (Object.prototype.hasOwnProperty.call(dictionary, contextWc)) {
+        contextW = contextWc;
+        continue;
+      }
+
+      if (Object.prototype.hasOwnProperty.call(dictionaryToCreate, contextW)) {
+        if (contextW.charCodeAt(0) < 256) {
+          writeValue(numBits, 0);
+          writeValue(8, contextW.charCodeAt(0));
+        } else {
+          writeValue(numBits, 1);
+          writeValue(16, contextW.charCodeAt(0));
+        }
+
+        enlargeIn -= 1;
+        if (enlargeIn === 0) {
+          enlargeIn = 2 ** numBits;
+          numBits += 1;
+        }
+
+        delete dictionaryToCreate[contextW];
+      } else {
+        writeValue(numBits, dictionary[contextW]);
+      }
+
+      enlargeIn -= 1;
+      if (enlargeIn === 0) {
+        enlargeIn = 2 ** numBits;
+        numBits += 1;
+      }
+
+      dictionary[contextWc] = dictionarySize;
+      dictionarySize += 1;
+      contextW = String(contextC);
+    }
+
+    if (contextW !== "") {
+      if (Object.prototype.hasOwnProperty.call(dictionaryToCreate, contextW)) {
+        if (contextW.charCodeAt(0) < 256) {
+          writeValue(numBits, 0);
+          writeValue(8, contextW.charCodeAt(0));
+        } else {
+          writeValue(numBits, 1);
+          writeValue(16, contextW.charCodeAt(0));
+        }
+
+        enlargeIn -= 1;
+        if (enlargeIn === 0) {
+          enlargeIn = 2 ** numBits;
+          numBits += 1;
+        }
+
+        delete dictionaryToCreate[contextW];
+      } else {
+        writeValue(numBits, dictionary[contextW]);
+      }
+
+      enlargeIn -= 1;
+      if (enlargeIn === 0) {
+        enlargeIn = 2 ** numBits;
+        numBits += 1;
+      }
+    }
+
+    writeValue(numBits, 2);
+
+    while (true) {
+      dataValue <<= 1;
+
+      if (dataPosition === 5) {
+        data.push(lzUrlAlphabet.charAt(dataValue));
+        break;
+      }
+
+      dataPosition += 1;
+    }
+
+    return data.join("");
+  }
+
+  function lzDecompressFromUrlSafe(value) {
+    if (value == null) {
+      return "";
+    }
+
+    if (value === "") {
+      return null;
+    }
+
+    const dictionary = [];
+    let enlargeIn = 4;
+    let dictionarySize = 4;
+    let numBits = 3;
+    let entry = "";
+    const result = [];
+    let bits;
+    let maxpower;
+    let power;
+    let next;
+    let charCode;
+    let currentValue;
+    let w;
+    const data = {
+      value: getLzBaseValue(lzUrlAlphabet, value.charAt(0)),
+      position: 32,
+      index: 1
+    };
+
+    const readBits = (bitCount) => {
+      let output = 0;
+      let currentPower = 1;
+      let currentMaxPower = 2 ** bitCount;
+
+      while (currentPower !== currentMaxPower) {
+        const resb = data.value & data.position;
+        data.position >>= 1;
+
+        if (data.position === 0) {
+          data.position = 32;
+          data.value = getLzBaseValue(lzUrlAlphabet, value.charAt(data.index));
+          data.index += 1;
+        }
+
+        output |= (resb > 0 ? 1 : 0) * currentPower;
+        currentPower <<= 1;
+      }
+
+      return output;
+    };
+
+    for (let index = 0; index < 3; index += 1) {
+      dictionary[index] = index;
+    }
+
+    next = readBits(2);
+
+    if (next === 0) {
+      charCode = readBits(8);
+      currentValue = String.fromCharCode(charCode);
+    } else if (next === 1) {
+      charCode = readBits(16);
+      currentValue = String.fromCharCode(charCode);
+    } else {
+      return "";
+    }
+
+    dictionary[3] = currentValue;
+    w = currentValue;
+    result.push(currentValue);
+
+    while (true) {
+      if (data.index > value.length) {
+        return "";
+      }
+
+      bits = readBits(numBits);
+
+      if (bits === 0) {
+        dictionary[dictionarySize] = String.fromCharCode(readBits(8));
+        bits = dictionarySize;
+        dictionarySize += 1;
+        enlargeIn -= 1;
+      } else if (bits === 1) {
+        dictionary[dictionarySize] = String.fromCharCode(readBits(16));
+        bits = dictionarySize;
+        dictionarySize += 1;
+        enlargeIn -= 1;
+      } else if (bits === 2) {
+        return result.join("");
+      }
+
+      if (enlargeIn === 0) {
+        enlargeIn = 2 ** numBits;
+        numBits += 1;
+      }
+
+      if (dictionary[bits]) {
+        entry = dictionary[bits];
+      } else if (bits === dictionarySize) {
+        entry = w + w.charAt(0);
+      } else {
+        return null;
+      }
+
+      result.push(entry);
+      dictionary[dictionarySize] = w + entry.charAt(0);
+      dictionarySize += 1;
+      enlargeIn -= 1;
+      w = entry;
+
+      if (enlargeIn === 0) {
+        enlargeIn = 2 ** numBits;
+        numBits += 1;
+      }
+    }
+  }
+
   function encodeChallengePayload(payload) {
-    return toBase64Url(JSON.stringify(payload));
+    const packedPayload = packChallengePayload(payload);
+    const json = JSON.stringify(packedPayload);
+    const compressed = `${compressedPayloadPrefix}${lzCompressToUrlSafe(json)}`;
+    const legacy = toBase64Url(json);
+    return compressed.length < legacy.length ? compressed : legacy;
   }
 
   function decodeChallengePayload(value) {
     try {
-      return JSON.parse(fromBase64Url(value));
+      if (String(value || "").startsWith(compressedPayloadPrefix)) {
+        const compressed = String(value || "").slice(compressedPayloadPrefix.length);
+        const decoded = lzDecompressFromUrlSafe(compressed);
+        return decoded ? unpackChallengePayload(JSON.parse(decoded)) : null;
+      }
+
+      return unpackChallengePayload(JSON.parse(fromBase64Url(value)));
     } catch (error) {
       console.warn("Failed to decode challenge payload.", error);
       return null;
     }
   }
 
-  function parsePendingChallengePayload() {
+  function readPendingChallengeLocation() {
     try {
       const currentUrl = new URL(global.location.href);
+      const refCode = normalizeText(currentUrl.searchParams.get(challengeRefParamKey));
       const encoded = currentUrl.searchParams.get(challengeParamKey);
-      return encoded ? decodeChallengePayload(encoded) : null;
+      return {
+        refCode,
+        encoded
+      };
     } catch (error) {
       console.warn("Failed to parse challenge query.", error);
-      return null;
+      return {
+        refCode: "",
+        encoded: ""
+      };
     }
   }
 
@@ -163,6 +456,310 @@
     });
 
     return Array.from(map.values());
+  }
+
+  function packResultSummary(result) {
+    if (!result || typeof result !== "object") {
+      return null;
+    }
+
+    const total = Number(result.total);
+    const correct = Number(result.correct);
+    const wrong = Number(result.wrong);
+
+    if (!Number.isFinite(total) || !Number.isFinite(correct) || !Number.isFinite(wrong)) {
+      return null;
+    }
+
+    return [total, correct, wrong];
+  }
+
+  function unpackResultSummary(value) {
+    if (!Array.isArray(value) || value.length < 3) {
+      return null;
+    }
+
+    const total = Number(value[0]);
+    const correct = Number(value[1]);
+    const wrong = Number(value[2]);
+
+    if (!Number.isFinite(total) || !Number.isFinite(correct) || !Number.isFinite(wrong)) {
+      return null;
+    }
+
+    return {
+      total,
+      correct,
+      wrong,
+      accuracy: getAccuracy(total, correct)
+    };
+  }
+
+  function packResultItems(items) {
+    return mergeUniqueResultItems(items).map((item) => [
+      normalizeText(item.title),
+      normalizeText(item.description),
+      item.status === "correct" ? 1 : 0
+    ]);
+  }
+
+  function unpackResultItems(items) {
+    if (!Array.isArray(items)) {
+      return [];
+    }
+
+    return mergeUniqueResultItems(
+      items
+        .map((item) => {
+          if (!Array.isArray(item) || !item.length) {
+            return null;
+          }
+
+          return {
+            title: normalizeText(item[0]),
+            description: normalizeText(item[1]),
+            status: Number(item[2]) === 1 ? "correct" : "wrong"
+          };
+        })
+        .filter(Boolean)
+    );
+  }
+
+  function packChallengePayload(payload) {
+    if (!payload || typeof payload !== "object") {
+      return payload;
+    }
+
+    const packed = {
+      v: Number.isFinite(Number(payload.v)) ? Number(payload.v) : 1,
+      k: payload.kind || "",
+      t: payload.createdAt || Date.now(),
+      i: payload.challengeId || ""
+    };
+
+    if (payload.config && typeof payload.config === "object") {
+      packed.c = payload.config;
+    }
+
+    if (Array.isArray(payload.questions) && payload.questions.length) {
+      packed.q = payload.questions;
+    }
+
+    if (Array.isArray(payload.sessionItems) && payload.sessionItems.length) {
+      packed.s = payload.sessionItems;
+    }
+
+    const sourceResult = packResultSummary(payload.sourceResult);
+    if (sourceResult) {
+      packed.sr = sourceResult;
+    }
+
+    const sourceItems = packResultItems(payload.sourceItems);
+    if (sourceItems.length) {
+      packed.si = sourceItems;
+    }
+
+    return packed;
+  }
+
+  function unpackChallengePayload(payload) {
+    if (!payload || typeof payload !== "object") {
+      return null;
+    }
+
+    if (payload.kind || payload.challengeId || payload.createdAt || payload.sourceResult || payload.sourceItems) {
+      return payload;
+    }
+
+    const unpacked = {
+      v: Number.isFinite(Number(payload.v)) ? Number(payload.v) : 1,
+      kind: payload.k || "",
+      createdAt: payload.t || Date.now(),
+      challengeId: payload.i || ""
+    };
+
+    if (payload.c && typeof payload.c === "object") {
+      unpacked.config = payload.c;
+    }
+
+    if (Array.isArray(payload.q) && payload.q.length) {
+      unpacked.questions = payload.q;
+    }
+
+    if (Array.isArray(payload.s) && payload.s.length) {
+      unpacked.sessionItems = payload.s;
+    }
+
+    const sourceResult = unpackResultSummary(payload.sr);
+    if (sourceResult) {
+      unpacked.sourceResult = sourceResult;
+    }
+
+    const sourceItems = unpackResultItems(payload.si);
+    if (sourceItems.length) {
+      unpacked.sourceItems = sourceItems;
+    }
+
+    return unpacked;
+  }
+
+  function getChallengeSupabaseConfig() {
+    const rawConfig =
+      global.japanoteSupabaseConfig && typeof global.japanoteSupabaseConfig === "object"
+        ? global.japanoteSupabaseConfig
+        : {};
+
+    return {
+      enabled: Boolean(rawConfig.enabled && rawConfig.url && rawConfig.anonKey),
+      url: rawConfig.url || "",
+      anonKey: rawConfig.anonKey || "",
+      table: rawConfig.challengeTable || challengeTableName
+    };
+  }
+
+  function getChallengeSupabaseClient() {
+    if (challengeSupabaseClient) {
+      return challengeSupabaseClient;
+    }
+
+    const config = getChallengeSupabaseConfig();
+
+    if (!config.enabled || !global.supabase || typeof global.supabase.createClient !== "function") {
+      return null;
+    }
+
+    challengeSupabaseClient = global.supabase.createClient(config.url, config.anonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
+      }
+    });
+
+    return challengeSupabaseClient;
+  }
+
+  function createChallengeShortCode(length = shortCodeLength) {
+    const size = Math.max(6, Number(length) || shortCodeLength);
+    const bytes = new Uint8Array(size);
+    const cryptoApi = global.crypto || global.msCrypto;
+
+    if (!cryptoApi || typeof cryptoApi.getRandomValues !== "function") {
+      return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`.slice(0, size);
+    }
+
+    cryptoApi.getRandomValues(bytes);
+    return Array.from(bytes, (byte) => shortCodeAlphabet[byte % shortCodeAlphabet.length]).join("");
+  }
+
+  async function createShortChallengeReference(payload) {
+    const client = getChallengeSupabaseClient();
+    const config = getChallengeSupabaseConfig();
+
+    if (!client || !config.table) {
+      return {
+        code: "",
+        warning: ""
+      };
+    }
+
+    const packedPayload = packChallengePayload(payload);
+
+    for (let attempt = 0; attempt < shortLinkMaxSaveAttempts; attempt += 1) {
+      const code = createChallengeShortCode();
+      const { error } = await client.from(config.table).insert({
+        code,
+        kind: payload.kind || "",
+        payload: packedPayload
+      });
+
+      if (!error) {
+        return {
+          code,
+          warning: ""
+        };
+      }
+
+      const errorCode = String(error.code || "").toLowerCase();
+      const duplicateKey = errorCode === "23505" || String(error.message || "").toLowerCase().includes("duplicate");
+
+      if (duplicateKey) {
+        continue;
+      }
+
+      console.warn("Failed to create short challenge link.", error);
+      return {
+        code: "",
+        warning: "짧은 링크를 저장하지 못해서 일반 링크를 복사했어요."
+      };
+    }
+
+    return {
+      code: "",
+      warning: "짧은 링크를 만드는 중 충돌이 생겨서 일반 링크를 복사했어요."
+    };
+  }
+
+  async function fetchShortChallengePayload(code) {
+    const client = getChallengeSupabaseClient();
+    const config = getChallengeSupabaseConfig();
+
+    if (!client || !config.table || !code) {
+      return null;
+    }
+
+    const { data, error } = await client
+      .from(config.table)
+      .select("payload")
+      .eq("code", code)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return data?.payload ? unpackChallengePayload(data.payload) : null;
+  }
+
+  async function loadPendingChallengePayload() {
+    const { refCode, encoded } = readPendingChallengeLocation();
+    const nextToken = refCode ? `ref:${refCode}` : encoded ? `inline:${encoded}` : "";
+
+    if (!nextToken) {
+      pendingChallengeToken = "";
+      pendingChallengeLoadPromise = null;
+      pendingChallengePayload = null;
+      pendingChallengeLoadError = "";
+      pendingChallengeErrorNotifiedToken = "";
+      return null;
+    }
+
+    if (pendingChallengeToken === nextToken && pendingChallengeLoadPromise) {
+      return pendingChallengeLoadPromise;
+    }
+
+    pendingChallengeToken = nextToken;
+    pendingChallengeLoadPromise = (async () => {
+      if (refCode) {
+        try {
+          const payload = await fetchShortChallengePayload(refCode);
+          pendingChallengePayload = payload;
+          pendingChallengeLoadError = payload ? "" : "도전 링크를 찾을 수 없거나 만료됐어요.";
+          return payload;
+        } catch (error) {
+          console.error("Failed to fetch short challenge payload.", error);
+          pendingChallengePayload = null;
+          pendingChallengeLoadError = "도전 링크를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.";
+          return null;
+        }
+      }
+
+      pendingChallengePayload = encoded ? decodeChallengePayload(encoded) : null;
+      pendingChallengeLoadError = pendingChallengePayload ? "" : "도전 링크를 해석하지 못했어요.";
+      return pendingChallengePayload;
+    })();
+
+    return pendingChallengeLoadPromise;
   }
 
   function readResultSummaryFromView(resultViewId) {
@@ -498,18 +1095,29 @@
     applyAttemptQueued = true;
     global.setTimeout(() => {
       applyAttemptQueued = false;
-      attemptApplyPendingChallenge();
+      void attemptApplyPendingChallenge();
     }, 0);
   }
 
-  function attemptApplyPendingChallenge() {
+  async function attemptApplyPendingChallenge() {
     if (!pendingChallengePayload) {
-      pendingChallengePayload = parsePendingChallengePayload();
+      pendingChallengePayload = await loadPendingChallengePayload();
     }
 
     if (!pendingChallengePayload) {
+      if (
+        pendingChallengeLoadError &&
+        pendingChallengeToken &&
+        pendingChallengeErrorNotifiedToken !== pendingChallengeToken
+      ) {
+        pendingChallengeErrorNotifiedToken = pendingChallengeToken;
+        notify(pendingChallengeLoadError);
+      }
+
       return false;
     }
+
+    pendingChallengeErrorNotifiedToken = "";
 
     const payloadKey = getPayloadKey(pendingChallengePayload);
 
@@ -558,7 +1166,7 @@
     queueApplyAttempt();
   }
 
-  function buildChallengeLink(resultViewId) {
+  async function buildChallengeLink(resultViewId) {
     const provider = providersByResultViewId.get(resultViewId);
 
     if (!provider || typeof provider.createPayload !== "function") {
@@ -597,6 +1205,28 @@
       sourceResult: sourceResult || payload.sourceResult || null,
       sourceItems: sourceItems.length ? sourceItems : payload.sourceItems || []
     };
+    const shortLink = await createShortChallengeReference(completedPayload);
+
+    if (shortLink.code) {
+      const shortTargetUrl = new URL(
+        provider.getTargetPath?.(completedPayload) || global.location.pathname,
+        global.location.href
+      );
+
+      shortTargetUrl.searchParams.delete(challengeParamKey);
+      shortTargetUrl.searchParams.set(challengeRefParamKey, shortLink.code);
+
+      const shortHash = provider.getTargetHash?.(completedPayload);
+      if (shortHash) {
+        shortTargetUrl.hash = shortHash;
+      }
+
+      return {
+        url: shortTargetUrl.toString(),
+        error: ""
+      };
+    }
+
     const encoded = encodeChallengePayload(completedPayload);
 
     if (encoded.length > maxEncodedChallengeLength) {
@@ -641,15 +1271,18 @@
 
     button.addEventListener("click", async () => {
       const originalLabel = label.textContent;
-      const { url, error } = buildChallengeLink(resultViewId);
+      label.textContent = "링크 만드는 중...";
+      button.disabled = true;
+      const { url, error } = await buildChallengeLink(resultViewId);
 
       if (!url) {
+        button.disabled = false;
+        label.textContent = originalLabel;
         notify(error || "도전 링크를 만들 수 없어요.");
         return;
       }
 
       label.textContent = "복사하는 중...";
-      button.disabled = true;
 
       const copied = await copyText(url);
 
@@ -661,7 +1294,7 @@
     return button;
   }
 
-  pendingChallengePayload = parsePendingChallengePayload();
+  void loadPendingChallengePayload();
 
   global.addEventListener("DOMContentLoaded", queueApplyAttempt);
   global.addEventListener("load", queueApplyAttempt);
