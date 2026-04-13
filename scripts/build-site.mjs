@@ -10,6 +10,7 @@ const outputRoot = resolve(repoRoot, "output");
 const defaultSiteUrl = "https://japanote.pages.dev";
 const htmlFiles = readdirSync(repoRoot).filter((name) => name.endsWith(".html"));
 const directoryCopies = ["assets", "data"];
+const fileCopies = ["functions/challenge-preview/shared.js"];
 
 function normalizeSiteUrl(rawValue) {
   const value = String(rawValue || "").trim() || defaultSiteUrl;
@@ -32,6 +33,17 @@ function copyStaticDirectories() {
   }
 }
 
+function copyStaticFiles() {
+  for (const relativePath of fileCopies) {
+    const sourcePath = resolve(repoRoot, relativePath);
+    const targetPath = resolve(outputRoot, relativePath);
+    mkdirSync(dirname(targetPath), {
+      recursive: true
+    });
+    cpSync(sourcePath, targetPath);
+  }
+}
+
 function buildSite() {
   const siteUrl = normalizeSiteUrl(process.env.SITE_URL);
 
@@ -48,6 +60,7 @@ function buildSite() {
   }
 
   copyStaticDirectories();
+  copyStaticFiles();
   buildKanaDataFile({
     outputPath: resolve(outputRoot, "data", "kana.json")
   });
