@@ -745,6 +745,7 @@ function handleMatchTimeout() {
 }
 
 function startNewMatchSession() {
+  global.japanoteChallengeLinks?.clearActiveChallenge?.("match-result-view");
   matchEngine.startNewSession();
 }
 
@@ -897,6 +898,53 @@ function attachMatchEventListeners() {
     onRemove: removeWordFromMasteredList,
     onSave: saveWordToMasteredList,
     afterChange: renderMatchResults
+  });
+}
+
+if (global.japanoteChallengeLinks && typeof global.japanoteChallengeLinks.registerProvider === "function") {
+  global.japanoteChallengeLinks.registerProvider({
+    resultViewId: "match-result-view",
+    kind: "vocab-match",
+    getTargetHash: () => "#match",
+    getApplyMessage: () => "친구가 보낸 단어 짝맞추기가 열렸어요.",
+    createPayload: () => {
+      if (!Array.isArray(matchState.sessionItems) || !matchState.sessionItems.length) {
+        return null;
+      }
+
+      return {
+        config: {
+          level: getMatchLevel(matchPreferences.level),
+          filter: getMatchFilter(matchPreferences.filter),
+          part: getMatchPartFilter(matchPreferences.part, getBaseMatchPool(getMatchLevel(matchPreferences.level))),
+          totalCount: getMatchTotalCount(matchPreferences.totalCount),
+          duration: getMatchDuration(matchPreferences.duration)
+        },
+        sessionItems: matchState.sessionItems.map((item) => ({ ...item }))
+      };
+    },
+    applyPayload: (payload) => {
+      if (!Array.isArray(payload?.sessionItems) || !payload.sessionItems.length) {
+        return false;
+      }
+
+      matchPreferences.level = getMatchLevel(payload.config?.level);
+      matchPreferences.filter = getMatchFilter(payload.config?.filter);
+      matchPreferences.part = getMatchPartFilter(
+        payload.config?.part,
+        getBaseMatchPool(matchPreferences.level)
+      );
+      matchPreferences.totalCount = getMatchTotalCount(payload.config?.totalCount);
+      matchPreferences.duration = getMatchDuration(payload.config?.duration);
+      saveMatchPreferences();
+
+      if (typeof global.setVocabTab === "function") {
+        global.setVocabTab("match");
+      }
+
+      matchEngine.startSession(payload.sessionItems.map((item) => ({ ...item })));
+      return true;
+    }
   });
 }
 

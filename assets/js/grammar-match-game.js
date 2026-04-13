@@ -548,6 +548,48 @@
     enterReadyState: () => grammarMatchEngine.enterReadyState()
   });
 
+  function startNewGrammarMatchSession() {
+    global.japanoteChallengeLinks?.clearActiveChallenge?.("grammar-match-result-view");
+    grammarMatchEngine.startNewSession();
+  }
+
+  if (global.japanoteChallengeLinks && typeof global.japanoteChallengeLinks.registerProvider === "function") {
+    global.japanoteChallengeLinks.registerProvider({
+      resultViewId: "grammar-match-result-view",
+      kind: "grammar-match",
+      getApplyMessage: () => "친구가 보낸 문법 짝맞추기가 열렸어요.",
+      createPayload: () => {
+        if (!Array.isArray(grammarMatchState.sessionItems) || !grammarMatchState.sessionItems.length) {
+          return null;
+        }
+
+        return {
+          config: {
+            level: getGrammarMatchLevel(grammarMatchPreferences.level),
+            filter: getGrammarMatchFilter(grammarMatchPreferences.filter),
+            totalCount: getGrammarMatchTotalCount(grammarMatchPreferences.totalCount),
+            duration: getGrammarMatchDuration(grammarMatchPreferences.duration)
+          },
+          sessionItems: grammarMatchState.sessionItems.map((item) => ({ ...item }))
+        };
+      },
+      applyPayload: (payload) => {
+        if (!Array.isArray(payload?.sessionItems) || !payload.sessionItems.length) {
+          return false;
+        }
+
+        grammarMatchPreferences.level = getGrammarMatchLevel(payload.config?.level);
+        grammarMatchPreferences.filter = getGrammarMatchFilter(payload.config?.filter);
+        grammarMatchPreferences.totalCount = getGrammarMatchTotalCount(payload.config?.totalCount);
+        grammarMatchPreferences.duration = getGrammarMatchDuration(payload.config?.duration);
+        saveGrammarMatchPreferences();
+        document.querySelector('[data-grammar-tab="match"]')?.click();
+        grammarMatchEngine.startSession(payload.sessionItems.map((item) => ({ ...item })));
+        return true;
+      }
+    });
+  }
+
   sharedMatchGame.initializeStandardMatchScreen({
     guardElement: document.getElementById("grammar-match-new-round"),
     renderSettings: renderGrammarMatchSettings,
@@ -555,7 +597,7 @@
     attachEventListeners: () => {
       sharedMatchGame.attachStandardMatchEventListeners({
         newRoundButton: document.getElementById("grammar-match-new-round"),
-        onStartNewRound: () => grammarMatchEngine.startNewSession(),
+        onStartNewRound: startNewGrammarMatchSession,
         optionsToggleButton: document.getElementById("grammar-match-options-toggle"),
         onToggleOptions: () => {
           grammarMatchPreferences.optionsOpen = !grammarMatchPreferences.optionsOpen;

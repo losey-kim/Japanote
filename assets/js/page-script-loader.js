@@ -1,5 +1,5 @@
 (function loadJapanotePageScripts(global) {
-  const assetVersion = "20260410k";
+  const assetVersion = "20260413h";
   const pageName = (() => {
     const path = global.location?.pathname || "";
     const segments = path.split("/").filter(Boolean);
@@ -23,6 +23,7 @@
       "assets/js/app-study-view-helpers.js",
       "assets/js/shared-timer.js",
       "assets/js/shared-match-game.js",
+      "assets/js/challenge-links.js",
       "assets/js/app.js",
       "assets/js/grammar-match-game.js",
       "assets/js/share-result.js"
@@ -36,6 +37,7 @@
       "assets/js/app-study-view-helpers.js",
       "assets/js/shared-timer.js",
       "assets/js/shared-match-game.js",
+      "assets/js/challenge-links.js",
       "assets/js/app.js",
       "assets/js/share-result.js"
     ],
@@ -50,6 +52,7 @@
       "assets/js/shared-match-game.js",
       "assets/js/shared-match-copy.js",
       "assets/js/app-study-view-helpers.js",
+      "assets/js/challenge-links.js",
       "assets/js/app.js",
       "assets/js/match-game.js",
       "assets/js/share-result.js",
@@ -66,6 +69,7 @@
       "assets/js/shared-match-game.js",
       "assets/js/shared-match-copy.js",
       "assets/js/app-study-view-helpers.js",
+      "assets/js/challenge-links.js",
       "assets/js/app.js",
       "assets/js/kanji-match-game.js",
       "assets/js/share-result.js"
@@ -78,6 +82,7 @@
       "assets/js/vocab-registry.js?v=20260330a",
       "assets/js/app-study-view-helpers.js?v=20260330a",
       "assets/js/shared-timer.js?v=20260330a",
+      "assets/js/challenge-links.js?v=20260330a",
       "assets/js/app.js?v=20260330a",
       "assets/js/share-result.js"
     ]

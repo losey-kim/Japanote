@@ -4292,14 +4292,219 @@ button {
 
 .match-result-share-footer {
   display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid var(--line);
 }
 
-.share-result-btn {
+.share-result-btn,
+.challenge-link-btn {
   gap: 8px;
+}
+
+.challenge-result-comparison {
+  flex: 1 0 100%;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(252, 247, 240, 0.94)),
+    linear-gradient(135deg, rgba(93, 133, 207, 0.08), rgba(242, 189, 70, 0.08));
+  box-shadow: var(--shadow-soft);
+}
+
+.challenge-result-comparison.is-leading {
+  border-color: rgba(95, 174, 139, 0.34);
+}
+
+.challenge-result-comparison.is-trailing {
+  border-color: rgba(222, 107, 72, 0.28);
+}
+
+.challenge-result-comparison-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.challenge-result-comparison-eyebrow {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.challenge-result-comparison-status {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.challenge-result-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.challenge-result-comparison-column {
+  display: grid;
+  gap: 12px;
+}
+
+.challenge-result-comparison-player {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(18, 20, 25, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.challenge-result-comparison-label {
+  font-size: 0.84rem;
+  color: var(--muted);
+}
+
+.challenge-result-comparison-score {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.7rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.challenge-result-comparison-metrics {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.challenge-result-comparison-sections {
+  display: grid;
+  gap: 12px;
+}
+
+.challenge-result-comparison-section {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(18, 20, 25, 0.08);
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.challenge-result-comparison-section.is-correct {
+  border-color: rgba(95, 174, 139, 0.24);
+}
+
+.challenge-result-comparison-section.is-wrong {
+  border-color: rgba(222, 107, 72, 0.2);
+}
+
+.challenge-result-comparison-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.challenge-result-comparison-section-title {
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.challenge-result-comparison-section-count {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.challenge-result-comparison-section-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.challenge-result-comparison-chip,
+.challenge-result-comparison-more,
+.challenge-result-comparison-empty {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(25, 21, 22, 0.06);
+  color: #3f3835;
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
+.challenge-result-comparison-more {
+  color: var(--muted);
+}
+
+.challenge-result-comparison-list-wrap {
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(25, 21, 22, 0.03);
+}
+
+.challenge-result-comparison-list {
+  display: grid;
+  gap: 0;
+}
+
+.challenge-result-comparison-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(25, 21, 22, 0.06);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+.challenge-result-comparison-item:last-child {
+  border-bottom: 0;
+}
+
+.challenge-result-comparison-item-icon {
+  flex-shrink: 0;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+
+.challenge-result-comparison-item-label {
+  min-width: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.challenge-result-comparison-list .challenge-result-comparison-empty {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.challenge-result-comparison-list .challenge-result-comparison-more {
+  display: block;
+  padding-top: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 /* ── 공유 미리보기 모달 ── */

@@ -653,6 +653,7 @@ function handleKanjiMatchTimeout() {
   kanjiMatchEngine.handleTimeout();
 }
 function startNewKanjiMatchSession() {
+  global.japanoteChallengeLinks?.clearActiveChallenge?.("kanji-match-result-view");
   kanjiMatchEngine.startNewSession();
 }
 
@@ -697,6 +698,49 @@ const setKanjiMatchResultFilter = sharedMatchGame.createResultFilterHandler({
   normalize: getKanjiMatchResultFilter,
   renderResults: renderKanjiMatchResults
 });
+
+if (global.japanoteChallengeLinks && typeof global.japanoteChallengeLinks.registerProvider === "function") {
+  global.japanoteChallengeLinks.registerProvider({
+    resultViewId: "kanji-match-result-view",
+    kind: "kanji-match",
+    getApplyMessage: () => "친구가 보낸 한자 짝맞추기가 열렸어요.",
+    createPayload: () => {
+      if (!Array.isArray(kanjiMatchState.sessionItems) || !kanjiMatchState.sessionItems.length) {
+        return null;
+      }
+
+      return {
+        config: {
+          grade: getKanjiMatchGrade(kanjiMatchPreferences.grade),
+          filter: getKanjiMatchFilter(kanjiMatchPreferences.filter),
+          totalCount: getKanjiMatchTotalCount(kanjiMatchPreferences.totalCount),
+          duration: getKanjiMatchDuration(kanjiMatchPreferences.duration)
+        },
+        sessionItems: kanjiMatchState.sessionItems.map((item) => ({ ...item }))
+      };
+    },
+    applyPayload: (payload) => {
+      if (!Array.isArray(payload?.sessionItems) || !payload.sessionItems.length) {
+        return false;
+      }
+
+      kanjiMatchPreferences.grade = getKanjiMatchGrade(payload.config?.grade);
+      kanjiMatchPreferences.filter = getKanjiMatchFilter(payload.config?.filter);
+      kanjiMatchPreferences.totalCount = getKanjiMatchTotalCount(payload.config?.totalCount);
+      kanjiMatchPreferences.duration = getKanjiMatchDuration(payload.config?.duration);
+      saveKanjiMatchPreferences();
+
+      if (typeof global.setKanjiTab === "function") {
+        global.setKanjiTab("match");
+      } else {
+        document.querySelector('[data-kanji-tab="match"]')?.click();
+      }
+
+      kanjiMatchEngine.startSession(payload.sessionItems.map((item) => ({ ...item })));
+      return true;
+    }
+  });
+}
 
 function attachKanjiMatchEventListeners() {
   const newRound = document.getElementById("kanji-match-new-round");

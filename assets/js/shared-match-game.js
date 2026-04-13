@@ -633,6 +633,7 @@
             ? matchCopy.getEmptyResultsText(filterLabels[activeFilter])
             : `${filterLabels[activeFilter]} 결과가 아직 없어요.`;
       list.innerHTML = "";
+      global.japanoteChallengeLinks?.syncResultComparison?.(resultViewId);
       return;
     }
 
@@ -641,10 +642,12 @@
 
     if (typeof renderItems === "function") {
       renderItems(filteredResults, list);
+      global.japanoteChallengeLinks?.syncResultComparison?.(resultViewId);
       return;
     }
 
     list.innerHTML = filteredResults.map((item) => createItemMarkup(item)).join("");
+    global.japanoteChallengeLinks?.syncResultComparison?.(resultViewId);
   }
 
   function createMatchGameEngine({
