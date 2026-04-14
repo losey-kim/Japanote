@@ -442,7 +442,7 @@
     const label = document.createElement("span");
 
     button.type = "button";
-    button.className = "secondary-btn button-with-icon share-result-btn match-result-bulk-btn";
+    button.className = "secondary-btn button-with-icon share-result-btn match-result-action-btn";
 
     icon.className = "material-symbols-rounded";
     icon.setAttribute("aria-hidden", "true");
@@ -476,6 +476,19 @@
     return button;
   }
 
+  function ensureShareActionGroup(filters) {
+    let shareActions = filters.querySelector(".match-result-share-actions");
+
+    if (shareActions) {
+      return shareActions;
+    }
+
+    shareActions = document.createElement("div");
+    shareActions.className = "match-result-share-actions";
+    filters.insertBefore(shareActions, filters.firstChild);
+    return shareActions;
+  }
+
   function ensureResultActionContainer(resultView) {
     const statsGrid = resultView.querySelector(".match-result-grid");
     let filters = resultView.querySelector(".match-result-filters");
@@ -493,13 +506,7 @@
       }
     }
 
-    let bulkActions = filters.querySelector(".match-result-bulk-actions");
-
-    if (!bulkActions) {
-      bulkActions = document.createElement("div");
-      bulkActions.className = "match-result-bulk-actions";
-      filters.appendChild(bulkActions);
-    }
+    const bulkActions = filters.querySelector(".match-result-bulk-actions");
 
     return { filters, bulkActions, statsGrid };
   }
@@ -540,13 +547,13 @@
       challengeLinks && typeof challengeLinks.createChallengeButton === "function"
         ? challengeLinks.createChallengeButton(resultViewId)
         : null;
-    const { filters, bulkActions, statsGrid } = ensureResultActionContainer(resultView);
+    const { filters, statsGrid } = ensureResultActionContainer(resultView);
+    const shareActions = ensureShareActionGroup(filters);
 
+    shareActions.append(button);
     if (challengeButton) {
-      challengeButton.classList.add("match-result-bulk-btn");
+      shareActions.appendChild(challengeButton);
     }
-
-    bulkActions.prepend(button, ...(challengeButton ? [challengeButton] : []));
     ensureComparisonFooter(resultView, filters, statsGrid);
     challengeLinks?.syncResultComparison?.(resultViewId);
   }

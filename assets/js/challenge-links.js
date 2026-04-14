@@ -1363,7 +1363,7 @@
     const label = document.createElement("span");
 
     button.type = "button";
-    button.className = "secondary-btn button-with-icon challenge-link-btn";
+    button.className = "secondary-btn button-with-icon challenge-link-btn match-result-action-btn";
     const canNativeShare = typeof global.navigator?.share === "function";
 
     icon.className = "material-symbols-rounded";
