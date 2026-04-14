@@ -10,6 +10,12 @@
   const SHARE_CARD_SURFACE = "linear-gradient(180deg, #ffffff 0%, #fffdfb 38%, #fff5ec 100%)";
   const SHARE_WATERMARK = "Japanote";
   const MAX_COMPARISON_LIST_ITEMS = 12;
+  /** html2canvas·모바일 WebView에서 이모지(⭕❌)가 깨지는 경우가 있어 벡터로 표시 */
+  const SHARE_ICON_SVG_CORRECT =
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" style=\"display:block\"><circle cx=\"12\" cy=\"12\" r=\"10.5\" fill=\"#4a9f78\"/><path fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M7.5 12.2l2.8 2.8L17 8.5\"/></svg>";
+  const SHARE_ICON_SVG_WRONG =
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" style=\"display:block\"><circle cx=\"12\" cy=\"12\" r=\"10.5\" fill=\"#d96548\"/><path stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" d=\"M8 8l8 8M16 8l-8 8\"/></svg>";
+
   const GAME_LABELS = {
     "match-result": "단어 짝맞추기",
     "kanji-match-result": "한자 짝맞추기",
@@ -79,14 +85,14 @@
 
     const rows = visibleItems.map((item) => {
       const ok = item?.status === "correct";
-      const emoji = ok ? "⭕" : "❌";
+      const iconSvg = ok ? SHARE_ICON_SVG_CORRECT : SHARE_ICON_SVG_WRONG;
       const label = escapeHtml(item?.label || item?.title || "");
       const rowBg = ok ? "rgba(95,174,139,0.07)" : "rgba(222,107,72,0.07)";
       const border = ok ? "rgba(95,174,139,0.2)" : "rgba(222,107,72,0.2)";
 
       return `
         <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:14px;background:${rowBg};border:1px solid ${border};font-size:0.83rem;line-height:1.45;box-shadow:0 1px 0 rgba(255,255,255,0.5) inset;">
-          <span style="flex-shrink:0;width:26px;height:26px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.55);font-size:0.88rem;line-height:1;">${emoji}</span>
+          <span style="flex-shrink:0;width:26px;height:26px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.55);line-height:0;">${iconSvg}</span>
           <span style="min-width:0;word-break:keep-all;overflow-wrap:anywhere;color:#2a2624;padding-top:1px;">${label}</span>
         </div>
       `;
@@ -184,7 +190,7 @@
       html += `<div style="${topBorder}display:grid;gap:8px;">`;
       items.forEach((item) => {
         const isCorrect = item.classList.contains("is-correct");
-        const icon = isCorrect ? "⭕" : "❌";
+        const iconSvg = isCorrect ? SHARE_ICON_SVG_CORRECT : SHARE_ICON_SVG_WRONG;
         const title = item.querySelector("strong")?.textContent || "";
         const description = item.querySelector("p")?.textContent || "";
         const rowBg = isCorrect ? "rgba(95,174,139,0.06)" : "rgba(222,107,72,0.07)";
@@ -193,7 +199,7 @@
 
         html += `<div style="display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border-radius:15px;background:${rowBg};border:1px solid ${border};font-size:0.86rem;line-height:1.45;box-shadow:0 1px 0 rgba(255,255,255,0.7) inset,0 2px 8px rgba(25,21,22,0.03);">
           <span style="flex-shrink:0;width:3px;align-self:stretch;border-radius:999px;background:linear-gradient(180deg,${accent},${accent}cc);min-height:2.4em;opacity:0.95;"></span>
-          <span style="flex-shrink:0;width:28px;height:28px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.65);font-size:0.95rem;line-height:1;box-shadow:0 1px 2px rgba(25,21,22,0.05);">${icon}</span>
+          <span style="flex-shrink:0;width:28px;height:28px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.65);line-height:0;box-shadow:0 1px 2px rgba(25,21,22,0.05);">${iconSvg}</span>
           <div style="min-width:0;flex:1;padding-top:1px;">
             <span style="font-weight:600;color:#1a1614;word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-0.02em;">${escapeHtml(title)}</span>
             ${description ? `<div style="margin-top:4px;color:#756d66;font-size:0.81rem;font-weight:500;line-height:1.4;word-break:keep-all;overflow-wrap:anywhere;">${escapeHtml(description)}</div>` : ""}

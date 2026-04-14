@@ -344,16 +344,13 @@
 
       try {
         const state = readStateFromInputs();
-        const [{ buildPreviewText, buildPreviewImageSvg, DEFAULT_CHALLENGE_PROMPT }, loadedIllustrationHref] = await Promise.all([
-          loadPreviewModule(),
-          loadIllustrationHref()
-        ]);
+        const { buildPreviewText, buildPreviewImageSvg, DEFAULT_CHALLENGE_PROMPT } = await loadPreviewModule();
         const previewText = buildPreviewText(createPayload(state));
         const lines = toDescriptionLines(previewText, DEFAULT_CHALLENGE_PROMPT);
         const svg = buildPreviewImageSvg({
-          ...previewText,
-          descriptionLines: lines,
-          illustrationHref: loadedIllustrationHref
+          scoreMain: previewText.scoreMain,
+          scoreEmojiKey: previewText.scoreEmojiKey,
+          descriptionLines: lines
         });
 
         if (currentImageUrl) {
