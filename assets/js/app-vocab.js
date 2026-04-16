@@ -27,3 +27,14 @@ function ensureVocabLevelsLoaded(level = "N5") {
 
   return vocabStore.ensureLevels(requestedLevels);
 }
+
+const vocabFilterLabels = {
+  all: "전체",
+  review: "다시 볼래요",
+  mastered: "익혔어요",
+  unmarked: "아직 안 봤어요"
+};
+
+function getVocabItemPart(item) {
+  return normalizeQuizText(item?.part) || "기타";
+}
