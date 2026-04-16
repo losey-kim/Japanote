@@ -19,6 +19,7 @@
       "assets/js/app-kanji.js",
       "assets/js/app-grammar.js",
       "assets/js/app-reading.js",
+      "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021"
     ],
@@ -39,6 +40,7 @@
       "assets/js/app-kanji.js",
       "assets/js/app-grammar.js",
       "assets/js/app-reading.js",
+      "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021",
       "assets/js/grammar-match-game.js?v=4087c18c",
@@ -61,6 +63,7 @@
       "assets/js/app-kanji.js",
       "assets/js/app-grammar.js",
       "assets/js/app-reading.js",
+      "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021",
       "assets/js/share-result.js?v=441dcdce"
@@ -84,6 +87,7 @@
       "assets/js/app-kanji.js",
       "assets/js/app-grammar.js",
       "assets/js/app-reading.js",
+      "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021",
       "assets/js/match-game.js?v=3f2e2e22",
@@ -109,6 +113,7 @@
       "assets/js/app-kanji.js",
       "assets/js/app-grammar.js",
       "assets/js/app-reading.js",
+      "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021",
       "assets/js/kanji-match-game.js?v=74bea83e",
@@ -130,6 +135,7 @@
       "assets/js/app-kanji.js",
       "assets/js/app-grammar.js",
       "assets/js/app-reading.js",
+      "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021",
       "assets/js/share-result.js?v=441dcdce"
