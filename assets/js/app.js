@@ -1576,48 +1576,101 @@ const grammarFilterLabels = {
   unmarked: "미분류"
 };
 
-const vocabHeadingCopy = {
-  N5: {
-    title: "N5 단어를 차근차근 익혀봐요",
-    description: "자주 쓰는 단어를 익히고, 퀴즈와 짝 맞추기로 다시 복습해봐요."
+/** Mirrors assets/js/app-copy.js when that script is absent or fails. */
+const japanoteCopyFallback = {
+  vocab: {
+    study: {
+      N5: {
+        title: "N5 단어를 차근차근 익혀봐요",
+        description: "자주 쓰는 단어를 익히고, 퀴즈와 짝 맞추기로 다시 복습해봐요."
+      },
+      N4: {
+        title: "N4 단어를 차근차근 익혀봐요",
+        description: "조금 더 넓어진 표현을 익히고, 퀴즈로 다시 확인해봐요."
+      },
+      N3: {
+        title: "N3 단어를 차근차근 익혀봐요",
+        description: "실전에서 자주 만나는 N3 단어를 익히고 복습해봐요."
+      },
+      all: {
+        title: "전체 단어를 한 번에 익혀봐요",
+        description: "N5부터 N3까지 섞어서 단어를 익히고 다시 복습해봐요."
+      }
+    },
+    quiz: {
+      N5: {
+        title: "N5 단어 퀴즈로 가볍게 확인해봐요",
+        description: "익힌 단어를 문제로 다시 확인해봐요."
+      },
+      N4: {
+        title: "N4 단어 퀴즈로 감각을 올려봐요",
+        description: "N4 단어를 뜻과 표현으로 다시 확인해봐요."
+      },
+      N3: {
+        title: "N3 단어 퀴즈로 실전 감각을 익혀봐요",
+        description: "실전에서 자주 나오는 단어를 문제로 점검해봐요."
+      },
+      all: {
+        title: "전체 단어 퀴즈로 한 번에 복습해봐요",
+        description: "N5부터 N3까지 섞어서 문제로 다시 확인해봐요."
+      }
+    },
+    match: {
+      title: "단어 짝 맞추기로 가볍게 복습해봐요",
+      description: "단어와 뜻을 연결하면서 배운 내용을 다시 확인해봐요."
+    }
   },
-  N4: {
-    title: "N4 단어를 차근차근 익혀봐요",
-    description: "조금 더 넓어진 표현을 익히고, 퀴즈로 다시 확인해봐요."
-  },
-  N3: {
-    title: "N3 단어를 차근차근 익혀봐요",
-    description: "실전에서 자주 만나는 N3 단어를 익히고 복습해봐요."
-  },
-  all: {
-    title: "전체 단어를 한 번에 익혀봐요",
-    description: "N5부터 N3까지 섞어서 단어를 익히고 다시 복습해봐요."
+  kanji: {
+    list: {
+      title: "기초 한자를 차근차근 익혀봐요",
+      description: "자주 나오는 한자를 보고, 퀴즈와 짝 맞추기로 가볍게 복습해봐요."
+    },
+    practice: {
+      title: "한자 퀴즈로 다시 확인해봐요",
+      description: "배운 한자를 문제로 다시 확인해봐요."
+    },
+    match: {
+      title: "한자 짝 맞추기로 가볍게 복습해봐요",
+      description: "한자와 뜻, 읽기를 연결하면서 다시 익혀봐요."
+    }
   }
 };
 
-const quizHeadingCopy = {
-  N5: {
-    title: "N5 단어 퀴즈, 가볍게 풀어볼까요?",
-    description: ""
-  },
-  N4: {
-    title: "N4 단어 퀴즈로 감각을 올려봐요",
-    description: "N4 단어를 뜻이랑 단어로 번갈아 풀어봐요."
-  },
-  N3: {
-    title: "N3 단어 퀴즈, 실전 느낌으로 가봐요",
-    description: "조금 더 긴 호흡으로 N3 어휘 감각을 확인해봐요."
-  },
-  all: {
-    title: "전체 단어 퀴즈로 감각을 섞어봐요",
-    description: "N5부터 N3까지 섞어서 문제 수와 시간에 맞춰 풀어봐요."
-  }
-};
+function getJapanoteCopy() {
+  const fromGlobal = globalThis.japanoteCopy;
+  return fromGlobal && typeof fromGlobal === "object" ? fromGlobal : japanoteCopyFallback;
+}
 
-const matchHeadingCopy = {
-  title: "단어 짝 맞추기로 가볍게 복습해봐요",
-  description: "단어와 뜻을 연결하면서 배운 내용을 다시 확인해봐요."
-};
+function resolveHeadingNode(node, fallback) {
+  const title =
+    node && typeof node.title === "string" && node.title.length > 0 ? node.title : fallback.title;
+  const description =
+    node && typeof node.description === "string" ? node.description : fallback.description;
+  return { title, description };
+}
+
+function buildLevelHeadingMap(sourceLevels, fallbackLevels) {
+  return {
+    N5: resolveHeadingNode(sourceLevels?.N5, fallbackLevels.N5),
+    N4: resolveHeadingNode(sourceLevels?.N4, fallbackLevels.N4),
+    N3: resolveHeadingNode(sourceLevels?.N3, fallbackLevels.N3),
+    all: resolveHeadingNode(sourceLevels?.all, fallbackLevels.all)
+  };
+}
+
+const japanoteCopyRoot = getJapanoteCopy();
+const vocabHeadingCopy = buildLevelHeadingMap(
+  japanoteCopyRoot.vocab?.study,
+  japanoteCopyFallback.vocab.study
+);
+const quizHeadingCopy = buildLevelHeadingMap(
+  japanoteCopyRoot.vocab?.quiz,
+  japanoteCopyFallback.vocab.quiz
+);
+const matchHeadingCopy = resolveHeadingNode(
+  japanoteCopyRoot.vocab?.match,
+  japanoteCopyFallback.vocab.match
+);
 
 function getVocabItemPart(item) {
   return normalizeQuizText(item?.part) || "기타";
@@ -7218,24 +7271,17 @@ function getKanjiFlashcardPlaceholder() {
 }
 
 function getKanjiPageHeading(tab = getKanjiTab(state.kanjiTab)) {
+  const copyRoot = getJapanoteCopy();
+  const fb = japanoteCopyFallback.kanji;
   if (tab === "practice") {
-    return {
-      title: "한자 퀴즈",
-      description: ""
-    };
+    return resolveHeadingNode(copyRoot.kanji?.practice, fb.practice);
   }
 
   if (tab === "match") {
-    return {
-      title: "한자 짝맞추기",
-      description: ""
-    };
+    return resolveHeadingNode(copyRoot.kanji?.match, fb.match);
   }
 
-  return {
-    title: "기초 한자를 차근차근 익혀봐요",
-    description: "자주 나오는 한자를 보고, 퀴즈와 짝 맞추기로 가볍게 복습해봐요."
-  };
+  return resolveHeadingNode(copyRoot.kanji?.list, fb.list);
 }
 
 function renderKanjiPageHeader(tab = getKanjiTab(state.kanjiTab)) {

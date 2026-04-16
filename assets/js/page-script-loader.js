@@ -12,6 +12,7 @@
       "assets/js/theme.js?v=0cb88168",
       "assets/js/app-study-view-helpers.js?v=444dc3dc",
       "assets/js/shared-timer.js?v=a53be2de",
+      "assets/js/app-copy.js?v=33a15021",
       "assets/js/app.js?v=33a15021"
     ],
     "grammar.html": [
@@ -24,6 +25,7 @@
       "assets/js/shared-timer.js?v=a53be2de",
       "assets/js/shared-match-game.js?v=2c46766b",
       "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app-copy.js?v=33a15021",
       "assets/js/app.js?v=33a15021",
       "assets/js/grammar-match-game.js?v=4087c18c",
       "assets/js/share-result.js?v=441dcdce"
@@ -38,6 +40,7 @@
       "assets/js/shared-timer.js?v=a53be2de",
       "assets/js/shared-match-game.js?v=2c46766b",
       "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app-copy.js?v=33a15021",
       "assets/js/app.js?v=33a15021",
       "assets/js/share-result.js?v=441dcdce"
     ],
@@ -53,6 +56,7 @@
       "assets/js/shared-match-copy.js?v=42df64f0",
       "assets/js/app-study-view-helpers.js?v=444dc3dc",
       "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app-copy.js?v=33a15021",
       "assets/js/app.js?v=33a15021",
       "assets/js/match-game.js?v=3f2e2e22",
       "assets/js/share-result.js?v=441dcdce",
@@ -70,6 +74,7 @@
       "assets/js/shared-match-copy.js?v=42df64f0",
       "assets/js/app-study-view-helpers.js?v=444dc3dc",
       "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app-copy.js?v=33a15021",
       "assets/js/app.js?v=33a15021",
       "assets/js/kanji-match-game.js?v=74bea83e",
       "assets/js/share-result.js?v=441dcdce"
@@ -83,6 +88,7 @@
       "assets/js/app-study-view-helpers.js?v=444dc3dc",
       "assets/js/shared-timer.js?v=a53be2de",
       "assets/js/challenge-links.js?v=02833806",
+      "assets/js/app-copy.js?v=33a15021",
       "assets/js/app.js?v=33a15021",
       "assets/js/share-result.js?v=441dcdce"
     ]
