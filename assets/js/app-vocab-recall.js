@@ -1,5 +1,6 @@
 (function initJapanoteVocabRecallMode(global) {
   const ANSWER_MODE_OPTIONS = ["choice", "recall"];
+  const RECALL_MASTERY_THRESHOLD = 2;
   let recallQuestionKey = "";
   let recallAnswerRevealed = false;
   let recallAnswerCommitted = false;
@@ -34,6 +35,14 @@
     }
 
     return String(question.id || question.sourceId || "");
+  }
+
+  function getRecallSourceId(question) {
+    if (!question || typeof question !== "object") {
+      return "";
+    }
+
+    return String(question.sourceId || question.id || "").trim();
   }
 
   function getRecallSessionKey() {
@@ -184,7 +193,7 @@
 
     syncRecallSessionState();
 
-    const sourceId = String(question.sourceId || question.id || "");
+    const sourceId = getRecallSourceId(question);
 
     if (!sourceId || recallRetriedSourceIds.has(sourceId)) {
       return;
@@ -218,6 +227,67 @@
     state.recentVocabWrongIds = nextIds;
   }
 
+  function getVocabRecallMasteryCounts() {
+    if (!state.vocabRecallMasteryCounts || typeof state.vocabRecallMasteryCounts !== "object") {
+      state.vocabRecallMasteryCounts = {};
+    }
+
+    return state.vocabRecallMasteryCounts;
+  }
+
+  function getVocabRecallMasteryCount(sourceId) {
+    const counts = getVocabRecallMasteryCounts();
+    const raw = Number(counts[sourceId]);
+    return Number.isFinite(raw) && raw > 0 ? raw : 0;
+  }
+
+  function setVocabRecallMasteryCount(sourceId, count) {
+    if (!sourceId) {
+      return;
+    }
+
+    const counts = getVocabRecallMasteryCounts();
+    const normalizedCount = Number(count);
+
+    if (!Number.isFinite(normalizedCount) || normalizedCount <= 0) {
+      delete counts[sourceId];
+      return;
+    }
+
+    counts[sourceId] = Math.min(3, Math.max(1, Math.floor(normalizedCount)));
+  }
+
+  function applyAutoStatusForRecall(sourceId, verdict) {
+    if (!sourceId || typeof getWordVocabStatus !== "function" || typeof setWordVocabStatus !== "function") {
+      return;
+    }
+
+    const currentStatus = getWordVocabStatus(sourceId);
+
+    if (verdict === "correct") {
+      const nextCount = getVocabRecallMasteryCount(sourceId) + 1;
+      setVocabRecallMasteryCount(sourceId, nextCount);
+
+      if (nextCount >= RECALL_MASTERY_THRESHOLD && currentStatus !== "mastered") {
+        setWordVocabStatus(sourceId, "mastered");
+        if (typeof showJapanoteToast === "function") {
+          showJapanoteToast("두 번 연속 맞아서 익혔어요로 바꿨어요");
+        }
+      }
+
+      return;
+    }
+
+    setVocabRecallMasteryCount(sourceId, 0);
+
+    if (currentStatus !== "review") {
+      setWordVocabStatus(sourceId, "review");
+      if (typeof showJapanoteToast === "function") {
+        showJapanoteToast(verdict === "unsure" ? "헷갈려서 다시 볼래요로 바꿨어요" : "틀려서 다시 볼래요로 바꿨어요");
+      }
+    }
+  }
+
   function getRecallExplanationText(question) {
     const answerLabel = getVocabRecallCopy("answerLabel") || "정답";
     const answerText = question?.options?.[question.answer] || "";
@@ -234,6 +304,7 @@
     const feedback = document.getElementById("vocab-quiz-feedback");
     const explanation = document.getElementById("vocab-quiz-explanation");
     const nextButton = document.getElementById("vocab-quiz-next");
+    const sourceId = getRecallSourceId(question);
     const isCorrect = verdict === "correct";
 
     if (!question || !feedback || !explanation || !nextButton) {
@@ -242,7 +313,7 @@
 
     if (!isCorrect) {
       queueRecallRetryQuestion(question, verdict === "unsure" ? "unsure" : "wrong");
-      rememberRecentWrongVocab(question.sourceId || question.id);
+      rememberRecentWrongVocab(sourceId);
     }
 
     const isLastQuestion = state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1;
@@ -259,6 +330,8 @@
     if (latestResult) {
       latestResult.selfCheck = verdict;
     }
+
+    applyAutoStatusForRecall(sourceId, verdict);
 
     feedback.textContent =
       verdict === "timeout"
