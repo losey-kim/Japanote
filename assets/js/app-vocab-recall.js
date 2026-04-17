@@ -177,7 +177,7 @@
     return JSON.parse(JSON.stringify(question));
   }
 
-  function queueRecallRetryQuestion(question) {
+  function queueRecallRetryQuestion(question, priority = "wrong") {
     if (!question || !Array.isArray(activeVocabQuizQuestions)) {
       return;
     }
@@ -194,7 +194,12 @@
     const retryQuestion = cloneRecallQuestion(question);
     retryQuestion.id = `${sourceId}-recall-retry-${Date.now()}`;
     retryQuestion.retry = true;
-    const insertIndex = Math.min(activeVocabQuizQuestions.length, Math.max(0, Number(state?.vocabQuizIndex) || 0) + 3);
+    retryQuestion.retryPriority = priority;
+    const retryOffset = priority === "unsure" ? 5 : 3;
+    const insertIndex = Math.min(
+      activeVocabQuizQuestions.length,
+      Math.max(0, Number(state?.vocabQuizIndex) || 0) + retryOffset
+    );
     activeVocabQuizQuestions.splice(insertIndex, 0, retryQuestion);
   }
 
@@ -236,7 +241,7 @@
     }
 
     if (!isCorrect) {
-      queueRecallRetryQuestion(question);
+      queueRecallRetryQuestion(question, verdict === "unsure" ? "unsure" : "wrong");
       rememberRecentWrongVocab(question.sourceId || question.id);
     }
 
