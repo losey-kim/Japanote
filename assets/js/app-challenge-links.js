@@ -6,6 +6,8 @@
     return JSON.parse(JSON.stringify(payload));
   }
 
+  window.cloneChallengeSessionData = window.cloneChallengeSessionData || cloneChallengeSessionData;
+
   if (japanoteChallengeLinks && typeof japanoteChallengeLinks.registerProvider === "function") {
   japanoteChallengeLinks.registerProvider({
     resultViewId: "vocab-quiz-result-view",
