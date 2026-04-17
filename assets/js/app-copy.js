@@ -49,6 +49,19 @@
         emptyQueue: "오늘 복습할 단어가 아직 없어요",
         notEnoughWords: "복습을 시작하려면 단어가 4개 이상 모여야 해요.",
         quizSourceLabel: "오늘의 복습"
+      },
+      recall: {
+        modeLabel: "풀이 방식",
+        choiceMode: "객관식",
+        recallMode: "떠올리기",
+        summaryLabel: "떠올리기",
+        revealAnswer: "정답 보기",
+        answerLabel: "정답",
+        selfCheckPrompt: "먼저 떠올려보고 스스로 체크해봐요.",
+        correctButton: "맞았어요",
+        unsureButton: "애매해요",
+        wrongButton: "틀렸어요",
+        timeoutMessage: "시간이 지나서 정답을 먼저 보여줄게요."
       }
     },
     kanji: {
@@ -147,6 +160,19 @@ const japanoteCopyFallback = {
       emptyQueue: "오늘 복습할 단어가 아직 없어요",
       notEnoughWords: "복습을 시작하려면 단어가 4개 이상 모여야 해요.",
       quizSourceLabel: "오늘의 복습"
+    },
+    recall: {
+      modeLabel: "풀이 방식",
+      choiceMode: "객관식",
+      recallMode: "떠올리기",
+      summaryLabel: "떠올리기",
+      revealAnswer: "정답 보기",
+      answerLabel: "정답",
+      selfCheckPrompt: "먼저 떠올려보고 스스로 체크해봐요.",
+      correctButton: "맞았어요",
+      unsureButton: "애매해요",
+      wrongButton: "틀렸어요",
+      timeoutMessage: "시간이 지나서 정답을 먼저 보여줄게요."
     }
   },
   kanji: {
@@ -239,4 +265,14 @@ function getVocabTodayReviewCopy(key, vars) {
   }
 
   return text;
+}
+
+function getVocabRecallCopy(key) {
+  const root = getJapanoteCopy();
+  const fromRoot = root?.vocab?.recall;
+  const block =
+    fromRoot && typeof fromRoot === "object" ? fromRoot : japanoteCopyFallback.vocab.recall;
+  const fallbackBlock = japanoteCopyFallback.vocab.recall;
+  const text = typeof block[key] === "string" ? block[key] : fallbackBlock[key];
+  return typeof text === "string" ? text : "";
 }
