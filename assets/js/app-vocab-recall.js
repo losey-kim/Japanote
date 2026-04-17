@@ -69,24 +69,18 @@
   function getRecallStageMeta() {
     if (!recallAnswerRevealed) {
       return {
-        badge: "1단계 · 먼저 떠올리기",
-        title: "뜻을 보고 일본어를 먼저 떠올려보세요",
-        description: "정답을 바로 보지 말고, 머릿속으로 한 번 답을 꺼내본 뒤 확인해보세요."
+        title: "먼저 떠올려보세요"
       };
     }
 
     if (!recallAnswerCommitted) {
       return {
-        badge: "2단계 · 정답 확인",
-        title: "정답을 확인하고 감각을 체크해보세요",
-        description: "정답을 봤다면 지금 얼마나 확실했는지 골라주세요."
+        title: "어땠나요?"
       };
     }
 
     return {
-      badge: "3단계 · 체크 완료",
-      title: "정리됐어요. 다음 문제로 넘어가볼까요?",
-      description: "필요하면 정답과 설명을 한 번 더 보고 다음으로 넘어가세요."
+      title: "다음으로 넘어가볼까요?"
     };
   }
 
@@ -101,50 +95,29 @@
       .study-options-group--recall { grid-column: 1 / -1; }
       .vocab-recall-panel {
         display: grid;
-        gap: 14px;
-        padding: 18px;
-        border-radius: 24px;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 22px;
         border: 1px solid rgba(15, 23, 42, 0.08);
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
-        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
-      }
-      .vocab-recall-stage-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: fit-content;
-        max-width: 100%;
-        padding: 6px 12px;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.06);
-        color: rgba(15, 23, 42, 0.72);
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: -0.01em;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
       }
       .vocab-recall-head {
         display: grid;
-        gap: 6px;
+        gap: 4px;
       }
       .vocab-recall-title {
         margin: 0;
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 800;
         line-height: 1.35;
         letter-spacing: -0.02em;
       }
-      .vocab-recall-description {
-        margin: 0;
-        color: rgba(15, 23, 42, 0.68);
-        font-size: 14px;
-        line-height: 1.6;
-      }
       .vocab-recall-answer {
         display: grid;
         gap: 8px;
-        padding: 18px;
-        border-radius: 20px;
+        padding: 16px;
+        border-radius: 18px;
         border: 1px solid rgba(15, 23, 42, 0.08);
         background: rgba(255, 255, 255, 0.96);
       }
@@ -181,8 +154,8 @@
         grid-template-columns: minmax(0, 1fr);
       }
       .vocab-recall-btn {
-        min-height: 52px;
-        border-radius: 18px;
+        min-height: 50px;
+        border-radius: 16px;
         font-weight: 800;
         letter-spacing: -0.02em;
       }
@@ -209,7 +182,7 @@
         align-items: center;
         width: fit-content;
         max-width: 100%;
-        padding: 7px 12px;
+        padding: 6px 10px;
         border-radius: 999px;
         background: rgba(59, 130, 246, 0.1);
         color: rgba(30, 64, 175, 0.92);
@@ -221,15 +194,15 @@
         width: 100%;
         min-height: 54px;
         border-radius: 18px;
-        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 12px 22px rgba(15, 23, 42, 0.06);
       }
       @media (max-width: 640px) {
         .vocab-recall-panel {
-          padding: 16px;
-          border-radius: 20px;
+          padding: 14px;
+          border-radius: 18px;
         }
         .vocab-recall-title {
-          font-size: 20px;
+          font-size: 18px;
         }
         .vocab-recall-actions {
           grid-template-columns: minmax(0, 1fr);
@@ -406,10 +379,10 @@
       }
 
       if (currentStatus === "mastered") {
-        return "이미 익힌 단어예요";
+        return "이미 익혔어요";
       }
 
-      return "한 번 더 맞히면 익혔어요로 바뀌어요";
+      return "한 번 더 맞히면 익혀져요";
     }
 
     setVocabRecallMasteryCount(sourceId, 0);
@@ -422,7 +395,7 @@
       return "다시 볼래요에 담았어요";
     }
 
-    return "다시 볼래요에 담겨 있어요";
+    return "다시 볼래요에 있어요";
   }
 
   function getRecallExplanationText(question) {
@@ -474,10 +447,10 @@
       verdict === "timeout"
         ? getVocabRecallCopy("timeoutMessage") || "시간이 지나서 정답을 먼저 보여줄게요."
         : verdict === "correct"
-          ? "잘 떠올렸어요. 이 흐름 좋아요."
+          ? "좋아요"
           : verdict === "unsure"
-            ? "조금 헷갈렸네요. 조금 뒤에 한 번 더 확인해볼게요."
-            : "괜찮아요. 더 빠르게 다시 나올 거예요.";
+            ? "조금 더 볼게요"
+            : "다시 나와요";
     explanation.textContent = formatQuizLineBreaks(getRecallExplanationText(question));
     nextButton.disabled = false;
     nextButton.hidden = false;
@@ -514,10 +487,8 @@
 
     optionsContainer.innerHTML = `
       <div class="vocab-recall-panel">
-        <span class="vocab-recall-stage-badge">${stage.badge}</span>
         <div class="vocab-recall-head">
           <h3 class="vocab-recall-title">${stage.title}</h3>
-          <p class="vocab-recall-description">${stage.description}</p>
         </div>
         ${answerMarkup}
         ${
@@ -531,7 +502,7 @@
             `
             : `
               <div class="vocab-recall-self-check">
-                <p class="vocab-recall-self-check-label">정답을 본 뒤, 지금 감각을 골라주세요.</p>
+                <p class="vocab-recall-self-check-label">어땠나요?</p>
                 <div class="vocab-recall-actions">
                   <button class="secondary-btn vocab-recall-btn vocab-recall-btn--correct" type="button" data-vocab-recall-action="correct"${recallAnswerCommitted ? " disabled" : ""}>
                     ${getVocabRecallCopy("correctButton") || "맞았어요"}
