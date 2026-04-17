@@ -117,9 +117,9 @@
       "assets/js/app-characters.js",
       "assets/js/app-core.js",
       "assets/js/app.js?v=33a15021",
+      "assets/js/app-vocab-recall.js",
       "assets/js/app-events.js",
       "assets/js/app-challenge-links.js",
-      "assets/js/app-vocab-recall.js",
       "assets/js/match-game.js?v=3f2e2e22",
       "assets/js/share-result.js?v=441dcdce",
       "assets/js/study-tools.js?v=9b778c4f"
