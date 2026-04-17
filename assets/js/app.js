@@ -260,6 +260,9 @@ let flashcards = [...fallbackFlashcards];
 let vocabListItems = [...fallbackFlashcards];
 const vocabPageSize = 20;
 const vocabQuizSessionSize = 12;
+const VOCAB_TODAY_REVIEW_QUEUE_MAX = 10;
+const VOCAB_RECENT_WRONG_MAX = 30;
+const VOCAB_QUIZ_RETRY_INSERT_OFFSET = 2;
 const studyCardOrderCache = {
   vocab: { signature: "", ids: [] },
   kanji: { signature: "", ids: [] },
@@ -750,63 +753,70 @@ function getVocabQuizExplanation(item) {
   return `${reading}의 뜻은 ${meaning}예요.`;
 }
 
-function buildWordPracticeQuestionSet(items, level = "N5", fallbackItems = [], config = {}) {
+function buildVocabPracticeQuestionForItem(item, pool, level = "N5", questionIndex = 0, config = {}) {
   const tones = ["tone-coral", "tone-mint", "tone-gold", "tone-sky"];
   const levelLabel = getLevelLabel(level);
   const questionField = getVocabQuizQuestionField(config.questionField, config.mode);
   const optionField = getVocabQuizOptionField(config.optionField, questionField, config.mode);
+  const display = getVocabQuizItemValue(item, questionField);
+  const displaySub = getVocabQuizDisplaySub(item, questionField, optionField);
+  const correctOption = getVocabQuizItemValue(item, optionField);
+  const distractors = uniqueQuizValues(
+    shuffleQuizArray(
+      pool
+        .filter((candidate) => candidate.id !== item.id)
+        .map((candidate) => getVocabQuizItemValue(candidate, optionField))
+        .filter((value) => value && value !== correctOption)
+    )
+  ).slice(0, 3);
+
+  if (!display || !correctOption || distractors.length < 3) {
+    return null;
+  }
+
+  const options = shuffleQuizArray([correctOption, ...distractors]);
+  const answer = options.indexOf(correctOption);
+  const questionLabel = getVocabQuizFieldLabel(questionField);
+  const optionLabel = getVocabQuizFieldLabel(optionField);
+  const title = item.part ? `${item.part} ${optionLabel} 퀴즈` : `${levelLabel} ${optionLabel} 퀴즈`;
+  const note = `${questionLabel}를 보고 ${optionLabel}를 골라봐요.`;
+  const prompt = `이 ${questionLabel}에 맞는 ${optionLabel}, 어떤 걸까요?`;
+  const explanation = getVocabQuizExplanation(item);
+
+  return {
+    id: `bp-dw-${questionField}-${optionField}-${item.id}-${questionIndex}`,
+    source: `${levelLabel} 단어 ${questionIndex + 1}`,
+    level: item.level || levelLabel,
+    title,
+    note,
+    prompt,
+    display,
+    displaySub,
+    options,
+    answer,
+    explanation,
+    sourceId: item.id,
+    questionField,
+    optionField,
+    word: item.word,
+    reading: item.reading,
+    meaning: item.meaning,
+    tone: tones[questionIndex % tones.length]
+  };
+}
+
+function buildWordPracticeQuestionSet(items, level = "N5", fallbackItems = [], config = {}) {
   const count = Math.max(1, Number(config.count) || vocabQuizSessionSize);
   const seedItems = shuffleQuizArray(items);
   const questions = [];
 
   for (let index = 0; index < seedItems.length && questions.length < count; index += 1) {
     const item = seedItems[index];
-    const questionIndex = questions.length;
-    const display = getVocabQuizItemValue(item, questionField);
-    const displaySub = getVocabQuizDisplaySub(item, questionField, optionField);
-    const correctOption = getVocabQuizItemValue(item, optionField);
-    const distractors = uniqueQuizValues(
-      shuffleQuizArray(
-        items
-          .filter((candidate) => candidate.id !== item.id)
-          .map((candidate) => getVocabQuizItemValue(candidate, optionField))
-          .filter((value) => value && value !== correctOption)
-      )
-    ).slice(0, 3);
+    const built = buildVocabPracticeQuestionForItem(item, items, level, questions.length, config);
 
-    if (!display || !correctOption || distractors.length < 3) {
-      continue;
+    if (built) {
+      questions.push(built);
     }
-
-    const options = shuffleQuizArray([correctOption, ...distractors]);
-    const answer = options.indexOf(correctOption);
-    const questionLabel = getVocabQuizFieldLabel(questionField);
-    const optionLabel = getVocabQuizFieldLabel(optionField);
-    const title = item.part ? `${item.part} ${optionLabel} 퀴즈` : `${levelLabel} ${optionLabel} 퀴즈`;
-    const note = `${questionLabel}를 보고 ${optionLabel}를 골라봐요.`;
-    const prompt = `이 ${questionLabel}에 맞는 ${optionLabel}, 어떤 걸까요?`;
-    const explanation = getVocabQuizExplanation(item);
-
-    questions.push({
-      id: `bp-dw-${questionField}-${optionField}-${item.id}-${questionIndex}`,
-      source: `${levelLabel} 단어 ${questionIndex + 1}`,
-      level: item.level || levelLabel,
-      title,
-      note,
-      prompt,
-      display,
-      displaySub,
-      options,
-      answer,
-      explanation,
-      sourceId: item.id,
-      questionField,
-      optionField,
-      word: item.word,
-      reading: item.reading,
-      meaning: item.meaning,
-      tone: tones[questionIndex % tones.length]
-    });
   }
 
   return questions.length ? questions : fallbackItems;
@@ -902,6 +912,7 @@ function handleLoadedVocabLevels() {
     activeVocabQuizQuestions = [];
     activeVocabQuizSignature = "";
     activeVocabQuizResults = [];
+    clearVocabQuizSessionRuntime();
   }
 
   renderAll();
@@ -1088,6 +1099,9 @@ let activeVocabQuizQuestions = [];
 let activeVocabQuizSignature = "";
 let activeVocabQuizResults = [];
 let activeVocabQuizChallengePayload = null;
+let activeVocabQuizItemPool = [];
+let vocabQuizSessionScheduledRetrySourceIds = new Set();
+let vocabQuizRetryNonce = 0;
 
 let pendingExternalStudyState = null;
 
@@ -1209,6 +1223,7 @@ function applyExternalStudyState(nextState, options = {}) {
         "vocabQuizCount",
         "vocabQuizDuration",
         "vocabQuizResultFilter",
+        "vocabQuizTodayReviewActive",
         "masteredIds",
         "reviewIds"
       ].forEach((key) => activeSessionStateKeys.add(key));
@@ -2695,6 +2710,140 @@ function getVocabViewLabel(view = state.vocabView) {
   return labels[getVocabView(view)];
 }
 
+function getLocalDateKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function getVocabTodayReviewSignature() {
+  return [getVocabLevel(), getVocabFilter(), getVocabPartFilter()].join("::");
+}
+
+function buildTodayVocabReviewQueueIds() {
+  const visible = getVisibleVocabList();
+  const byId = new Map(visible.map((entry) => [entry.id, entry]));
+  const orderedIds = [];
+  const used = new Set();
+
+  visible.forEach((item) => {
+    if (used.has(item.id)) {
+      return;
+    }
+
+    if (state.reviewIds.includes(item.id)) {
+      orderedIds.push(item.id);
+      used.add(item.id);
+    }
+  });
+
+  const recent = Array.isArray(state.recentVocabWrongIds) ? state.recentVocabWrongIds : [];
+  recent.forEach((id) => {
+    if (!byId.has(id) || used.has(id)) {
+      return;
+    }
+
+    orderedIds.push(id);
+    used.add(id);
+  });
+
+  visible.forEach((item) => {
+    if (used.has(item.id)) {
+      return;
+    }
+
+    const unmarked = !state.reviewIds.includes(item.id) && !state.masteredIds.includes(item.id);
+
+    if (unmarked) {
+      orderedIds.push(item.id);
+      used.add(item.id);
+    }
+  });
+
+  return orderedIds.slice(0, VOCAB_TODAY_REVIEW_QUEUE_MAX);
+}
+
+function ensureVocabTodayReviewQueueInState() {
+  const today = getLocalDateKey();
+  const signature = getVocabTodayReviewSignature();
+  const cached = state.vocabTodayReview;
+  const nextIds = buildTodayVocabReviewQueueIds();
+
+  if (
+    cached &&
+    cached.date === today &&
+    cached.signature === signature &&
+    Array.isArray(cached.ids) &&
+    cached.ids.join("\u0001") === nextIds.join("\u0001")
+  ) {
+    return;
+  }
+
+  state.vocabTodayReview = {
+    date: today,
+    signature,
+    ids: nextIds
+  };
+  saveState();
+}
+
+function pushRecentVocabWrongId(id) {
+  if (!id) {
+    return;
+  }
+
+  const next = [id, ...(state.recentVocabWrongIds || []).filter((entry) => entry !== id)];
+  state.recentVocabWrongIds = next.slice(0, VOCAB_RECENT_WRONG_MAX);
+}
+
+function getTodayVocabReviewQuizItems() {
+  ensureVocabTodayReviewQueueInState();
+  const ids = state.vocabTodayReview?.ids || [];
+  const visible = getVisibleVocabList();
+  const map = new Map(visible.map((entry) => [entry.id, entry]));
+
+  return ids.map((id) => map.get(id)).filter(Boolean);
+}
+
+function scheduleVocabQuizRetryQuestion(question) {
+  if (activeVocabQuizChallengePayload) {
+    return;
+  }
+
+  const sourceId = question.sourceId;
+
+  if (!sourceId || vocabQuizSessionScheduledRetrySourceIds.has(sourceId)) {
+    return;
+  }
+
+  const item = activeVocabQuizItemPool.find((entry) => entry.id === sourceId);
+
+  if (!item || !activeVocabQuizItemPool.length) {
+    return;
+  }
+
+  const built = buildVocabPracticeQuestionForItem(item, activeVocabQuizItemPool, getVocabLevel(), activeVocabQuizQuestions.length, {
+    questionField: getVocabQuizQuestionField(),
+    optionField: getVocabQuizOptionField()
+  });
+
+  if (!built) {
+    return;
+  }
+
+  vocabQuizRetryNonce += 1;
+  const retryQuestion = { ...built, id: `${built.id}-retry-${vocabQuizRetryNonce}` };
+  const insertAt = Math.min(state.vocabQuizIndex + VOCAB_QUIZ_RETRY_INSERT_OFFSET, activeVocabQuizQuestions.length);
+  activeVocabQuizQuestions.splice(insertAt, 0, retryQuestion);
+  vocabQuizSessionScheduledRetrySourceIds.add(sourceId);
+}
+
+function clearVocabQuizSessionRuntime() {
+  activeVocabQuizItemPool = [];
+  vocabQuizSessionScheduledRetrySourceIds = new Set();
+}
+
 function invalidateVocabQuizSession() {
   window.japanoteChallengeLinks?.clearActiveChallenge?.("vocab-quiz-result-view");
   activeVocabQuizQuestions = [];
@@ -2702,9 +2851,11 @@ function invalidateVocabQuizSession() {
   activeVocabQuizResults = [];
   activeVocabQuizChallengePayload = null;
   state.vocabQuizStarted = false;
+  state.vocabQuizTodayReviewActive = false;
   state.vocabQuizResultFilter = "all";
   state.vocabQuizIndex = 0;
   state.vocabQuizFinished = false;
+  clearVocabQuizSessionRuntime();
   resetQuizSessionScore("vocab");
   setQuizSessionDuration("vocab", getVocabQuizDuration());
   stopQuizSessionTimer("vocab");
@@ -2956,6 +3107,18 @@ function clampVocabPage(items) {
 }
 
 function getVocabQuizSignature(items = getVocabQuizItems()) {
+  if (state.vocabQuizTodayReviewActive) {
+    const queueIds = state.vocabTodayReview?.ids || [];
+    return [
+      "today-review",
+      getLocalDateKey(),
+      queueIds.join("|"),
+      getVocabQuizQuestionField(),
+      getVocabQuizOptionField(),
+      getVocabQuizCount()
+    ].join("::");
+  }
+
   return [
     getVocabLevel(),
     getVocabFilter(),
@@ -2968,6 +3131,10 @@ function getVocabQuizSignature(items = getVocabQuizItems()) {
 }
 
 function getVocabQuizSourceLabel() {
+  if (state.vocabQuizTodayReviewActive) {
+    return getVocabTodayReviewCopy("quizSourceLabel");
+  }
+
   return [getVocabLevelLabel(), vocabFilterLabels[getVocabFilter()], getVocabPartSummaryLabel()].join(" · ");
 }
 
@@ -2988,6 +3155,8 @@ function restoreChallengeVocabQuizSession() {
     return false;
   }
 
+  state.vocabQuizTodayReviewActive = false;
+  clearVocabQuizSessionRuntime();
   activeVocabQuizSignature = `challenge::${payload.challengeId || Date.now()}`;
   activeVocabQuizQuestions = cloneChallengeSessionData(payload.questions);
   activeVocabQuizResults = [];
@@ -3000,9 +3169,17 @@ function restoreChallengeVocabQuizSession() {
   return true;
 }
 
-function startNewVocabQuizSession(force = false) {
+function startNewVocabQuizSession(force = false, options) {
+  const opts = options && typeof options === "object" ? options : {};
+  const todayReview = opts.todayReview === true;
+  const hasTodayReviewOption = Object.prototype.hasOwnProperty.call(opts, "todayReview");
+
+  if (hasTodayReviewOption) {
+    state.vocabQuizTodayReviewActive = todayReview;
+  }
+
   window.japanoteChallengeLinks?.clearActiveChallenge?.("vocab-quiz-result-view");
-  const items = getVocabQuizItems();
+  const items = todayReview ? getTodayVocabReviewQuizItems() : getVocabQuizItems();
   const nextSignature = getVocabQuizSignature(items);
 
   if (!force && nextSignature === activeVocabQuizSignature && activeVocabQuizQuestions.length) {
@@ -3010,10 +3187,13 @@ function startNewVocabQuizSession(force = false) {
     return true;
   }
 
+  activeVocabQuizItemPool = items.slice();
+  vocabQuizSessionScheduledRetrySourceIds = new Set();
+  const questionCount = todayReview ? Math.min(getVocabQuizCount(), items.length) : getVocabQuizCount();
   const nextQuestions = buildWordPracticeQuestionSet(items, getVocabLevel(), [], {
     questionField: getVocabQuizQuestionField(),
     optionField: getVocabQuizOptionField(),
-    count: getVocabQuizCount()
+    count: questionCount
   });
 
   activeVocabQuizSignature = nextSignature;
@@ -3026,6 +3206,34 @@ function startNewVocabQuizSession(force = false) {
   resetVocabQuizSessionStats();
   saveState();
   return nextQuestions.length > 0;
+}
+
+function startTodayVocabReviewSession() {
+  window.japanoteChallengeLinks?.clearActiveChallenge?.("vocab-quiz-result-view");
+  invalidateVocabQuizSession();
+  return startNewVocabQuizSession(true, { todayReview: true });
+}
+
+function handleVocabTodayReviewStartClick() {
+  ensureVocabTodayReviewQueueInState();
+  const items = getTodayVocabReviewQuizItems();
+
+  if (items.length < 4) {
+    showJapanoteToast(getVocabTodayReviewCopy("notEnoughWords"));
+    return;
+  }
+
+  if (getVocabTab() !== "quiz") {
+    state.vocabTab = "quiz";
+    syncVocabLocationHash("quiz");
+  }
+
+  const started = startTodayVocabReviewSession();
+  renderVocabPage();
+
+  if (started) {
+    scrollToElementById("vocab-quiz-card");
+  }
 }
 
 function ensureVocabQuizSession(force = false) {
@@ -3055,7 +3263,7 @@ function ensureVocabQuizSession(force = false) {
     nextSignature !== activeVocabQuizSignature ||
     (activeVocabQuizQuestions.length > 0 && state.vocabQuizIndex >= activeVocabQuizQuestions.length)
   ) {
-    return startNewVocabQuizSession(true);
+    return startNewVocabQuizSession(true, { todayReview: state.vocabQuizTodayReviewActive });
   }
 
   return true;
@@ -3333,7 +3541,6 @@ function finalizeVocabQuizQuestion(selectedIndex, timedOut = false) {
   }
 
   const correct = selectedIndex === question.answer;
-  const isLastQuestion = state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1;
 
   finalizeQuizSession("vocab", correct);
   state.quizAnsweredCount += 1;
@@ -3343,6 +3550,13 @@ function finalizeVocabQuizQuestion(selectedIndex, timedOut = false) {
   }
 
   recordVocabQuizResult(question, selectedIndex, correct, timedOut);
+
+  if (!correct) {
+    pushRecentVocabWrongId(question.sourceId);
+    scheduleVocabQuizRetryQuestion(question);
+  }
+
+  const isLastQuestion = state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1;
   revealVocabQuizAnswer(question, selectedIndex, correct);
   feedback.textContent = correct
     ? ""
@@ -3398,6 +3612,7 @@ function nextVocabQuizQuestion() {
   if (state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1) {
     state.vocabQuizFinished = true;
     stopQuizSessionTimer("vocab");
+    clearVocabQuizSessionRuntime();
     saveState();
     renderVocabQuiz();
     return;
@@ -3416,7 +3631,7 @@ function restartVocabQuiz() {
     return;
   }
 
-  const started = startNewVocabQuizSession(true);
+  const started = startNewVocabQuizSession(true, { todayReview: false });
   renderVocabPage();
 
   if (started) {
@@ -3870,6 +4085,7 @@ function renderVocabQuiz() {
     restartLabel.textContent = getJapanoteButtonLabel("start");
     setActionButtonIcon(restart, "play_arrow");
     state.vocabQuizStarted = false;
+    state.vocabQuizTodayReviewActive = false;
     renderQuizSessionHud("vocab");
     return;
   }
@@ -3929,6 +4145,55 @@ function renderVocabQuiz() {
   resetQuizSessionTimer("vocab", handleVocabQuizTimeout);
 }
 
+function buildVocabTodayReviewBannerHtml() {
+  ensureVocabTodayReviewQueueInState();
+  const count = (state.vocabTodayReview?.ids || []).length;
+  const canStart = count >= 4;
+  const prepared = getVocabTodayReviewCopy("prepared", { count });
+  const retryHint = getVocabTodayReviewCopy("retryHint");
+  const emptyMessage = getVocabTodayReviewCopy("emptyQueue");
+  const startLabel = getVocabTodayReviewCopy("startButton");
+
+  if (!count) {
+    return `
+      <div class="vocab-today-review-card" role="region" aria-label="${getVocabTodayReviewCopy("ariaLabel")}">
+        <p class="vocab-today-review-title">${emptyMessage}</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="vocab-today-review-card" role="region" aria-label="${getVocabTodayReviewCopy("ariaLabel")}">
+      <div class="vocab-today-review-head">
+        <p class="vocab-today-review-title">${prepared}</p>
+        <button type="button" class="primary-btn button-with-icon vocab-today-review-start" data-vocab-today-review-start ${canStart ? "" : "disabled"}>
+          <span class="material-symbols-rounded" aria-hidden="true">playlist_add_check</span>
+          <span>${startLabel}</span>
+        </button>
+      </div>
+      <p class="vocab-today-review-hint">${retryHint}</p>
+    </div>
+  `;
+}
+
+function renderVocabTodayReviewBanners() {
+  if (!isVocabPagePath()) {
+    return;
+  }
+
+  const studySlot = document.getElementById("vocab-today-review-slot-study");
+  const quizSlot = document.getElementById("vocab-today-review-slot-quiz");
+  const html = buildVocabTodayReviewBannerHtml();
+
+  if (studySlot) {
+    studySlot.innerHTML = html;
+  }
+
+  if (quizSlot) {
+    quizSlot.innerHTML = html;
+  }
+}
+
 function renderVocabPage() {
   if (flushPendingExternalStudyStateIfIdle()) {
     return;
@@ -3953,6 +4218,8 @@ function renderVocabPage() {
   if (summary) {
     summary.textContent = getVocabSummaryText(items.length);
   }
+
+  renderVocabTodayReviewBanners();
 
   renderVocabTabLayout();
   renderVocabStudyControls(counts, availableParts, activePart);

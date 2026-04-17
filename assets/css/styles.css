@@ -2511,6 +2511,45 @@ button {
   gap: 18px;
 }
 
+.vocab-today-review-slot:empty {
+  display: none;
+}
+
+.vocab-today-review-card {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.vocab-today-review-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.vocab-today-review-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.55;
+  flex: 1 1 220px;
+}
+
+.vocab-today-review-hint {
+  margin: 14px 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.vocab-today-review-start .material-symbols-rounded {
+  font-size: 22px;
+}
+
 /* 탭 줄(.vocab-tab-list margin-bottom)만으로 간격을 쓰고, match-shell 기본 margin-top(24px)은 이중 여백이 됨 */
 .vocab-tab-panel .match-shell,
 .grammar-tab-panel .match-shell,

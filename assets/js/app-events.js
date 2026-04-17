@@ -220,6 +220,18 @@ function attachEventListeners() {
   });
   attachClickListener(vocabQuizNext, nextVocabQuizQuestion);
   attachClickListener(vocabQuizRestart, restartVocabQuiz);
+  const vocabPageRoot = document.getElementById("flashcards");
+  if (vocabPageRoot) {
+    vocabPageRoot.addEventListener("click", (event) => {
+      const trigger = event.target.closest("[data-vocab-today-review-start]");
+      if (!trigger || !vocabPageRoot.contains(trigger)) {
+        return;
+      }
+
+      event.preventDefault();
+      handleVocabTodayReviewStartClick();
+    });
+  }
   attachClickListener(quizNext, nextQuiz);
   attachClickListener(quizRestart, startNewQuizSession);
   attachClickListener(quizClearMistakes, clearQuizMistakes);

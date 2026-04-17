@@ -40,6 +40,15 @@
       match: {
         title: "단어 짝 맞추기로 가볍게 복습해봐요",
         description: "단어와 뜻을 연결하면서 배운 내용을 다시 확인해봐요."
+      },
+      todayReview: {
+        ariaLabel: "오늘의 단어 복습",
+        prepared: "오늘 다시 볼 단어 {count}개 준비했어요",
+        startButton: "오늘의 복습 시작",
+        retryHint: "틀린 단어는 한 번 더 나와요",
+        emptyQueue: "오늘 복습할 단어가 아직 없어요",
+        notEnoughWords: "복습을 시작하려면 단어가 4개 이상 모여야 해요.",
+        quizSourceLabel: "오늘의 복습"
       }
     },
     kanji: {
@@ -129,6 +138,15 @@ const japanoteCopyFallback = {
     match: {
       title: "단어 짝 맞추기로 가볍게 복습해봐요",
       description: "단어와 뜻을 연결하면서 배운 내용을 다시 확인해봐요."
+    },
+    todayReview: {
+      ariaLabel: "오늘의 단어 복습",
+      prepared: "오늘 다시 볼 단어 {count}개 준비했어요",
+      startButton: "오늘의 복습 시작",
+      retryHint: "틀린 단어는 한 번 더 나와요",
+      emptyQueue: "오늘 복습할 단어가 아직 없어요",
+      notEnoughWords: "복습을 시작하려면 단어가 4개 이상 모여야 해요.",
+      quizSourceLabel: "오늘의 복습"
     }
   },
   kanji: {
@@ -201,3 +219,24 @@ const matchHeadingCopy = resolveHeadingNode(
   japanoteCopyRoot.vocab?.match,
   japanoteCopyFallback.vocab.match
 );
+
+function getVocabTodayReviewCopy(key, vars) {
+  const root = getJapanoteCopy();
+  const fromRoot = root?.vocab?.todayReview;
+  const block =
+    fromRoot && typeof fromRoot === "object" ? fromRoot : japanoteCopyFallback.vocab.todayReview;
+  const fallbackBlock = japanoteCopyFallback.vocab.todayReview;
+  let text = typeof block[key] === "string" ? block[key] : "";
+
+  if (!text && typeof fallbackBlock[key] === "string") {
+    text = fallbackBlock[key];
+  }
+
+  const replacements = vars && typeof vars === "object" ? vars : {};
+
+  if (Object.prototype.hasOwnProperty.call(replacements, "count")) {
+    text = text.replace(/\{count\}/g, String(replacements.count));
+  }
+
+  return text;
+}

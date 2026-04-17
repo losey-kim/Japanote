@@ -1,7 +1,7 @@
 /* Japanote — persisted UI state (split from app.js, phase 1) */
 const storageKey = "jlpt-compass-state";
 /** Bump when persisted shape changes; used for localStorage + future remote sync migration. */
-const STATE_SCHEMA_VERSION = 2;
+const STATE_SCHEMA_VERSION = 3;
 var state = null;
 function getStudyStateStore() {
   if (globalThis.japanoteSync && typeof globalThis.japanoteSync.readValue === "function") {
@@ -107,6 +107,9 @@ const defaultState = {
   writingSetupOpen: false,
   lastStudyDate: null,
   streak: 0,
+  vocabTodayReview: { date: null, signature: "", ids: [] },
+  recentVocabWrongIds: [],
+  vocabQuizTodayReviewActive: false,
   stateVersion: STATE_SCHEMA_VERSION
 };
 
@@ -256,6 +259,28 @@ function normalizeLoadedState(inputState) {
     : "all";
   nextState.vocabQuizIndex = 0;
   nextState.vocabQuizFinished = false;
+  nextState.vocabQuizTodayReviewActive = false;
+  const savedRecentWrong = Array.isArray(nextState.recentVocabWrongIds) ? nextState.recentVocabWrongIds.filter(Boolean) : [];
+  const recentWrongSeen = new Set();
+  const recentWrongOrdered = [];
+  savedRecentWrong.forEach((id) => {
+    if (!id || recentWrongSeen.has(id)) {
+      return;
+    }
+
+    recentWrongSeen.add(id);
+    recentWrongOrdered.push(id);
+  });
+  nextState.recentVocabWrongIds = recentWrongOrdered.slice(0, 30);
+  const savedTodayReview = nextState.vocabTodayReview;
+  nextState.vocabTodayReview =
+    savedTodayReview && typeof savedTodayReview === "object"
+      ? {
+          date: typeof savedTodayReview.date === "string" ? savedTodayReview.date : null,
+          signature: typeof savedTodayReview.signature === "string" ? savedTodayReview.signature : "",
+          ids: getUniqueStudyIdList(savedTodayReview.ids || [])
+        }
+      : { date: null, signature: "", ids: [] };
   nextState.kanjiPracticeQuestionField = getKanjiPracticeQuestionField(nextState.kanjiPracticeQuestionField);
   nextState.kanjiPracticeOptionField = getKanjiPracticeOptionField(
     nextState.kanjiPracticeOptionField,
