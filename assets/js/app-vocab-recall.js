@@ -5,10 +5,8 @@
   let recallAnswerRevealed = false;
   let recallAnswerCommitted = false;
   let recallRetrySessionKey = "";
-  let recallRetriedSourceIds = new Set();
   let recallAdvanceTimer = null;
   let recallInlineStatusMessage = "";
-  let recallTargetQuestionCount = 0;
 
   function getVocabQuizAnswerMode(value = state?.vocabQuizAnswerMode) {
     return ANSWER_MODE_OPTIONS.includes(value) ? value : "choice";
@@ -55,19 +53,14 @@
     const nextSessionKey = getRecallSessionKey();
 
     if (nextSessionKey === recallRetrySessionKey) {
-      if (!recallTargetQuestionCount && Array.isArray(activeVocabQuizQuestions)) {
-        recallTargetQuestionCount = activeVocabQuizQuestions.length;
-      }
       return;
     }
 
     recallRetrySessionKey = nextSessionKey;
-    recallRetriedSourceIds = new Set();
     recallQuestionKey = "";
     recallAnswerRevealed = false;
     recallAnswerCommitted = false;
     recallInlineStatusMessage = "";
-    recallTargetQuestionCount = Array.isArray(activeVocabQuizQuestions) ? activeVocabQuizQuestions.length : 0;
     clearRecallAdvanceTimer();
   }
 
@@ -289,67 +282,6 @@
     select.disabled = Boolean(state?.vocabQuizStarted && !state?.vocabQuizFinished);
   }
 
-  function cloneRecallQuestion(question) {
-    return JSON.parse(JSON.stringify(question));
-  }
-
-  function trimRecallQuestionPool(insertedQuestionId) {
-    if (!Array.isArray(activeVocabQuizQuestions) || !recallTargetQuestionCount) {
-      return;
-    }
-
-    while (activeVocabQuizQuestions.length > recallTargetQuestionCount) {
-      let removeIndex = -1;
-
-      for (let index = activeVocabQuizQuestions.length - 1; index > Number(state?.vocabQuizIndex || 0); index -= 1) {
-        const candidate = activeVocabQuizQuestions[index];
-        if (!candidate || candidate.id === insertedQuestionId) {
-          continue;
-        }
-
-        removeIndex = index;
-        if (!candidate.retry) {
-          break;
-        }
-      }
-
-      if (removeIndex < 0) {
-        break;
-      }
-
-      activeVocabQuizQuestions.splice(removeIndex, 1);
-    }
-  }
-
-  function queueRecallRetryQuestion(question, priority = "wrong") {
-    if (!question || !Array.isArray(activeVocabQuizQuestions)) {
-      return;
-    }
-
-    syncRecallSessionState();
-
-    const sourceId = getRecallSourceId(question);
-    const currentIndex = Math.max(0, Number(state?.vocabQuizIndex) || 0);
-    const remainingFutureCount = activeVocabQuizQuestions.length - (currentIndex + 1);
-
-    if (!sourceId || recallRetriedSourceIds.has(sourceId) || remainingFutureCount <= 0) {
-      return;
-    }
-
-    recallRetriedSourceIds.add(sourceId);
-    const retryQuestion = cloneRecallQuestion(question);
-    retryQuestion.id = `${sourceId}-recall-retry-${Date.now()}`;
-    retryQuestion.retry = true;
-    retryQuestion.retryPriority = priority;
-    const retryOffset = priority === "unsure" ? 5 : 3;
-    const insertIndex = Math.min(
-      activeVocabQuizQuestions.length,
-      currentIndex + retryOffset
-    );
-    activeVocabQuizQuestions.splice(insertIndex, 0, retryQuestion);
-    trimRecallQuestionPool(retryQuestion.id);
-  }
-
   function rememberRecentWrongVocab(sourceId) {
     const normalizedSourceId = String(sourceId || "").trim();
 
@@ -458,7 +390,6 @@
     }
 
     if (!isCorrect) {
-      queueRecallRetryQuestion(question, verdict === "unsure" ? "unsure" : "wrong");
       rememberRecentWrongVocab(sourceId);
     }
 
@@ -486,7 +417,7 @@
           ? "좋아요"
           : verdict === "unsure"
             ? "조금 더 볼게요"
-            : "다시 나와요";
+            : "복습에 담았어요";
     explanation.textContent = formatQuizLineBreaks(getRecallExplanationText(question));
     nextButton.disabled = false;
     nextButton.hidden = false;
