@@ -1,6 +1,22 @@
 (function loadJapanotePageScripts(global) {
   const assetVersion = "20260418t";
+
+  function getChallengePreviewRef(pathname = global.location?.pathname || "") {
+    const segments = String(pathname || "").split("/").filter(Boolean);
+
+    if (segments.length >= 2 && segments[0] === "challenge-preview") {
+      return segments[1];
+    }
+
+    return "";
+  }
+
+  const challengePreviewRef = getChallengePreviewRef();
   const pageName = (() => {
+    if (challengePreviewRef) {
+      return "__challenge_preview__";
+    }
+
     const path = global.location?.pathname || "";
     const segments = path.split("/").filter(Boolean);
     const rawPageName = segments[segments.length - 1] || "index.html";
@@ -8,6 +24,11 @@
   })();
 
   const pageScriptMap = {
+    "__challenge_preview__": [
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+      "assets/js/supabase-config.js?v=587210d3",
+      "assets/js/challenge-links.js?v=02833806"
+    ],
     "index.html": [
       "assets/js/theme.js?v=0cb88168",
       "assets/js/app-study-view-helpers.js?v=444dc3dc",
