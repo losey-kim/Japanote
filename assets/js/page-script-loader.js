@@ -27,7 +27,7 @@
     "__challenge_preview__": [
       "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
       "assets/js/supabase-config.js?v=587210d3",
-      "assets/js/challenge-links.js?v=02833806"
+      "assets/js/challenge-preview-redirect.js"
     ],
     "index.html": [
       "assets/js/theme.js?v=0cb88168",
