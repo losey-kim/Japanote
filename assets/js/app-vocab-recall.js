@@ -7,6 +7,12 @@
   let recallRetrySessionKey = "";
   let recallAdvanceTimer = null;
   let recallInlineStatusMessage = "";
+  let recallComboCount = 0;
+  let recallBestComboCount = 0;
+  let recallBossActive = false;
+  let recallBossUsed = false;
+  let recallSessionQuestionMap = new Map();
+  let recallSessionWeakSourceIds = [];
 
   function getVocabQuizAnswerMode(value = state?.vocabQuizAnswerMode) {
     return ANSWER_MODE_OPTIONS.includes(value) ? value : "choice";
@@ -49,6 +55,20 @@
     return [activeVocabQuizSignature || "", state?.vocabQuizTodayReviewActive === true ? "today" : "general"].join("::");
   }
 
+  function resetRecallSessionRuntime() {
+    recallQuestionKey = "";
+    recallAnswerRevealed = false;
+    recallAnswerCommitted = false;
+    recallInlineStatusMessage = "";
+    recallComboCount = 0;
+    recallBestComboCount = 0;
+    recallBossActive = false;
+    recallBossUsed = false;
+    recallSessionQuestionMap = new Map();
+    recallSessionWeakSourceIds = [];
+    clearRecallAdvanceTimer();
+  }
+
   function syncRecallSessionState() {
     const nextSessionKey = getRecallSessionKey();
 
@@ -57,14 +77,16 @@
     }
 
     recallRetrySessionKey = nextSessionKey;
-    recallQuestionKey = "";
-    recallAnswerRevealed = false;
-    recallAnswerCommitted = false;
-    recallInlineStatusMessage = "";
-    clearRecallAdvanceTimer();
+    resetRecallSessionRuntime();
   }
 
-  function getRecallStageMeta() {
+  function getRecallStageMeta(question) {
+    if (question?.boss) {
+      return {
+        title: "보스전"
+      };
+    }
+
     if (!recallAnswerRevealed) {
       return {
         title: "먼저 떠올려보세요"
@@ -99,6 +121,31 @@
         border: 1px solid rgba(15, 23, 42, 0.08);
         background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.94));
         box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+      }
+      .vocab-recall-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .vocab-recall-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        background: rgba(15, 23, 42, 0.06);
+        color: rgba(15, 23, 42, 0.76);
+      }
+      .vocab-recall-chip--combo {
+        background: rgba(34, 197, 94, 0.12);
+        color: rgba(21, 128, 61, 0.96);
+      }
+      .vocab-recall-chip--boss {
+        background: rgba(239, 68, 68, 0.12);
+        color: rgba(185, 28, 28, 0.96);
       }
       .vocab-recall-head {
         display: grid;
@@ -350,7 +397,7 @@
         return "이미 익혔어요";
       }
 
-      return "한 번 더 맞히면 익혀져요";
+      return nextCount > 1 ? `${nextCount}콤보` : "좋아요";
     }
 
     setVocabRecallMasteryCount(sourceId, 0);
@@ -378,6 +425,63 @@
     return softenExplanationCopy(parts.filter(Boolean).join(" "));
   }
 
+  function rememberRecallQuestion(question) {
+    const sourceId = getRecallSourceId(question);
+
+    if (!sourceId || recallSessionQuestionMap.has(sourceId)) {
+      return;
+    }
+
+    recallSessionQuestionMap.set(sourceId, JSON.parse(JSON.stringify(question)));
+  }
+
+  function buildBossRecallQuestion() {
+    const weakSourceId = recallSessionWeakSourceIds.length
+      ? recallSessionWeakSourceIds[recallSessionWeakSourceIds.length - 1]
+      : "";
+    const fallbackEntry = recallSessionQuestionMap.values().next().value;
+    const sourceQuestion = (weakSourceId && recallSessionQuestionMap.get(weakSourceId)) || fallbackEntry;
+
+    if (!sourceQuestion) {
+      return null;
+    }
+
+    const bossQuestion = JSON.parse(JSON.stringify(sourceQuestion));
+    bossQuestion.id = `${getRecallSourceId(sourceQuestion) || "boss"}-boss-${Date.now()}`;
+    bossQuestion.sourceId = getRecallSourceId(sourceQuestion) || bossQuestion.id;
+    bossQuestion.boss = true;
+    return bossQuestion;
+  }
+
+  function maybeStartRecallBossRound() {
+    if (recallBossUsed || recallBossActive || !Array.isArray(activeVocabQuizQuestions)) {
+      return false;
+    }
+
+    const bossQuestion = buildBossRecallQuestion();
+
+    if (!bossQuestion) {
+      return false;
+    }
+
+    recallBossUsed = true;
+    recallBossActive = true;
+    recallQuestionKey = "";
+    recallAnswerRevealed = false;
+    recallAnswerCommitted = false;
+    recallInlineStatusMessage = "보스전 시작";
+    activeVocabQuizQuestions.push(bossQuestion);
+    state.vocabQuizIndex += 1;
+
+    if (typeof showJapanoteToast === "function") {
+      showJapanoteToast("보스전 시작!");
+    }
+
+    saveState();
+    renderVocabQuiz();
+    return true;
+  }
+
   function finalizeVocabRecallQuestion(question, verdict) {
     const feedback = document.getElementById("vocab-quiz-feedback");
     const explanation = document.getElementById("vocab-quiz-explanation");
@@ -389,8 +493,15 @@
       return;
     }
 
-    if (!isCorrect) {
-      rememberRecentWrongVocab(sourceId);
+    if (isCorrect) {
+      recallComboCount += 1;
+      recallBestComboCount = Math.max(recallBestComboCount, recallComboCount);
+    } else {
+      recallComboCount = 0;
+      if (sourceId) {
+        recallSessionWeakSourceIds.push(sourceId);
+        rememberRecentWrongVocab(sourceId);
+      }
     }
 
     const isLastQuestion = state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1;
@@ -410,19 +521,33 @@
 
     recallInlineStatusMessage = applyAutoStatusForRecall(sourceId, verdict);
 
-    feedback.textContent =
-      verdict === "timeout"
-        ? getVocabRecallCopy("timeoutMessage") || "시간이 지나서 정답을 먼저 보여줄게요."
-        : verdict === "correct"
-          ? "좋아요"
-          : verdict === "unsure"
-            ? "조금 더 볼게요"
-            : "복습에 담았어요";
+    if (question.boss) {
+      feedback.textContent = isCorrect ? "보스전 클리어" : "보스전 다시 도전";
+    } else if (isCorrect && recallComboCount >= 2) {
+      feedback.textContent = `${recallComboCount}콤보!`;
+    } else {
+      feedback.textContent =
+        verdict === "timeout"
+          ? getVocabRecallCopy("timeoutMessage") || "시간이 지나서 정답을 먼저 보여줄게요."
+          : verdict === "correct"
+            ? "좋아요"
+            : verdict === "unsure"
+              ? "조금 더 볼게요"
+              : "복습에 담았어요";
+    }
+
     explanation.textContent = formatQuizLineBreaks(getRecallExplanationText(question));
     nextButton.disabled = false;
     nextButton.hidden = false;
     nextButton.classList.add("vocab-recall-next-ready");
-    nextButton.textContent = isLastQuestion ? getJapanoteButtonLabel("result") : getJapanoteButtonLabel("nextQuestion");
+
+    if (question.boss) {
+      nextButton.textContent = getJapanoteButtonLabel("result");
+    } else if (isLastQuestion && !recallBossUsed) {
+      nextButton.textContent = "보스전 가기";
+    } else {
+      nextButton.textContent = isLastQuestion ? getJapanoteButtonLabel("result") : getJapanoteButtonLabel("nextQuestion");
+    }
 
     updateStudyStreak();
     saveState();
@@ -439,7 +564,22 @@
       return;
     }
 
-    const stage = getRecallStageMeta();
+    rememberRecallQuestion(question);
+    const stage = getRecallStageMeta(question);
+    const chips = [];
+
+    if (recallComboCount >= 2) {
+      chips.push(`<span class="vocab-recall-chip vocab-recall-chip--combo">${recallComboCount}콤보</span>`);
+    }
+
+    if (question.boss) {
+      chips.push('<span class="vocab-recall-chip vocab-recall-chip--boss">보스전</span>');
+    }
+
+    if (!question.boss && recallBestComboCount >= 3) {
+      chips.push(`<span class="vocab-recall-chip">최고 ${recallBestComboCount}</span>`);
+    }
+
     const answerMarkup = recallAnswerRevealed
       ? `
         <div class="vocab-recall-answer">
@@ -454,6 +594,7 @@
 
     optionsContainer.innerHTML = `
       <div class="vocab-recall-panel">
+        ${chips.length ? `<div class="vocab-recall-meta">${chips.join("")}</div>` : ""}
         <div class="vocab-recall-head">
           <h3 class="vocab-recall-title">${stage.title}</h3>
         </div>
@@ -574,7 +715,8 @@
         recallQuestionKey = questionKey;
         recallAnswerRevealed = false;
         recallAnswerCommitted = false;
-        recallInlineStatusMessage = "";
+        recallInlineStatusMessage = question?.boss ? "보스전 시작" : "";
+        recallBossActive = Boolean(question?.boss);
         clearRecallAdvanceTimer();
       }
 
@@ -620,7 +762,14 @@
 
       clearRecallAdvanceTimer();
 
-      if (state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1) {
+      const currentQuestion = typeof getCurrentVocabQuizQuestion === "function" ? getCurrentVocabQuizQuestion() : null;
+      const isLastQuestion = state.vocabQuizIndex >= activeVocabQuizQuestions.length - 1;
+
+      if (isLastQuestion && !currentQuestion?.boss && maybeStartRecallBossRound()) {
+        return;
+      }
+
+      if (isLastQuestion) {
         state.vocabQuizFinished = true;
         stopQuizSessionTimer("vocab");
         clearVocabQuizSessionRuntime();
