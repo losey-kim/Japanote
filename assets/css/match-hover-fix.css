@@ -1,36 +1,5 @@
-/* 짝 맞추기 카드는 선택/정답 상태와 위치감이 중요해서
-   hover 시 위치·크기·그림자 변화가 생기지 않도록 고정합니다. */
-.match-card,
-.match-card:hover,
-.match-card:focus,
-.match-card:focus-visible,
-.match-card:focus-within,
-.match-card.is-selected,
-.match-card.is-correct,
-.match-card.is-wrong,
-.match-card.is-matched {
-  transform: none !important;
-}
-
-.match-card {
-  will-change: auto !important;
-  transition:
-    background 140ms ease,
-    border-color 140ms ease,
-    color 140ms ease,
-    opacity 140ms ease !important;
-}
-
-.match-card:hover,
-.match-card:focus,
-.match-card:focus-visible,
-.match-card:focus-within {
-  box-shadow: inherit !important;
-}
-
-.match-card:hover *,
-.match-card:focus *,
-.match-card:focus-visible *,
-.match-card:focus-within * {
+/* 짝 맞추기 카드는 hover 때만 떠오르는 효과를 막습니다.
+   선택/정답/오답 상태 표시는 기존 스타일을 그대로 살립니다. */
+.match-card:hover:not(.is-selected):not(.is-active):not(.is-correct):not(.is-wrong):not(.is-matched):not(.is-resolved):not([aria-pressed="true"]) {
   transform: none !important;
 }
